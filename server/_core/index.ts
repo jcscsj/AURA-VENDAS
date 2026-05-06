@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { initializeDatabase } from "../initDb";
+// import { initializeDatabase } from "../initDb";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
