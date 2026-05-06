@@ -588,14 +588,11 @@ export default function Admin() {
           </div>
         )}
         {activeTab === "config" && (
-          <div className="space-y-4">
-            <input className="w-full p-2 border rounded bg-background" placeholder="Título Hero" defaultValue={siteConfig?.heroTitle || ""} onChange={e => setNewBanner({...newBanner, heroTitle: e.target.value})} />
-            <input className="w-full p-2 border rounded bg-background" placeholder="Subtítulo" defaultValue={siteConfig?.heroSubtitle || ""} onChange={e => setNewBanner({...newBanner, heroSubtitle: e.target.value})} />
-            <Button onClick={() => updateConfigMut.mutate(newBanner)}>Salvar Mudanças</Button>
-          </div>
-        )}
-              </Button>
-            </div>
+          <div className="space-y-4 max-w-lg border p-6 rounded bg-card">
+            <h2 className="text-xl font-bold">Configurações Gerais</h2>
+            <input className="w-full p-2 border rounded bg-background" placeholder="Título Hero" defaultValue={siteConfig?.heroTitle} onChange={e => setConfigForm({...configForm, heroTitle: e.target.value})} />
+            <input className="w-full p-2 border rounded bg-background" placeholder="Subtítulo" defaultValue={siteConfig?.heroSubtitle} onChange={e => setConfigForm({...configForm, heroSubtitle: e.target.value})} />
+            <Button onClick={() => updateConfigMut.mutate(configForm)}>Salvar Mudanças</Button>
           </div>
         )}
       </div>
