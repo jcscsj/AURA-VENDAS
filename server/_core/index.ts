@@ -32,7 +32,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 async function startServer() {
   // Initialize database tables
-  await initializeDatabase();
+  // await initializeDatabase();
 
   const app = express();
   const server = createServer(app);
