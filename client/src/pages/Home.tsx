@@ -136,14 +136,19 @@ export default function Home() {
   });
 
   const submitOrder = () => {
-    if (!cart.length) {
-      toast.error("Adicione pelo menos um item antes de finalizar.");
-      return;
-    }
-    if (!playerNick.trim()) {
-      toast.error("Informe o nick do jogador para prosseguir.");
-      return;
-    }
+  // NOVA TRAVA: Se não estiver logado, manda pro Discord antes de finalizar
+  if (!isAuthenticated) {
+    toast.error("Você precisa estar logado com seu Discord para finalizar o pedido.");
+    setTimeout(() => {
+      window.location.href = getLoginUrl();
+    }, 1500);
+    return;
+  }
+
+  if (!cart.length) {
+    toast.error("Adicione pelo menos um item antes de finalizar.");
+    return;
+  }
 
     const items = cart.map(item => ({
       productId: item.id,
@@ -187,18 +192,10 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/login")}
+                  onClick={() => (window.location.href = getLoginUrl())} // Vai direto pro Discord
                   className="hidden md:inline-flex border-primary text-primary hover:bg-primary/10"
                 >
-                  Login
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/register")}
-                  className="hidden md:inline-flex border-primary text-primary hover:bg-primary/10"
-                >
-                  Cadastro
+                  Entrar com Discord
                 </Button>
               </>
             ) : (
