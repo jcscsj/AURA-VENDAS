@@ -354,13 +354,13 @@ export const appRouter = router({
     }),
     users: router({
         list: protectedProcedure.query(async ({ ctx }) => {
-          if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
           return db.getUsers(); // Vamos garantir que essa função exista no db.ts
         }),
         updateRole: protectedProcedure
           .input(z.object({ userId: z.number(), role: z.string() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.updateUserRole(input.userId, input.role);
           }),
       }),
@@ -414,7 +414,7 @@ export const appRouter = router({
       updateStatus: protectedProcedure
         .input(z.object({ orderId: z.number(), status: z.string() }))
         .mutation(async ({ input, ctx }) => {
-          if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
           return db.updateOrderStatus(input.orderId, input.status);
         }),
     }),
@@ -426,31 +426,31 @@ export const appRouter = router({
         create: protectedProcedure
           .input(z.object({ name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createCategory({ name: input.name } as any);
           }),
         update: protectedProcedure
           .input(z.object({ id: z.number(), name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.updateCategory(input.id, { name: input.name });
           }),
         delete: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteCategory(input.id);
           }),
         moveUp: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveCategoryUp(input.id);
           }),
         moveDown: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveCategoryDown(input.id);
           }),
       }),
@@ -463,7 +463,7 @@ export const appRouter = router({
             image: z.string(),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             
             const { resizeProductImage } = await import("../server/_core/imageResize");
             const { storagePut } = await import("../server/storage");
@@ -491,7 +491,7 @@ export const appRouter = router({
             benefits: z.array(z.string()),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createProduct(input);
           }),
         update: protectedProcedure
@@ -508,26 +508,26 @@ export const appRouter = router({
             benefits: z.array(z.string()),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             const { id, ...data } = input;
             return db.updateProduct(id, data);
           }),
         delete: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteProduct(input.id);
           }),
         moveUp: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveProductUp(input.id);
           }),
         moveDown: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveProductDown(input.id);
           }),
       }),
@@ -541,7 +541,7 @@ export const appRouter = router({
             imageUrl: z.string(),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createBanner(input as any);
           }),
         update: protectedProcedure
@@ -551,26 +551,26 @@ export const appRouter = router({
             imageUrl: z.string(),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             const { id, ...data } = input;
             return db.updateBanner(id, data);
           }),
         delete: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteBanner(input.id);
           }),
         moveUp: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveBannerUp(input.id);
           }),
         moveDown: protectedProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveBannerDown(input.id);
           }),
       }),
