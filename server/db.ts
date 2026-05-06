@@ -612,3 +612,25 @@ export async function updateSiteConfig(data: Partial<InsertSiteConfig>): Promise
     return null;
   }
 }
+// ===== USUÁRIOS (CONTAS LOGADAS) =====
+export async function getUsers(): Promise<User[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    // Busca todos os usuários do Discord que logaram na loja
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  } catch (error) {
+    console.error("[DB] Erro ao buscar usuários:", error);
+    return [];
+  }
+}
+
+export async function updateUserRole(userId: number, role: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.update(users).set({ role }).where(eq(users.id, userId));
+  } catch (error) {
+    console.error("[DB] Erro ao atualizar cargo do usuário:", error);
+  }
+}
