@@ -1,18 +1,18 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 export const getLoginUrl = () => {
-  // Pegamos a URL da própria loja como fallback para não quebrar
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL || window.location.origin;
-  const appId = import.meta.env.VITE_APP_ID || "aura-shop";
+  const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
+  if (!clientId) return "#";
 
-  try {
-    const url = new URL(`${oauthPortalUrl}/app-auth`);
-    const redirectUri = `${window.location.origin}/api/oauth/callback`;
-    url.searchParams.set("appId", appId);
-    url.searchParams.set("redirectUri", redirectUri);
-    return url.toString();
-  } catch (e) {
-    console.error("Erro ao gerar URL de login:", e);
-    return "#"; // Retorna um link vazio em vez de quebrar o site
-  }
+  const redirectUri = `${window.location.origin}/api/oauth/callback`;
+  const state = btoa(redirectUri);
+
+  const url = new URL("https://discord.com/api/oauth2/authorize");
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("scope", "identify email");
+  url.searchParams.set("state", state);
+
+  return url.toString();
 };
