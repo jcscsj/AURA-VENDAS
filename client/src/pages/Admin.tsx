@@ -14,12 +14,13 @@ import {
   Edit2,
   ChevronUp,
   ChevronDown,
+  Users,
 } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users">("products");
 
   // Proteger rota de admin
   useEffect(() => {
@@ -37,133 +38,36 @@ export default function Admin() {
     enabled: user?.role === "admin",
   });
   const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
+  
+  // NOVA QUERY: Lista de Usuários que logaram
+  const { data: storeUsers = [] } = trpc.shop.users.list.useQuery(undefined, {
+    enabled: true,
+  });
 
   // Mutations
   const createCategoryMut = trpc.shop.admin.categories.create.useMutation({
-    onSuccess: () => {
-      refetchCategories();
-      toast.success("Categoria criada!");
-      setNewCategoryName("");
-    },
-    onError: () => toast.error("Erro ao criar categoria"),
+    onSuccess: () => { refetchCategories(); toast.success("Categoria criada!"); setNewCategoryName(""); },
+    onError: () => toast.error("Erro ao criar categoria. Verifique o routers.ts."),
   });
 
   const deleteCategoryMut = trpc.shop.admin.categories.delete.useMutation({
-    onSuccess: () => {
-      refetchCategories();
-      toast.success("Categoria removida!");
-    },
-    onError: () => toast.error("Erro ao remover categoria"),
-  });
-
-  const moveCategoryUpMut = trpc.shop.admin.categories.moveUp.useMutation({
-    onSuccess: () => {
-      refetchCategories();
-      toast.success("Categoria movida para cima!");
-    },
-    onError: () => toast.error("Erro ao mover categoria"),
-  });
-
-  const moveCategoryDownMut = trpc.shop.admin.categories.moveDown.useMutation({
-    onSuccess: () => {
-      refetchCategories();
-      toast.success("Categoria movida para baixo!");
-    },
-    onError: () => toast.error("Erro ao mover categoria"),
+    onSuccess: () => { refetchCategories(); toast.success("Categoria removida!"); },
   });
 
   const createProductMut = trpc.shop.admin.products.create.useMutation({
-    onSuccess: () => {
-      refetchProducts();
-      toast.success("Produto criado!");
-      setNewProduct({});
-    },
-    onError: () => toast.error("Erro ao criar produto"),
+    onSuccess: () => { refetchProducts(); toast.success("Produto criado!"); setNewProduct({}); },
   });
 
   const updateProductMut = trpc.shop.admin.products.update.useMutation({
-    onSuccess: () => {
-      refetchProducts();
-      toast.success("Produto atualizado!");
-      setEditingProductId(null);
-      setNewProduct({});
-    },
-    onError: () => toast.error("Erro ao atualizar produto"),
+    onSuccess: () => { refetchProducts(); toast.success("Produto atualizado!"); setEditingProductId(null); },
   });
 
   const deleteProductMut = trpc.shop.admin.products.delete.useMutation({
-    onSuccess: () => {
-      refetchProducts();
-      toast.success("Produto removido!");
-    },
-    onError: () => toast.error("Erro ao remover produto"),
-  });
-
-  const moveProductUpMut = trpc.shop.admin.products.moveUp.useMutation({
-    onSuccess: () => {
-      refetchProducts();
-      toast.success("Produto movido para cima!");
-    },
-    onError: () => toast.error("Erro ao mover produto"),
-  });
-
-  const moveProductDownMut = trpc.shop.admin.products.moveDown.useMutation({
-    onSuccess: () => {
-      refetchProducts();
-      toast.success("Produto movido para baixo!");
-    },
-    onError: () => toast.error("Erro ao mover produto"),
-  });
-
-  const createBannerMut = trpc.shop.admin.banners.create.useMutation({
-    onSuccess: () => {
-      refetchBanners();
-      toast.success("Banner criado!");
-      setNewBanner({});
-    },
-    onError: () => toast.error("Erro ao criar banner"),
-  });
-
-  const updateBannerMut = trpc.shop.admin.banners.update.useMutation({
-    onSuccess: () => {
-      refetchBanners();
-      toast.success("Banner atualizado!");
-      setEditingBannerId(null);
-      setNewBanner({});
-    },
-    onError: () => toast.error("Erro ao atualizar banner"),
-  });
-
-  const deleteBannerMut = trpc.shop.admin.banners.delete.useMutation({
-    onSuccess: () => {
-      refetchBanners();
-      toast.success("Banner removido!");
-    },
-    onError: () => toast.error("Erro ao remover banner"),
-  });
-
-  const moveBannerUpMut = trpc.shop.admin.banners.moveUp.useMutation({
-    onSuccess: () => {
-      refetchBanners();
-      toast.success("Banner movido para cima!");
-    },
-    onError: () => toast.error("Erro ao mover banner"),
-  });
-
-  const moveBannerDownMut = trpc.shop.admin.banners.moveDown.useMutation({
-    onSuccess: () => {
-      refetchBanners();
-      toast.success("Banner movido para baixo!");
-    },
-    onError: () => toast.error("Erro ao mover banner"),
+    onSuccess: () => { refetchProducts(); toast.success("Produto removido!"); },
   });
 
   const updateConfigMut = trpc.shop.admin.config.update.useMutation({
-    onSuccess: () => {
-      refetchConfig();
-      toast.success("Configurações atualizadas!");
-    },
-    onError: () => toast.error("Erro ao atualizar configurações"),
+    onSuccess: () => { refetchConfig(); toast.success("Configurações atualizadas!"); },
   });
 
   // Local state
@@ -173,450 +77,173 @@ export default function Admin() {
   const [newBanner, setNewBanner] = useState<any>({});
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")) {
-      navigate("/");
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
-  }
-
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-
-  const handleSaveProduct = () => {
-    if (!newProduct.name) {
-      toast.error("Nome do produto é obrigatório");
-      return;
-    }
-    if (!newProduct.categoryId) {
-      toast.error("Categoria é obrigatória");
-      return;
-    }
-    if (!newProduct.price) {
-      toast.error("Preço é obrigatório");
-      return;
-    }
-
-    // Preencher campos obrigatórios com valores padrão
-    const productData = {
-      ...newProduct,
-      description: newProduct.description || "Produto sem descrição",
-      tag: newProduct.tag || "Novo",
-      rarity: newProduct.rarity || "Premium",
-      image: newProduct.image || "",
-      benefits: newProduct.benefits || [],
-    };
-    
-    // Remover oldPrice se não estiver preenchido
-    if (!newProduct.oldPrice) {
-      delete productData.oldPrice;
-    }
-
-    if (editingProductId) {
-      updateProductMut.mutate({ id: editingProductId, ...productData });
-    } else {
-      createProductMut.mutate(productData);
+  // LOGOUT DEFINITIVO
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/";
+    } catch (e) {
+      localStorage.clear();
+      window.location.href = "/";
     }
   };
 
-  const handleSaveBanner = () => {
-    if (!newBanner.title || !newBanner.imageUrl) {
-      toast.error("Título e URL da imagem são obrigatórios");
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-white">Carregando...</div>;
+  if (!user || user.role !== "admin") return null;
+
+  const handleSaveProduct = () => {
+    if (!newProduct.name || !newProduct.categoryId || !newProduct.price) {
+      toast.error("Preencha os campos obrigatórios");
       return;
     }
-
-    if (editingBannerId) {
-      updateBannerMut.mutate({ id: editingBannerId, ...newBanner });
-    } else {
-      createBannerMut.mutate(newBanner);
-    }
+    const productData = { ...newProduct, benefits: newProduct.benefits || [] };
+    if (editingProductId) updateProductMut.mutate({ id: editingProductId, ...productData });
+    else createProductMut.mutate(productData);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/manus-storage/aura-city-logo_1da7d4d4.png" alt="Aura City" className="h-10 w-10 object-contain" />
+            <img src="/manus-storage/aura-city-logo_1da7d4d4.png" alt="Logo" className="h-10 w-10 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">Aura City</h1>
-              <p className="text-xs text-muted-foreground">Painel Admin</p>
+              <h1 className="text-xl font-bold">Aura City</h1>
+              <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest text-primary">Admin</p>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-2 border-primary text-primary hover:bg-primary/10">
-              <Home className="h-4 w-4" />
-              Loja
+            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-2 border-primary text-primary">
+              <Home className="h-4 w-4" /> Loja
             </Button>
-            <Button variant="ghost" size="sm" onClick={logout} className="gap-2 text-destructive">
-              <LogOut className="h-4 w-4" />
-              Sair
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 text-destructive hover:bg-destructive/10">
+              <LogOut className="h-4 w-4" /> Sair
             </Button>
           </div>
         </div>
       </header>
 
       <div className="container py-8">
-        {/* Tabs */}
-        <div className="flex gap-2 border-b border-border mb-8">
-          {(["products", "categories", "banners", "orders", "config"] as const).map((tab) => (
+        {/* Tabs de Navegação */}
+        <div className="flex gap-2 border-b border-border mb-8 overflow-x-auto pb-1">
+          {(["products", "categories", "banners", "orders", "config", "users"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-semibold text-sm transition ${
-                activeTab === tab
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`px-4 py-2 font-semibold text-sm transition whitespace-nowrap border-b-2 ${
+                activeTab === tab ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "users" ? "Contas Logadas" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Produtos */}
+        {/* ABA DE USUÁRIOS */}
+        {activeTab === "users" && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Jogadores na Loja</h2>
+            <div className="rounded-lg border border-border bg-card overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-muted text-muted-foreground border-b border-border">
+                  <tr>
+                    <th className="p-4">Nome Discord</th>
+                    <th className="p-4">E-mail</th>
+                    <th className="p-4">Discord ID</th>
+                    <th className="p-4">Último Acesso</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {storeUsers.map((u: any) => (
+                    <tr key={u.id} className="hover:bg-muted/50 transition">
+                      <td className="p-4 font-semibold">{u.name}</td>
+                      <td className="p-4">{u.email || "N/A"}</td>
+                      <td className="p-4 text-muted-foreground">{u.discordId || "N/A"}</td>
+                      <td className="p-4 text-xs">
+                        {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleString("pt-BR") : "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* PRODUTOS */}
         {activeTab === "products" && (
           <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Gerenciar Produtos</h2>
-              <div className="space-y-4 rounded-lg border border-border bg-background p-6">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Nome</label>
-                  <input
-                    type="text"
-                    value={newProduct.name || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="Nome do produto"
-                  />
+            <div className="space-y-4 rounded-lg border border-border bg-card p-6">
+                <h2 className="text-xl font-bold">Adicionar Produto</h2>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <input type="text" placeholder="Nome" value={newProduct.name || ""} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="bg-background border border-border p-2 rounded" />
+                    <select value={newProduct.categoryId || ""} onChange={e => setNewProduct({...newProduct, categoryId: Number(e.target.value)})} className="bg-background border border-border p-2 rounded">
+                        <option value="">Categoria</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <input type="number" placeholder="Preço (Centavos)" value={newProduct.price || ""} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="bg-background border border-border p-2 rounded" />
+                    <input type="text" placeholder="URL Imagem" value={newProduct.image || ""} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="bg-background border border-border p-2 rounded" />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Categoria</label>
-                  <select
-                    value={newProduct.categoryId || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Preço (em centavos)</label>
-                  <input
-                    type="number"
-                    value={newProduct.price || 0}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Preço Antigo (opcional)</label>
-                  <input
-                    type="number"
-                    value={newProduct.oldPrice || 0}
-                    onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">URL da Imagem</label>
-                  <input
-                    type="text"
-                    value={newProduct.image || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={handleSaveProduct}>
-                    <Save className="h-4 w-4" />
-                    {editingProductId ? "Atualizar" : "Criar"}
-                  </Button>
-                  {editingProductId && (
-                    <Button variant="outline" onClick={() => { setEditingProductId(null); setNewProduct({}); }}>
-                      Cancelar
-                    </Button>
-                  )}
-                </div>
-              </div>
+                <Button onClick={handleSaveProduct} className="bg-primary text-black font-bold">Salvar Produto</Button>
             </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-4">Produtos Existentes</h3>
-              <div className="grid gap-3">
-                {products.map((product) => (
-                  <div key={product.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">{product.name}</h4>
-                      <p className="text-sm text-muted-foreground">R$ {(product.price ? product.price / 100 : 0).toFixed(2)}</p>
+            <div className="grid gap-4">
+                {products.map(p => (
+                    <div key={p.id} className="p-4 border border-border bg-card rounded-lg flex justify-between items-center">
+                        <div>
+                            <p className="font-bold">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">R$ {(p.price/100).toFixed(2)}</p>
+                        </div>
+                        <Button variant="ghost" onClick={() => deleteProductMut.mutate({id: p.id})} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductUpMut.mutate({ id: product.id })}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductDownMut.mutate({ id: product.id })}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingProductId(product.id);
-                          setNewProduct(product);
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteProductMut.mutate({ id: product.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
                 ))}
-              </div>
             </div>
           </div>
         )}
 
-        {/* Categorias */}
+        {/* CATEGORIAS */}
         {activeTab === "categories" && (
           <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Gerenciar Categorias</h2>
-              <div className="flex gap-2 rounded-lg border border-border bg-background p-4">
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="flex-1 rounded border border-border bg-card px-3 py-2 text-foreground"
-                  placeholder="Nome da categoria"
-                />
-                <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={() => {
-                  if (newCategoryName.trim()) {
-                    createCategoryMut.mutate({ name: newCategoryName });
-                  }
-                }}>
-                  <Plus className="h-4 w-4" />
-                  Adicionar
-                </Button>
-              </div>
+            <div className="flex gap-2 p-6 border border-border bg-card rounded-lg">
+                <input type="text" placeholder="Nova Categoria" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} className="flex-1 bg-background border border-border p-2 rounded" />
+                <Button onClick={() => createCategoryMut.mutate({name: newCategoryName})} className="bg-primary text-black font-bold">Criar</Button>
             </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-4">Categorias Existentes</h3>
-              <div className="grid gap-3">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
-                    <h4 className="font-semibold text-foreground">{category.name}</h4>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveCategoryUpMut.mutate({ id: category.id })}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveCategoryDownMut.mutate({ id: category.id })}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteCategoryMut.mutate({ id: category.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+            <div className="grid gap-2">
+                {categories.map(c => (
+                    <div key={c.id} className="p-3 border border-border bg-card rounded flex justify-between items-center">
+                        <span>{c.name}</span>
+                        <Button variant="ghost" onClick={() => deleteCategoryMut.mutate({id: c.id})} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                     </div>
-                  </div>
                 ))}
-              </div>
             </div>
           </div>
         )}
 
-        {/* Banners */}
-        {activeTab === "banners" && (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Gerenciar Banners</h2>
-              <div className="space-y-4 rounded-lg border border-border bg-background p-6">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Título</label>
-                    <input
-                      type="text"
-                      value={newBanner.title ?? ""}
-                      onChange={(e) => setNewBanner({ ...newBanner, title: e.target.value })}
-                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                      placeholder="Título do banner"
-                    />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">URL da Imagem</label>
-                  <input
-                    type="text"
-                    value={newBanner.imageUrl ?? ""}
-                    onChange={(e) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={handleSaveBanner}>
-                    <Save className="h-4 w-4" />
-                    {editingBannerId ? "Atualizar" : "Criar"}
-                  </Button>
-                  {editingBannerId && (
-                    <Button variant="outline" onClick={() => { setEditingBannerId(null); setNewBanner({}); }}>
-                      Cancelar
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-4">Banners Existentes</h3>
-              <div className="grid gap-4">
-                {banners.map((banner) => (
-                  <div key={banner.id} className="rounded-lg border border-border bg-background p-4">
-                    <img src={banner.imageUrl ?? ""} alt={banner.title ?? ""} className="h-32 w-full object-cover rounded mb-3" />
-                    <h4 className="font-semibold text-foreground mb-2">{banner.title ?? ""}</h4>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingBannerId(banner.id);
-                          setNewBanner(banner);
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteBannerMut.mutate({ id: banner.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Pedidos */}
+        {/* PEDIDOS */}
         {activeTab === "orders" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Pedidos Recentes</h2>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Pedidos Recentes</h2>
             <div className="grid gap-4">
-              {orders.map((order) => (
-                <div key={order.id} className="rounded-lg border border-border bg-background p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-semibold text-foreground">{order.playerNick}</h4>
-                      <p className="text-sm text-muted-foreground">Discord: {order.discord || "N/A"}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                      order.status === "completed" ? "bg-green-500/20 text-green-700" :
-                      order.status === "cancelled" ? "bg-red-500/20 text-red-700" :
-                      "bg-yellow-500/20 text-yellow-700"
-                    }`}>
-                      {order.status}
-                    </span>
+              {orders.map((o: any) => (
+                <div key={o.id} className="p-4 border border-border bg-card rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-bold">{o.playerNick}</p>
+                    <p className="text-sm text-muted-foreground">Status: {o.status}</p>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Total:</strong> R$ {(order.total ? order.total / 100 : 0).toFixed(2)}</p>
-                    <p><strong>Itens:</strong> {order.items?.length || 0}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("pt-BR") : "N/A"}
-                    </p>
-                  </div>
+                  <p className="font-bold text-primary">R$ {(o.total/100).toFixed(2)}</p>
                 </div>
               ))}
-             </div>
+            </div>
           </div>
         )}
 
+        {/* CONFIGURAÇÕES */}
         {activeTab === "config" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Configurações do Site</h2>
-            <div className="grid gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Título do Hero</label>
-                <input
-                  type="text"
-                  value={siteConfig?.heroTitle || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroTitle: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Eleve sua experiência no FiveM"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Subtítulo do Hero</label>
-                <input
-                  type="text"
-                  value={siteConfig?.heroSubtitle || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Bem-vindo à Aura City"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
-                <textarea
-                  value={siteConfig?.heroDescription || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroDescription: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Descubra pacotes VIP, veículos premium..."
-                  rows={3}
-                />
-              </div>
-              <Button
-                onClick={() => updateConfigMut.mutate(newBanner)}
-                disabled={updateConfigMut.isPending}
-                className="bg-primary hover:bg-orange-600 text-black font-semibold"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Configurações
-              </Button>
-            </div>
+          <div className="p-6 border border-border bg-card rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Configurações Gerais</h2>
+            <p className="text-muted-foreground mb-4">Ajuste os textos da página inicial.</p>
+            <Button onClick={() => updateConfigMut.mutate(siteConfig)} className="bg-primary text-black font-bold">Salvar Mudanças</Button>
           </div>
         )}
       </div>
