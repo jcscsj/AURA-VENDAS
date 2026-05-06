@@ -192,14 +192,6 @@ export default function Home() {
                 >
                   Login
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/register")}
-                  className="hidden md:inline-flex border-primary text-primary hover:bg-primary/10"
-                >
-                  Cadastro
-                </Button>
               </>
             ) : (
               <>
