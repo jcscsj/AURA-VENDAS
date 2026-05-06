@@ -13,8 +13,6 @@ async function notifyDiscordOrder(order: any, items: any[]) {
   
   try {
     const itemsText = items.map(item => `- ${item.name} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`).join("\n");
-    
-    // Criar mention se tiver discordId
     let mention = "";
     if (order.discordId) {
       mention = `<@${order.discordId}>`;
@@ -22,8 +20,8 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     
     const embed = {
       title: "🛒 Novo Pedido Realizado!",
-      color: 16744192, // Laranja
-      fields: [
+      color: 16744192,
+      fields:[
         { name: "Jogador", value: `${mention} ${order.playerNick}`, inline: true },
         { name: "ID do Jogo", value: order.gameId || "Não informado", inline: true },
         { name: "Discord", value: order.discord || "Não informado", inline: true },
@@ -54,366 +52,116 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      return ctx.user || null;
+      return ctx.user || ctx.adminSession || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
-  // Limpa o cookie do Discord, do Admin e da conta Local
-  ctx.res.clearCookie("app_session_id");
-  ctx.res.clearCookie("adminSession");
-  ctx.res.clearCookie("localSession");
-  return { success: true };
-}),
+      ctx.res.clearCookie("app_session_id");
+      ctx.res.clearCookie("adminSession");
+      ctx.res.clearCookie("localSession");
+      return { success: true };
+    }),
     register: publicProcedure
-      .input(
-        z.object({
-          email: z.string().email(),
-          password: z.string().min(6),
-          name: z.string().min(1),
-          gameId: z.string().min(1),
-        })
-      )
+      .input(z.object({ email: z.string().email(), password: z.string().min(6), name: z.string().min(1), gameId: z.string().min(1) }))
       .mutation(async ({ input, ctx }) => {
         const existing = await db.getLocalAccountByEmail(input.email);
-        if (existing) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email já cadastrado",
-          });
-        }
-
-        const passwordHash = crypto
-          .createHash("sha256")
-          .update(input.password)
-          .digest("hex");
-
-        const account = await db.createLocalAccount({
-          email: input.email,
-          passwordHash,
-          name: input.name,
-          gameId: input.gameId,
-        });
-
-        if (!account) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Erro ao criar conta",
-          });
-        }
-
-        const sessionData = JSON.stringify({
-          id: account.id,
-          email: account.email,
-          name: account.name,
-          gameId: account.gameId,
-        });
-        const sessionCookie = Buffer.from(sessionData).toString("base64");
-
-        ctx.res.cookie("localSession", sessionCookie);
-
-        return {
-          id: account.id,
-          email: account.email,
-          name: account.name,
-          gameId: account.gameId,
-        };
+        if (existing) throw new TRPCError({ code: "BAD_REQUEST", message: "Email já cadastrado" });
+        const passwordHash = crypto.createHash("sha256").update(input.password).digest("hex");
+        const account = await db.createLocalAccount({ email: input.email, passwordHash, name: input.name, gameId: input.gameId });
+        if (!account) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar conta" });
+        const sessionData = JSON.stringify({ id: account.id, email: account.email, name: account.name, gameId: account.gameId });
+        ctx.res.cookie("localSession", Buffer.from(sessionData).toString("base64"));
+        return account;
       }),
     login: publicProcedure
-      .input(
-        z.object({
-          email: z.string().email(),
-          password: z.string().min(6),
-        })
-      )
+      .input(z.object({ email: z.string().email(), password: z.string().min(6) }))
       .mutation(async ({ input, ctx }) => {
         const account = await db.getLocalAccountByEmail(input.email);
-        if (!account) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email ou senha incorretos",
-          });
-        }
-
-        const passwordHash = crypto
-          .createHash("sha256")
-          .update(input.password)
-          .digest("hex");
-
-        if (passwordHash !== account.passwordHash) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email ou senha incorretos",
-          });
-        }
-
-        // Update last signed in timestamp
-
-        const sessionData = JSON.stringify({
-          id: account.id,
-          email: account.email,
-          name: account.name,
-          gameId: account.gameId,
-        });
-        const sessionCookie = Buffer.from(sessionData).toString("base64");
-
-        ctx.res.cookie("localSession", sessionCookie);
-
-        return {
-          id: account.id,
-          email: account.email,
-          name: account.name,
-          gameId: account.gameId,
-        };
+        if (!account) throw new TRPCError({ code: "BAD_REQUEST", message: "Email ou senha incorretos" });
+        const passwordHash = crypto.createHash("sha256").update(input.password).digest("hex");
+        if (passwordHash !== account.passwordHash) throw new TRPCError({ code: "BAD_REQUEST", message: "Email ou senha incorretos" });
+        const sessionData = JSON.stringify({ id: account.id, email: account.email, name: account.name, gameId: account.gameId });
+        ctx.res.cookie("localSession", Buffer.from(sessionData).toString("base64"));
+        return account;
       }),
     getProfile: publicProcedure.query(async ({ ctx }) => {
-      if (ctx.user) {
-        return ctx.user;
-      }
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Não autenticado",
-      });
+      if (ctx.user) return ctx.user;
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
     }),
     updateProfile: protectedProcedure
-      .input(
-        z.object({
-          name: z.string().optional(),
-          gameId: z.string().optional(),
-          characterName: z.string().optional(),
-          profilePicture: z.string().optional(),
-        })
-      )
+      .input(z.object({ name: z.string().optional(), gameId: z.string().optional(), characterName: z.string().optional(), profilePicture: z.string().optional() }))
       .mutation(async ({ input, ctx }) => {
-        if (!ctx.user) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Não autenticado",
-          });
-        }
-
-        const updates: any = {};
-        if (input.name) updates.name = input.name;
-        if (input.gameId) updates.gameId = input.gameId;
-        if (input.characterName) updates.characterName = input.characterName;
-        if (input.profilePicture) updates.profilePicture = input.profilePicture;
-
-        await db.updateUserProfile(ctx.user.id, updates);
-
-        return {
-          ...ctx.user,
-          ...updates,
-        };
+        if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Não autenticado" });
+        await db.updateUserProfile(ctx.user.id, input);
+        return { ...ctx.user, ...input };
       }),
     adminLogin: publicProcedure
-      .input(
-        z.object({
-          email: z.string().email(),
-          password: z.string().min(6),
-        })
-      )
+      .input(z.object({ email: z.string().email(), password: z.string().min(6) }))
       .mutation(async ({ input, ctx }) => {
         const admin = await db.getAdminByEmail(input.email);
-        if (!admin) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email ou senha incorretos",
-          });
-        }
-
-        const passwordHash = crypto
-          .createHash("sha256")
-          .update(input.password)
-          .digest("hex");
-
-        if (passwordHash !== admin.passwordHash) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email ou senha incorretos",
-          });
-        }
-
+        if (!admin) throw new TRPCError({ code: "BAD_REQUEST", message: "Email ou senha incorretos" });
+        const passwordHash = crypto.createHash("sha256").update(input.password).digest("hex");
+        if (passwordHash !== admin.passwordHash) throw new TRPCError({ code: "BAD_REQUEST", message: "Email ou senha incorretos" });
         await db.updateAdminLastSignedIn(admin.id);
-
-        const sessionData = JSON.stringify({
-          id: admin.id,
-          email: admin.email,
-          name: admin.name,
-          role: "admin",
-        });
-        const sessionCookie = Buffer.from(sessionData).toString("base64");
-
-        ctx.res.cookie("adminSession", sessionCookie);
-
-        return {
-          id: admin.id,
-          email: admin.email,
-          name: admin.name,
-          role: "admin",
-        };
+        const sessionData = JSON.stringify({ id: admin.id, email: admin.email, name: admin.name, role: "admin" });
+        ctx.res.cookie("adminSession", Buffer.from(sessionData).toString("base64"));
+        return { id: admin.id, email: admin.email, name: admin.name, role: "admin" };
       }),
-    adminLogout: protectedProcedure.mutation(async ({ ctx }) => {
+    adminLogout: publicProcedure.mutation(async ({ ctx }) => {
       ctx.res.clearCookie("adminSession");
       return { success: true };
     }),
     resetAdminPassword: publicProcedure
-      .input(
-        z.object({
-          email: z.string().email(),
-          newPassword: z.string().min(6),
-          resetKey: z.string(),
-        })
-      )
+      .input(z.object({ email: z.string().email(), newPassword: z.string().min(6), resetKey: z.string() }))
       .mutation(async ({ input }) => {
-        if (input.resetKey !== "AURACITY_RESET_2026") {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Chave de reset invalida",
-          });
-        }
-
+        if (input.resetKey !== "AURACITY_RESET_2026") throw new TRPCError({ code: "UNAUTHORIZED", message: "Chave de reset invalida" });
         const admin = await db.getAdminByEmail(input.email);
-        if (!admin) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Admin nao encontrado",
-          });
-        }
-
-        const newPasswordHash = crypto
-          .createHash("sha256")
-          .update(input.newPassword)
-          .digest("hex");
-
+        if (!admin) throw new TRPCError({ code: "BAD_REQUEST", message: "Admin nao encontrado" });
+        const newPasswordHash = crypto.createHash("sha256").update(input.newPassword).digest("hex");
         await db.updateAdminPassword(admin.id, newPasswordHash);
-
         return { success: true, message: "Senha resetada com sucesso" };
       }),
     createAdmin: publicProcedure
-      .input(
-        z.object({
-          email: z.string().email(),
-          password: z.string().min(6),
-          name: z.string().min(1),
-          setupKey: z.string(),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        if (input.setupKey !== "AURACITY_SETUP_2026") {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Chave de setup inválida",
-          });
-        }
-
+      .input(z.object({ email: z.string().email(), password: z.string().min(6), name: z.string().min(1), setupKey: z.string() }))
+      .mutation(async ({ input }) => {
+        if (input.setupKey !== "AURACITY_SETUP_2026") throw new TRPCError({ code: "UNAUTHORIZED", message: "Chave de setup inválida" });
         const existing = await db.getAdminByEmail(input.email);
-        if (existing) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email já cadastrado",
-          });
-        }
-
-        const passwordHash = crypto
-          .createHash("sha256")
-          .update(input.password)
-          .digest("hex");
-
-        const admin = await db.createAdmin({
-          email: input.email,
-          passwordHash,
-          name: input.name,
-        } as any);
-
-        if (!admin) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Erro ao criar admin",
-          });
-        }
-
-        return {
-          id: admin.id,
-          email: admin.email,
-          name: admin.name,
-          role: "admin",
-        };
+        if (existing) throw new TRPCError({ code: "BAD_REQUEST", message: "Email já cadastrado" });
+        const passwordHash = crypto.createHash("sha256").update(input.password).digest("hex");
+        const admin = await db.createAdmin({ email: input.email, passwordHash, name: input.name } as any);
+        if (!admin) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao criar admin" });
+        return { id: admin.id, email: admin.email, name: admin.name, role: "admin" };
       }),
   }),
   shop: router({
-    categories: router({
-      list: publicProcedure.query(async () => {
-        return db.getCategories();
-      }),
-    }),
-    products: router({
-      list: publicProcedure.query(async () => {
-        return db.getProducts();
-      }),
-    }),
-    banners: router({
-      list: publicProcedure.query(async () => {
-        return db.getBanners();
-      }),
-    }),
+    categories: router({ list: publicProcedure.query(async () => db.getCategories()) }),
+    products: router({ list: publicProcedure.query(async () => db.getProducts()) }),
+    banners: router({ list: publicProcedure.query(async () => db.getBanners()) }),
     users: router({
-        list: protectedProcedure.query(async ({ ctx }) => {
-          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-          return db.getUsers(); // Vamos garantir que essa função exista no db.ts
-        }),
-        updateRole: protectedProcedure
-          .input(z.object({ userId: z.number(), role: z.string() }))
-          .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.updateUserRole(input.userId, input.role);
-          }),
+      list: publicProcedure.query(async ({ ctx }) => {
+        if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+        return db.getUsers(); 
       }),
+    }),
     orders: router({
       create: publicProcedure
-        .input(
-          z.object({
-            playerNick: z.string(),
-            gameId: z.string(),
-            discord: z.string().optional(),
-            discordId: z.string().optional(),
-            items: z.array(
-              z.object({
-                productId: z.number(),
-                quantity: z.number(),
-                price: z.number(),
-              })
-            ),
-            subtotal: z.number(),
-            discount: z.number(),
-            total: z.number(),
-          })
-        )
+        .input(z.object({
+            playerNick: z.string(), gameId: z.string(), discord: z.string().optional(), discordId: z.string().optional(),
+            items: z.array(z.object({ productId: z.number(), quantity: z.number(), price: z.number() })),
+            subtotal: z.number(), discount: z.number(), total: z.number(),
+        }))
         .mutation(async ({ input }) => {
-          const order = await db.createOrder({
-            playerNick: input.playerNick,
-            gameId: input.gameId,
-            discord: input.discord,
-            discordId: input.discordId,
-            items: input.items,
-            subtotal: input.subtotal,
-            discount: input.discount,
-            total: input.total,
-            status: "pending",
-          });
-
-          if (order) {
-            await notifyDiscordOrder(order, input.items);
-          }
-
+          const order = await db.createOrder({ ...input, status: "pending" } as any);
+          if (order) await notifyDiscordOrder(order, input.items);
           return order;
         }),
-      list: publicProcedure.query(async () => {
+      list: publicProcedure.query(async ({ ctx }) => {
+        if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
         return db.getOrders();
       }),
       getByGameId: publicProcedure
         .input(z.object({ gameId: z.string() }))
-        .query(async ({ input }) => {
-          return db.getOrdersByGameId(input.gameId);
-        }),
-      updateStatus: protectedProcedure
+        .query(async ({ input }) => db.getOrdersByGameId(input.gameId)),
+      updateStatus: publicProcedure
         .input(z.object({ orderId: z.number(), status: z.string() }))
         .mutation(async ({ input, ctx }) => {
           if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -421,62 +169,35 @@ export const appRouter = router({
         }),
     }),
     admin: router({
-      // 1. ABA DE USUÁRIOS
-      users: router({
-        list: publicProcedure.query(async ({ ctx }) => {
-          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-          return db.getUsers(); 
-        }),
-      }),
-
-      // 2. CATEGORIAS
       categories: router({
-        list: publicProcedure.query(async () => {
-          return db.getCategories();
-        }),
-        create: publicProcedure
-          .input(z.object({ name: z.string().min(1) }))
-          .mutation(async ({ input, ctx }) => {
+        list: publicProcedure.query(async () => db.getCategories()),
+        create: publicProcedure.input(z.object({ name: z.string().min(1) })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createCategory({ name: input.name } as any);
-          }),
-        update: publicProcedure
-          .input(z.object({ id: z.number(), name: z.string().min(1) }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        update: publicProcedure.input(z.object({ id: z.number(), name: z.string().min(1) })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.updateCategory(input.id, { name: input.name });
-          }),
-        delete: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteCategory(input.id);
-          }),
-        moveUp: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        moveUp: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveCategoryUp(input.id);
-          }),
-        moveDown: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        moveDown: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveCategoryDown(input.id);
-          }),
-      }),
-
-      // 3. PRODUTOS (UNIFICADO)
-      products: router({
-        list: publicProcedure.query(async () => {
-          return db.getProducts();
         }),
-        uploadImage: publicProcedure
-          .input(z.object({ image: z.string() }))
-          .mutation(async ({ input, ctx }) => {
+      }),
+      products: router({
+        list: publicProcedure.query(async () => db.getProducts()),
+        uploadImage: publicProcedure.input(z.object({ image: z.string() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            const { resizeProductImage } = await import("./_core/imageResize");
-            const { storagePut } = await import("./storage");
+            const { resizeProductImage } = await import("../server/_core/imageResize");
+            const { storagePut } = await import("../server/storage");
             try {
               const imageBuffer = Buffer.from(input.image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
               const resizedBuffer = await resizeProductImage(imageBuffer);
@@ -485,104 +206,70 @@ export const appRouter = router({
             } catch (error) {
               throw new TRPCError({ code: "BAD_REQUEST", message: "Erro ao processar imagem" });
             }
-          }),
-        create: publicProcedure
-          .input(z.object({
-            name: z.string().min(1),
-            categoryId: z.number(),
-            description: z.string(),
-            price: z.number(),
-            oldPrice: z.number().optional(),
-            image: z.string(),
-            tag: z.string(),
-            rarity: z.string(),
-            benefits: z.array(z.string()),
-          }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        create: publicProcedure.input(z.object({
+            name: z.string().min(1), categoryId: z.number(), description: z.string(),
+            price: z.number(), oldPrice: z.number().optional(), image: z.string(),
+            tag: z.string(), rarity: z.string(), benefits: z.array(z.string()),
+        })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createProduct(input);
-          }),
-        update: publicProcedure
-          .input(z.object({
-            id: z.number(),
-            name: z.string().min(1),
-            categoryId: z.number(),
-            description: z.string(),
-            price: z.number(),
-            oldPrice: z.number().optional(),
-            image: z.string(),
-            tag: z.string(),
-            rarity: z.string(),
-            benefits: z.array(z.string()),
-          }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        update: publicProcedure.input(z.object({
+            id: z.number(), name: z.string().min(1), categoryId: z.number(), description: z.string(),
+            price: z.number(), oldPrice: z.number().optional(), image: z.string(),
+            tag: z.string(), rarity: z.string(), benefits: z.array(z.string()),
+        })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             const { id, ...data } = input;
             return db.updateProduct(id, data);
-          }),
-        delete: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteProduct(input.id);
-          }),
-        moveUp: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        moveUp: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveProductUp(input.id);
-          }),
-        moveDown: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        moveDown: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveProductDown(input.id);
-          }),
-      }),
-
-      // 4. BANNERS
-      banners: router({
-        list: publicProcedure.query(async () => {
-          return db.getBanners();
         }),
-        create: publicProcedure
-          .input(z.object({ title: z.string().min(1), imageUrl: z.string() }))
-          .mutation(async ({ input, ctx }) => {
+      }),
+      banners: router({
+        list: publicProcedure.query(async () => db.getBanners()),
+        create: publicProcedure.input(z.object({ title: z.string().min(1), imageUrl: z.string() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createBanner(input as any);
-          }),
-        update: publicProcedure
-          .input(z.object({ id: z.number(), title: z.string().min(1), imageUrl: z.string() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        update: publicProcedure.input(z.object({ id: z.number(), title: z.string().min(1), imageUrl: z.string() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             const { id, ...data } = input;
             return db.updateBanner(id, data);
-          }),
-        delete: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
+        }),
+        delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteBanner(input.id);
-          }),
+        }),
+        moveUp: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerUp(input.id);
+        }),
+        moveDown: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerDown(input.id);
+        }),
       }),
-
-      // 5. PAGAMENTOS
       payment: router({
-        createCheckoutSession: publicProcedure // Mudado para public para aceitar ambos
+        createCheckoutSession: publicProcedure
           .input(z.object({
-            items: z.array(z.object({
-              productId: z.number(),
-              productName: z.string(),
-              quantity: z.number(),
-              price: z.number(),
-            })),
-            total: z.number(),
-            successUrl: z.string(),
-            cancelUrl: z.string(),
+            items: z.array(z.object({ productId: z.number(), productName: z.string(), quantity: z.number(), price: z.number() })),
+            total: z.number(), successUrl: z.string(), cancelUrl: z.string(),
           }))
           .mutation(async ({ input, ctx }) => {
             if (!ctx.user && !ctx.adminSession) throw new TRPCError({ code: "UNAUTHORIZED" });
-            const { createCheckoutSession } = await import("./_core/stripe");
+            const { createCheckoutSession } = await import("../server/_core/stripe");
             const session = await createCheckoutSession({
               userId: (ctx.user?.id || ctx.adminSession?.id || 0).toString(),
               userEmail: ctx.user?.email || ctx.adminSession?.email || "",
@@ -595,23 +282,18 @@ export const appRouter = router({
             return { sessionId: session.id, url: session.url };
           }),
       }),
-
-      // 6. CONFIGURAÇÃO
       config: router({
         get: publicProcedure.query(async () => {
-          return db.getSiteConfig();
+          const config = await db.getSiteConfig();
+          return config || { heroTitle: "", heroSubtitle: "", heroDescription: "", welcomeText: "", catalogTitle: "", benefitsTitle: "" };
         }),
         update: publicProcedure
           .input(z.object({
-            heroTitle: z.string().optional(),
-            heroSubtitle: z.string().optional(),
-            heroDescription: z.string().optional(),
-            welcomeText: z.string().optional(),
-            catalogTitle: z.string().optional(),
-            benefitsTitle: z.string().optional(),
+            heroTitle: z.string().optional(), heroSubtitle: z.string().optional(), heroDescription: z.string().optional(),
+            welcomeText: z.string().optional(), catalogTitle: z.string().optional(), benefitsTitle: z.string().optional(),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (!ctx.user?.role === "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.updateSiteConfig(input);
           }),
       }),
@@ -620,6 +302,4 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-
-// Exportar função para testes
 export { notifyDiscordOrder };
