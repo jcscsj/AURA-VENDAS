@@ -1,203 +1,656 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
-import { useLocation } from "wouter";
-import { toast } from "sonner";
-import { useState } from "react";
-import {
-  Trash2,
-  Plus,
-  Save,
-  LogOut,
-  Home,
-  Edit2,
-  ChevronUp,
-  ChevronDown,
-  Users,
-} from "lucide-react";
+import { getSessionCookieOptions } from "./_core/cookies";
+import { systemRouter } from "./_core/systemRouter";
+import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
+import { z } from "zod";
+import * as db from "./db";
+import { TRPCError } from "@trpc/server";
+import { ENV } from "./_core/env";
+import crypto from "crypto";
 
-export default function Admin() {
-  const { user, loading, logout } = useAuth();
-  const [, navigate] = useLocation();
-  // Adicionamos "users" ao tipo da aba ativa
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users">("products");
-
-  // Proteger rota de admin
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")) {
-      toast.error("Acesso negado. Apenas administradores podem acessar esta página.");
-      navigate("/admin-login");
-    }
-  }, [user, loading, navigate]);
-
-  // Queries
-  const { data: categories = [], refetch: refetchCategories } = trpc.shop.categories.list.useQuery();
-  const { data: products = [], refetch: refetchProducts } = trpc.shop.products.list.useQuery();
-  const { data: banners = [], refetch: refetchBanners } = trpc.shop.banners.list.useQuery();
-  const { data: orders = [], refetch: refetchOrders } = trpc.shop.orders.list.useQuery(undefined, {
-    enabled: user?.role === "admin",
-  });
-  const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
+// Função para enviar notificação Discord com @mention
+async function notifyDiscordOrder(order: any, items: any[]) {
+  if (!ENV.discordWebhookUrl) return;
   
-  // NOVA QUERY: Lista de Usuários que logaram (Contas)
-  const { data: storeUsers = [] } = trpc.shop.users.list.useQuery(undefined, {
-    enabled: true, // Habilitado para quem estiver no admin
-  });
-
-  // Mutations
-  const createCategoryMut = trpc.shop.admin.categories.create.useMutation({
-    onSuccess: () => {
-      refetchCategories();
-      toast.success("Categoria criada!");
-      setNewCategoryName("");
-    },
-    onError: () => toast.error("Erro ao criar categoria. Verifique as permissões."),
-  });
-
-  const deleteCategoryMut = trpc.shop.admin.categories.delete.useMutation({
-    onSuccess: () => { refetchCategories(); toast.success("Categoria removida!"); },
-  });
-
-  const createProductMut = trpc.shop.admin.products.create.useMutation({
-    onSuccess: () => { refetchProducts(); toast.success("Produto criado!"); setNewProduct({}); },
-    onError: () => toast.error("Erro ao criar produto"),
-  });
-
-  const updateProductMut = trpc.shop.admin.products.update.useMutation({
-    onSuccess: () => { refetchProducts(); toast.success("Produto atualizado!"); setEditingProductId(null); },
-  });
-
-  const deleteProductMut = trpc.shop.admin.products.delete.useMutation({
-    onSuccess: () => { refetchProducts(); toast.success("Produto removido!"); },
-  });
-
-  const updateConfigMut = trpc.shop.admin.config.update.useMutation({
-    onSuccess: () => { refetchConfig(); toast.success("Configurações atualizadas!"); },
-  });
-
-  // Local state
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newProduct, setNewProduct] = useState<any>({});
-  const [editingProductId, setEditingProductId] = useState<number | null>(null);
-  const [newBanner, setNewBanner] = useState<any>({});
-  const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
-
-  // FUNÇÃO DE LOGOUT CORRIGIDA (Limpa Cookies e LocalStorage)
-  const handleLogout = async () => {
-    try {
-      await logout();
-      localStorage.clear();
-      sessionStorage.clear();
-      toast.success("Saindo...");
-      setTimeout(() => { window.location.href = "/"; }, 500);
-    } catch (e) {
-      localStorage.clear();
-      window.location.href = "/";
+  try {
+    const itemsText = items.map(item => `- ${item.name} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`).join("\n");
+    
+    // Criar mention se tiver discordId
+    let mention = "";
+    if (order.discordId) {
+      mention = `<@${order.discordId}>`;
     }
-  };
-
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
-  if (!user || user.role !== "admin") return null;
-
-  const handleSaveProduct = () => {
-    if (!newProduct.name || !newProduct.categoryId || !newProduct.price) {
-      toast.error("Preencha os campos obrigatórios");
-      return;
-    }
-    const productData = { ...newProduct, benefits: newProduct.benefits || [] };
-    if (editingProductId) updateProductMut.mutate({ id: editingProductId, ...productData });
-    else createProductMut.mutate(productData);
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/manus-storage/aura-city-logo_1da7d4d4.png" alt="Aura City" className="h-10 w-10 object-contain" />
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Aura City</h1>
-              <p className="text-xs text-muted-foreground">Painel Admin</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-2 border-primary text-primary hover:bg-primary/10">
-              <Home className="h-4 w-4" /> Loja
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 text-destructive">
-              <LogOut className="h-4 w-4" /> Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="container py-8">
-        {/* Tabs - Incluindo Usuários */}
-        <div className="flex gap-2 border-b border-border mb-8 overflow-x-auto">
-          {(["products", "categories", "banners", "orders", "config", "users"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-semibold text-sm transition whitespace-nowrap ${
-                activeTab === tab ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab === "users" ? "Contas Logadas" : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* ABA DE USUÁRIOS (CONTAS) */}
-        {activeTab === "users" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Jogadores Registrados</h2>
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted text-muted-foreground font-medium border-b border-border">
-                  <tr>
-                    <th className="p-4">Nome/Discord</th>
-                    <th className="p-4">E-mail</th>
-                    <th className="p-4">Método</th>
-                    <th className="p-4">Discord ID</th>
-                    <th className="p-4">Último Acesso</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {storeUsers.map((u: any) => (
-                    <tr key={u.id} className="hover:bg-muted/50 transition">
-                      <td className="p-4 font-semibold">{u.name}</td>
-                      <td className="p-4">{u.email || "N/A"}</td>
-                      <td className="p-4 uppercase text-xs font-bold text-primary">{u.loginMethod}</td>
-                      <td className="p-4 text-muted-foreground">{u.discordId || "N/A"}</td>
-                      <td className="p-4 text-xs text-muted-foreground">
-                        {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleString("pt-BR") : "Nunca"}
-                      </td>
-                    </tr>
-                  ))}
-                  {storeUsers.length === 0 && (
-                    <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">Nenhum jogador logou ainda.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* ... (Manter o código de Produtos, Categorias, Banners, Pedidos e Config igual ao que você já tem abaixo) ... */}
-        {activeTab === "products" && (
-          <div className="space-y-8">
-             {/* O conteúdo de produtos que você já tem... */}
-             <div className="bg-card p-6 rounded-lg border border-border">
-                <h3 className="text-lg font-bold mb-4 text-primary">Dica de Especialista</h3>
-                <p className="text-sm text-muted-foreground">Agora você pode gerenciar seus produtos e ver quem está acessando sua loja na aba de Contas.</p>
-             </div>
-             {/* Aqui continua o seu código original de produtos... */}
-          </div>
-        )}
-        
-        {/* Adicione o restante do seu código original (Categorias, Banners, etc) aqui para baixo */}
-      </div>
-    </div>
-  );
+    
+    const embed = {
+      title: "🛒 Novo Pedido Realizado!",
+      color: 16744192, // Laranja
+      fields: [
+        { name: "Jogador", value: `${mention} ${order.playerNick}`, inline: true },
+        { name: "ID do Jogo", value: order.gameId || "Não informado", inline: true },
+        { name: "Discord", value: order.discord || "Não informado", inline: true },
+        { name: "Produtos", value: itemsText || "N/A", inline: false },
+        { name: "Subtotal", value: `R$ ${(order.subtotal / 100).toFixed(2)}`, inline: true },
+        { name: "Desconto", value: `R$ ${(order.discount / 100).toFixed(2)}`, inline: true },
+        { name: "Total", value: `R$ ${(order.total / 100).toFixed(2)}`, inline: true },
+        { name: "Status", value: "⏳ Pendente", inline: false },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: "Aura City - Sistema de Vendas" },
+    };
+    
+    await fetch(ENV.discordWebhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        content: mention ? `${mention}` : undefined,
+        embeds: [embed] 
+      }),
+    });
+  } catch (error) {
+    console.error("[Discord] Erro ao enviar notificação:", error);
+  }
 }
+
+export const appRouter = router({
+  system: systemRouter,
+  auth: router({
+    me: publicProcedure.query(async ({ ctx }) => {
+      return ctx.user || null;
+    }),
+    logout: publicProcedure.mutation(async ({ ctx }) => {
+  // Limpa o cookie do Discord, do Admin e da conta Local
+  ctx.res.clearCookie("app_session_id");
+  ctx.res.clearCookie("adminSession");
+  ctx.res.clearCookie("localSession");
+  return { success: true };
+}),
+    register: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(6),
+          name: z.string().min(1),
+          gameId: z.string().min(1),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const existing = await db.getLocalAccountByEmail(input.email);
+        if (existing) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email já cadastrado",
+          });
+        }
+
+        const passwordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest("hex");
+
+        const account = await db.createLocalAccount({
+          email: input.email,
+          passwordHash,
+          name: input.name,
+          gameId: input.gameId,
+        });
+
+        if (!account) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Erro ao criar conta",
+          });
+        }
+
+        const sessionData = JSON.stringify({
+          id: account.id,
+          email: account.email,
+          name: account.name,
+          gameId: account.gameId,
+        });
+        const sessionCookie = Buffer.from(sessionData).toString("base64");
+
+        ctx.res.cookie("localSession", sessionCookie);
+
+        return {
+          id: account.id,
+          email: account.email,
+          name: account.name,
+          gameId: account.gameId,
+        };
+      }),
+    login: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(6),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const account = await db.getLocalAccountByEmail(input.email);
+        if (!account) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email ou senha incorretos",
+          });
+        }
+
+        const passwordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest("hex");
+
+        if (passwordHash !== account.passwordHash) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email ou senha incorretos",
+          });
+        }
+
+        // Update last signed in timestamp
+
+        const sessionData = JSON.stringify({
+          id: account.id,
+          email: account.email,
+          name: account.name,
+          gameId: account.gameId,
+        });
+        const sessionCookie = Buffer.from(sessionData).toString("base64");
+
+        ctx.res.cookie("localSession", sessionCookie);
+
+        return {
+          id: account.id,
+          email: account.email,
+          name: account.name,
+          gameId: account.gameId,
+        };
+      }),
+    getProfile: publicProcedure.query(async ({ ctx }) => {
+      if (ctx.user) {
+        return ctx.user;
+      }
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Não autenticado",
+      });
+    }),
+    updateProfile: protectedProcedure
+      .input(
+        z.object({
+          name: z.string().optional(),
+          gameId: z.string().optional(),
+          characterName: z.string().optional(),
+          profilePicture: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Não autenticado",
+          });
+        }
+
+        const updates: any = {};
+        if (input.name) updates.name = input.name;
+        if (input.gameId) updates.gameId = input.gameId;
+        if (input.characterName) updates.characterName = input.characterName;
+        if (input.profilePicture) updates.profilePicture = input.profilePicture;
+
+        await db.updateUserProfile(ctx.user.id, updates);
+
+        return {
+          ...ctx.user,
+          ...updates,
+        };
+      }),
+    adminLogin: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(6),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const admin = await db.getAdminByEmail(input.email);
+        if (!admin) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email ou senha incorretos",
+          });
+        }
+
+        const passwordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest("hex");
+
+        if (passwordHash !== admin.passwordHash) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email ou senha incorretos",
+          });
+        }
+
+        await db.updateAdminLastSignedIn(admin.id);
+
+        const sessionData = JSON.stringify({
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: "admin",
+        });
+        const sessionCookie = Buffer.from(sessionData).toString("base64");
+
+        ctx.res.cookie("adminSession", sessionCookie);
+
+        return {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: "admin",
+        };
+      }),
+    adminLogout: protectedProcedure.mutation(async ({ ctx }) => {
+      ctx.res.clearCookie("adminSession");
+      return { success: true };
+    }),
+    resetAdminPassword: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          newPassword: z.string().min(6),
+          resetKey: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        if (input.resetKey !== "AURACITY_RESET_2026") {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Chave de reset invalida",
+          });
+        }
+
+        const admin = await db.getAdminByEmail(input.email);
+        if (!admin) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Admin nao encontrado",
+          });
+        }
+
+        const newPasswordHash = crypto
+          .createHash("sha256")
+          .update(input.newPassword)
+          .digest("hex");
+
+        await db.updateAdminPassword(admin.id, newPasswordHash);
+
+        return { success: true, message: "Senha resetada com sucesso" };
+      }),
+    createAdmin: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(6),
+          name: z.string().min(1),
+          setupKey: z.string(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (input.setupKey !== "AURACITY_SETUP_2026") {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Chave de setup inválida",
+          });
+        }
+
+        const existing = await db.getAdminByEmail(input.email);
+        if (existing) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email já cadastrado",
+          });
+        }
+
+        const passwordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest("hex");
+
+        const admin = await db.createAdmin({
+          email: input.email,
+          passwordHash,
+          name: input.name,
+        } as any);
+
+        if (!admin) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Erro ao criar admin",
+          });
+        }
+
+        return {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: "admin",
+        };
+      }),
+  }),
+  shop: router({
+    categories: router({
+      list: publicProcedure.query(async () => {
+        return db.getCategories();
+      }),
+    }),
+    products: router({
+      list: publicProcedure.query(async () => {
+        return db.getProducts();
+      }),
+    }),
+    banners: router({
+      list: publicProcedure.query(async () => {
+        return db.getBanners();
+      }),
+    }),
+    users: router({
+        list: protectedProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getUsers(); // Vamos garantir que essa função exista no db.ts
+        }),
+        updateRole: protectedProcedure
+          .input(z.object({ userId: z.number(), role: z.string() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.updateUserRole(input.userId, input.role);
+          }),
+      }),
+    orders: router({
+      create: publicProcedure
+        .input(
+          z.object({
+            playerNick: z.string(),
+            gameId: z.string(),
+            discord: z.string().optional(),
+            discordId: z.string().optional(),
+            items: z.array(
+              z.object({
+                productId: z.number(),
+                quantity: z.number(),
+                price: z.number(),
+              })
+            ),
+            subtotal: z.number(),
+            discount: z.number(),
+            total: z.number(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const order = await db.createOrder({
+            playerNick: input.playerNick,
+            gameId: input.gameId,
+            discord: input.discord,
+            discordId: input.discordId,
+            items: input.items,
+            subtotal: input.subtotal,
+            discount: input.discount,
+            total: input.total,
+            status: "pending",
+          });
+
+          if (order) {
+            await notifyDiscordOrder(order, input.items);
+          }
+
+          return order;
+        }),
+      list: publicProcedure.query(async () => {
+        return db.getOrders();
+      }),
+      getByGameId: publicProcedure
+        .input(z.object({ gameId: z.string() }))
+        .query(async ({ input }) => {
+          return db.getOrdersByGameId(input.gameId);
+        }),
+      updateStatus: protectedProcedure
+        .input(z.object({ orderId: z.number(), status: z.string() }))
+        .mutation(async ({ input, ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.updateOrderStatus(input.orderId, input.status);
+        }),
+    }),
+    admin: router({
+      // NOVA ROTA PARA VER AS CONTAS LOGADAS
+      users: router({
+        list: publicProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getUsers(); 
+        }),
+      }),
+      categories: router({
+        list: publicProcedure.query(async () => {
+          return db.getCategories();
+        }),
+        create: protectedProcedure
+          .input(z.object({ name: z.string().min(1) }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.createCategory({ name: input.name } as any);
+          }),
+        update: protectedProcedure
+          .input(z.object({ id: z.number(), name: z.string().min(1) }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.updateCategory(input.id, { name: input.name });
+          }),
+        delete: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.deleteCategory(input.id);
+          }),
+      }),
+      products: router({
+        list: publicProcedure.query(async () => {
+          return db.getProducts();
+        }),
+        create: protectedProcedure
+          .input(z.object({
+            name: z.string().min(1),
+            categoryId: z.number(),
+            description: z.string(),
+            price: z.number(),
+            oldPrice: z.number().optional(),
+            image: z.string(),
+            tag: z.string(),
+            rarity: z.string(),
+            benefits: z.array(z.string()),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.createProduct(input);
+          }),
+      }),
+      products: router({
+        list: publicProcedure.query(async () => {
+          return db.getProducts();
+        }),
+        uploadImage: protectedProcedure
+          .input(z.object({
+            image: z.string(),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            
+            const { resizeProductImage } = await import("../server/_core/imageResize");
+            const { storagePut } = await import("../server/storage");
+            
+            try {
+              const imageBuffer = Buffer.from(input.image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+              const resizedBuffer = await resizeProductImage(imageBuffer);
+              const result = await storagePut(`products/product-${Date.now()}.webp`, resizedBuffer, 'image/webp');
+              
+              return { url: result.url, key: result.key };
+            } catch (error) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "Erro ao processar imagem" });
+            }
+          }),
+        create: protectedProcedure
+          .input(z.object({
+            name: z.string().min(1),
+            categoryId: z.number(),
+            description: z.string(),
+            price: z.number(),
+            oldPrice: z.number().optional(),
+            image: z.string(),
+            tag: z.string(),
+            rarity: z.string(),
+            benefits: z.array(z.string()),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.createProduct(input);
+          }),
+        update: protectedProcedure
+          .input(z.object({
+            id: z.number(),
+            name: z.string().min(1),
+            categoryId: z.number(),
+            description: z.string(),
+            price: z.number(),
+            oldPrice: z.number().optional(),
+            image: z.string(),
+            tag: z.string(),
+            rarity: z.string(),
+            benefits: z.array(z.string()),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            const { id, ...data } = input;
+            return db.updateProduct(id, data);
+          }),
+        delete: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.deleteProduct(input.id);
+          }),
+        moveUp: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveProductUp(input.id);
+          }),
+        moveDown: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveProductDown(input.id);
+          }),
+      }),
+      banners: router({
+        list: publicProcedure.query(async () => {
+          return db.getBanners();
+        }),
+        create: protectedProcedure
+          .input(z.object({
+            title: z.string().min(1),
+            imageUrl: z.string(),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.createBanner(input as any);
+          }),
+        update: protectedProcedure
+          .input(z.object({
+            id: z.number(),
+            title: z.string().min(1),
+            imageUrl: z.string(),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            const { id, ...data } = input;
+            return db.updateBanner(id, data);
+          }),
+        delete: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.deleteBanner(input.id);
+          }),
+        moveUp: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerUp(input.id);
+          }),
+        moveDown: protectedProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerDown(input.id);
+          }),
+      }),
+      payment: router({
+        createCheckoutSession: protectedProcedure
+          .input(z.object({
+            items: z.array(z.object({
+              productId: z.number(),
+              productName: z.string(),
+              quantity: z.number(),
+              price: z.number(),
+            })),
+            total: z.number(),
+            successUrl: z.string(),
+            cancelUrl: z.string(),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
+            
+            const { createCheckoutSession } = await import("../server/_core/stripe");
+            
+            const session = await createCheckoutSession({
+              userId: ctx.user.id.toString(),
+              userEmail: ctx.user.email ?? "",
+              userName: ctx.user.name ?? undefined,
+              items: input.items,
+              total: input.total,
+              successUrl: input.successUrl,
+              cancelUrl: input.cancelUrl,
+            });
+            
+            return {
+              sessionId: session.id,
+              url: session.url,
+            };
+          }),
+      }),
+      config: router({
+        get: publicProcedure.query(async () => {
+          return db.getSiteConfig();
+        }),
+        update: protectedProcedure
+          .input(z.object({
+            heroTitle: z.string().optional(),
+            heroSubtitle: z.string().optional(),
+            heroDescription: z.string().optional(),
+            welcomeText: z.string().optional(),
+            catalogTitle: z.string().optional(),
+            benefitsTitle: z.string().optional(),
+          }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.adminSession?.id) {
+              return db.updateSiteConfig(input);
+            }
+            throw new TRPCError({ code: "FORBIDDEN" });
+          }),
+      }),
+    }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
+
+// Exportar função para testes
+export { notifyDiscordOrder };
