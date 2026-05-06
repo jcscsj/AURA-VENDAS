@@ -8,7 +8,7 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   discordWebhookUrl: process.env.DISCORD_WEBHOOK_URL ?? "",
-  discordClientId: process.env.DISCORD_CLIENT_ID ?? "",
+  discordClientId: process.env.VITE_DISCORD_CLIENT_ID ?? process.env.DISCORD_CLIENT_ID ?? "",
   discordClientSecret: process.env.DISCORD_CLIENT_SECRET ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
