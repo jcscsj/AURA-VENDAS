@@ -352,6 +352,18 @@ export const appRouter = router({
         return db.getBanners();
       }),
     }),
+    users: router({
+        list: protectedProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getUsers(); // Vamos garantir que essa função exista no db.ts
+        }),
+        updateRole: protectedProcedure
+          .input(z.object({ userId: z.number(), role: z.string() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+            return db.updateUserRole(input.userId, input.role);
+          }),
+      }),
     orders: router({
       create: publicProcedure
         .input(
