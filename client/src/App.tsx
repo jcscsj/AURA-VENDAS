@@ -8,7 +8,6 @@ import { ShopProvider } from "./contexts/ShopContext";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import EditProfile from "./pages/EditProfile";
@@ -17,12 +16,10 @@ import AdminPasswordReset from "./pages/AdminPasswordReset";
 import AdminLogin from "./pages/AdminLogin";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/login"} component={Login} />
-      <Route path={"/register"} component={Register} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/orders"} component={Orders} />
       <Route path={"/edit-profile"} component={EditProfile} />
@@ -31,7 +28,6 @@ function Router() {
       <Route path={"/admin-setup"} component={AdminSetup} />
       <Route path={"/admin-password-reset"} component={AdminPasswordReset} />
       <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -46,7 +42,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
-        defaultTheme="light"
+        defaultTheme="dark"
         // switchable
       >
         <ShopProvider>
