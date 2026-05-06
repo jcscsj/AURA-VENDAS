@@ -56,11 +56,12 @@ export const appRouter = router({
     me: publicProcedure.query(async ({ ctx }) => {
       return ctx.user || null;
     }),
-    logout: protectedProcedure.mutation(async ({ ctx }) => {
-      ctx.res.clearCookie("app_session_id");
-      ctx.res.clearCookie("localSession");
-      return { success: true };
-    }),
+    logout: publicProcedure.mutation(async ({ ctx }) => {
+  ctx.res.clearCookie("app_session_id");
+  ctx.res.clearCookie("adminSession");
+  ctx.res.clearCookie("localSession");
+  return { success: true };
+}),
     register: publicProcedure
       .input(
         z.object({
