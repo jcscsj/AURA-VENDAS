@@ -57,6 +57,7 @@ export const appRouter = router({
       return ctx.user || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
+  // Limpa o cookie do Discord, do Admin e da conta Local
   ctx.res.clearCookie("app_session_id");
   ctx.res.clearCookie("adminSession");
   ctx.res.clearCookie("localSession");
