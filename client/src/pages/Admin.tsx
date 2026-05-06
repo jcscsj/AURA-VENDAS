@@ -240,10 +240,43 @@ export default function Admin() {
 
         {/* CONFIGURAÇÕES */}
         {activeTab === "config" && (
-          <div className="p-6 border border-border bg-card rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Configurações Gerais</h2>
-            <p className="text-muted-foreground mb-4">Ajuste os textos da página inicial.</p>
-            <Button onClick={() => updateConfigMut.mutate(siteConfig)} className="bg-primary text-black font-bold">Salvar Mudanças</Button>
+          <div className="p-6 border border-border bg-card rounded-lg space-y-4">
+            <h2 className="text-xl font-bold">Configurações Gerais</h2>
+            <p className="text-muted-foreground text-sm">Ajuste os textos da página inicial.</p>
+            
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1">Título Hero</label>
+                <input 
+                  className="w-full bg-background border border-border p-2 rounded"
+                  defaultValue={siteConfig?.heroTitle || ""}
+                  onBlur={(e) => setNewBanner({...newBanner, heroTitle: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Subtítulo Hero</label>
+                <input 
+                  className="w-full bg-background border border-border p-2 rounded"
+                  defaultValue={siteConfig?.heroSubtitle || ""}
+                  onBlur={(e) => setNewBanner({...newBanner, heroSubtitle: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1">Descrição Hero</label>
+                <textarea 
+                  className="w-full bg-background border border-border p-2 rounded"
+                  defaultValue={siteConfig?.heroDescription || ""}
+                  onBlur={(e) => setNewBanner({...newBanner, heroDescription: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => updateConfigMut.mutate(newBanner)} 
+              className="bg-primary text-black font-bold w-full"
+            >
+              Salvar Mudanças
+            </Button>
           </div>
         )}
       </div>
