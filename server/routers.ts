@@ -419,6 +419,13 @@ export const appRouter = router({
         }),
     }),
     admin: router({
+      // NOVA ROTA PARA VER AS CONTAS LOGADAS
+      users: router({
+        list: publicProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getUsers(); 
+        }),
+      }),
       categories: router({
         list: publicProcedure.query(async () => {
           return db.getCategories();
@@ -441,17 +448,26 @@ export const appRouter = router({
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteCategory(input.id);
           }),
-        moveUp: protectedProcedure
-          .input(z.object({ id: z.number() }))
+      }),
+      products: router({
+        list: publicProcedure.query(async () => {
+          return db.getProducts();
+        }),
+        create: protectedProcedure
+          .input(z.object({
+            name: z.string().min(1),
+            categoryId: z.number(),
+            description: z.string(),
+            price: z.number(),
+            oldPrice: z.number().optional(),
+            image: z.string(),
+            tag: z.string(),
+            rarity: z.string(),
+            benefits: z.array(z.string()),
+          }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.moveCategoryUp(input.id);
-          }),
-        moveDown: protectedProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.moveCategoryDown(input.id);
+            return db.createProduct(input);
           }),
       }),
       products: router({
