@@ -211,24 +211,31 @@ export default function Home() {
                 >
                   Meu Perfil
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      await logout();
-                      // Aguardar um pouco para o logout ser processado
-                      setTimeout(() => {
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        // Chama o servidor para apagar os cookies
+                        await logout(); 
+                        
+                        // FATO TÉCNICO: Limpa o cache do navegador para o site não achar que você ainda está logado
+                        localStorage.clear();
+                        sessionStorage.clear();
+                  
+                        // Redireciona e força um recarregamento total da página
                         window.location.href = "/";
-                      }, 300);
-                    } catch (error) {
-                      console.error("Erro ao fazer logout:", error);
-                    }
-                  }}
-                  className="hidden md:inline-flex border-red-600 text-red-600 hover:bg-red-600/10"
-                >
-                  Sair
-                </Button>
+                      } catch (error) {
+                        console.error("Erro ao fazer logout:", error);
+                        // Mesmo com erro, forçamos a limpeza local por segurança
+                        localStorage.clear();
+                        window.location.href = "/";
+                      }
+                    }}
+                    className="hidden md:inline-flex border-red-600 text-red-600 hover:bg-red-600/10"
+                  >
+                    Sair
+                  </Button>
               </>
             )}
             <Button
