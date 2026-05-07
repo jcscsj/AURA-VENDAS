@@ -49,19 +49,19 @@ export async function updateUserProfile(id: number, data: any) {
 
 // ===== CATEGORIAS (INSERÇÃO BLINDADA) =====
 export async function getCategories() {
-  const db = await getDb(); 
+  const db = await getDb();
   if (!db) return [];
-  // FATO TÉCNICO: O .orderBy(asc(categories.order)) é o que faz o site respeitar a sua mudança
+  // FATO: O site precisa ler pelo campo 'order' para as setinhas funcionarem
   return db.select().from(categories).orderBy(asc(categories.order));
 }
 export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // FATO TÉCNICO: Enviamos o 0 explicitamente para a coluna 'order' 
-    // para satisfazer a regra de 'NOT NULL' do banco.
+    // FATO TÉCNICO: Enviamos o 0 explicitamente para satisfazer a regra do banco
     await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, 0)`);
     
+    // Busca o item criado para retornar ao painel
     const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
     return res[0] || null;
   } catch (error) {
