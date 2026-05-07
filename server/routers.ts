@@ -635,12 +635,13 @@ export const appRouter = router({
         }),
         update: publicProcedure
           .input(z.object({
-            heroTitle: z.string().optional(),
-            heroSubtitle: z.string().optional(),
-            heroDescription: z.string().optional(),
-            welcomeText: z.string().optional(),
-            catalogTitle: z.string().optional(),
-            benefitsTitle: z.string().optional(),
+            // Adicionamos .nullable() para o servidor aceitar campos vazios sem reclamar
+            heroTitle: z.string().optional().nullable(),
+            heroSubtitle: z.string().optional().nullable(),
+            heroDescription: z.string().optional().nullable(),
+            welcomeText: z.string().optional().nullable(),
+            catalogTitle: z.string().optional().nullable(),
+            benefitsTitle: z.string().optional().nullable(),
           }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
