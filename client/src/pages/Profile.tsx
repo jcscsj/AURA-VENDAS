@@ -122,7 +122,7 @@ export default function Profile() {
             <div className="pb-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Tipo de Autenticação</h3>
               <p className="text-lg font-semibold text-foreground">
-                {profile.openId ? "Manus OAuth" : "Email/Senha"}
+                {profile.openId ? "Discord OAuth2" : "Email/Senha"}
               </p>
             </div>
           </div>
