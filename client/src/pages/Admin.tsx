@@ -19,7 +19,7 @@ import {
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config">("products");
 
   // Proteger rota de admin
   useEffect(() => {
@@ -266,7 +266,7 @@ export default function Admin() {
       <div className="container py-8">
         {/* Tabs */}
         <div className="flex gap-2 border-b border-border mb-8">
-          {(["products", "categories", "banners", "orders", "config", "users"] as const).map((tab) => (
+          {(["products", "categories", "banners", "orders", "config"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -277,7 +277,6 @@ export default function Admin() {
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {tab === "users" ? "Contas Logadas" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -574,25 +573,50 @@ export default function Admin() {
              </div>
           </div>
         )}
-        {activeTab === "users" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Contas Logadas</h2>
-            <div className="border border-border rounded p-4">
-              {storeUsers.map((u: any) => (
-                <div key={u.id} className="border-b py-2 flex justify-between">
-                  <span>{u.name} - {u.email || "Sem e-mail"}</span>
-                  <span className="text-muted-foreground">{u.discordId || "Sem Discord"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
         {activeTab === "config" && (
-          <div className="space-y-4 max-w-lg border p-6 rounded bg-card">
-            <h2 className="text-xl font-bold">Configurações Gerais</h2>
-            <input className="w-full p-2 border rounded bg-background" placeholder="Título Hero" defaultValue={siteConfig?.heroTitle} onChange={e => setConfigForm({...configForm, heroTitle: e.target.value})} />
-            <input className="w-full p-2 border rounded bg-background" placeholder="Subtítulo" defaultValue={siteConfig?.heroSubtitle} onChange={e => setConfigForm({...configForm, heroSubtitle: e.target.value})} />
-            <Button onClick={() => updateConfigMut.mutate(configForm)}>Salvar Mudanças</Button>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Configurações do Site</h2>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Título do Hero</label>
+                <input
+                  type="text"
+                  value={siteConfig?.heroTitle || ""}
+                  onChange={(e) => setNewBanner({ ...newBanner, heroTitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Eleve sua experiência no FiveM"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Subtítulo do Hero</label>
+                <input
+                  type="text"
+                  value={siteConfig?.heroSubtitle || ""}
+                  onChange={(e) => setNewBanner({ ...newBanner, heroSubtitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Bem-vindo à Aura City"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
+                <textarea
+                  value={siteConfig?.heroDescription || ""}
+                  onChange={(e) => setNewBanner({ ...newBanner, heroDescription: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Descubra pacotes VIP, veículos premium..."
+                  rows={3}
+                />
+              </div>
+              <Button
+                onClick={() => updateConfigMut.mutate(newBanner)}
+                disabled={updateConfigMut.isPending}
+                className="bg-primary hover:bg-orange-600 text-black font-semibold"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Salvar Configurações
+              </Button>
+            </div>
           </div>
         )}
       </div>
