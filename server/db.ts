@@ -80,9 +80,11 @@ export async function getProducts() {
 }
 
 export async function createProduct(data: any) {
-  const db = await getDb(); if (!db) return null;
-  const res = await db.insert(products).values(data);
-  return db.select().from(products).where(eq(products.id, (res as any)[0].insertId)).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  await db.insert(products).values(data);
+  const res = await db.select().from(products).orderBy(desc(products.id)).limit(1);
+  return res[0] || null;
 }
 
 export async function updateProduct(id: number, data: any) {
@@ -103,9 +105,11 @@ export async function getBanners() {
 }
 
 export async function createBanner(data: any) {
-  const db = await getDb(); if (!db) return null;
-  const res = await db.insert(banners).values(data);
-  return db.select().from(banners).where(eq(banners.id, (res as any)[0].insertId)).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  await db.insert(banners).values(data);
+  const res = await db.select().from(banners).orderBy(desc(banners.id)).limit(1);
+  return res[0] || null;
 }
 
 export async function updateBanner(id: number, data: any) {
