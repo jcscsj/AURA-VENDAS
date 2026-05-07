@@ -348,7 +348,9 @@ export const appRouter = router({
       }),
     }),
     categories: router({
-      list: publicProcedure.query(async () => db.getCategories()),
+      list: publicProcedure.query(async () => {
+        return db.getCategories();
+      }),
     }),
     products: router({
       list: publicProcedure.query(async () => {
