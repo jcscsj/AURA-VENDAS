@@ -66,6 +66,8 @@ export default function Home() {
   const [discord, setDiscord] = useState("");
   const [discordId, setDiscordId] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
   // Filtrar produtos
   const filteredProducts = useMemo(() => {
@@ -85,7 +87,8 @@ export default function Home() {
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cart],
   );
-  const discount = Math.round(subtotal * 0.25);
+  // O desconto agora só existe se o cupom "SP25" for validado
+  const discount = appliedCoupon === "SP25" ? Math.round(subtotal * 0.25) : 0;
   const total = Math.max(subtotal - discount, 0);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -508,16 +511,46 @@ export default function Home() {
               )}
             </div>
 
-            <div className="border-t border-border p-4 space-y-3">
+            <div className="border-t border-border p-4 space-y-4">
+              {/* CAMPO DE CUPOM DINÂMICO */}
+              <div className="flex gap-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="Cupom de desconto"
+                  className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                />
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-primary text-primary"
+                  onClick={() => {
+                    if (couponInput === "SP25") {
+                      setAppliedCoupon("SP25");
+                      toast.success("Cupom aplicado!");
+                    } else {
+                      toast.error("Cupom inválido.");
+                    }
+                  }}
+                >
+                  Aplicar
+                </Button>
+              </div>
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-primary font-semibold">
-                  <span>Cupom SP25</span>
-                  <span>- {formatCurrency(discount)}</span>
-                </div>
+                
+                {/* O cupom só aparece se 'appliedCoupon' não for nulo */}
+                {appliedCoupon && (
+                  <div className="flex justify-between text-primary font-semibold">
+                    <span>Cupom {appliedCoupon}</span>
+                    <span>- {formatCurrency(discount)}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between border-t border-border pt-2 font-bold text-foreground">
                   <span>Total</span>
                   <span>{formatCurrency(total)}</span>
