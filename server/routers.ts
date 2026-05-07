@@ -422,8 +422,12 @@ export const appRouter = router({
         create: publicProcedure
           .input(z.object({ name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.createCategory({ name: input.name } as any);
+            // Checagem de admin (E-mail ou Discord)
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) {
+              throw new TRPCError({ code: "FORBIDDEN" });
+            }
+            // Chama a nossa nova função de SQL Puro
+            return db.createCategory(input);
           }),
         update: publicProcedure
           .input(z.object({ id: z.number(), name: z.string().min(1) }))
