@@ -598,52 +598,6 @@ export default function Admin() {
 
         {activeTab === "config" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Configurações do Site</h2>
-            <div className="grid gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Título do Hero</label>
-                <input
-                  type="text"
-                  defaultValue={siteConfig?.heroTitle || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroTitle: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Eleve sua experiência no FiveM"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Subtítulo do Hero</label>
-                <input
-                  type="text"
-                  defaultValue={siteConfig?.heroSubtitle || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Bem-vindo à Aura City"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
-                <textarea
-                  defaultValue={siteConfig?.heroDescription || ""}
-                  onChange={(e) => setNewBanner({ ...newBanner, heroDescription: e.target.value })}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  placeholder="Descubra pacotes VIP, veículos premium..."
-                  rows={3}
-                />
-              </div>
-              <Button
-                onClick={() => updateConfigMut.mutate(newBanner)}
-                disabled={updateConfigMut.isPending}
-                className="bg-primary hover:bg-orange-600 text-black font-semibold"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Configurações
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "config" && (
-          <div className="space-y-6">
             <h2 className="text-2xl font-bold text-foreground">Configurações do Site</h2>
             <div className="grid gap-4">
               <div>
