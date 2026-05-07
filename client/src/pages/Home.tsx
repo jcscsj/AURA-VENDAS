@@ -53,6 +53,7 @@ export default function Home() {
   const { data: categories = [] } = trpc.shop.categories.list.useQuery();
   const { data: products = [] } = trpc.shop.products.list.useQuery();
   const { data: banners = [] } = trpc.shop.banners.list.useQuery();
+  const { data: siteConfig } = trpc.shop.admin.config.get.useQuery();
 
   // Local state
   const [query, setQuery] = useState("");
@@ -265,7 +266,7 @@ export default function Home() {
       </header>
 
       <main>
-        {/* Hero */}
+        {/* Hero Conectado ao Banco */}
         <section className="relative bg-background py-20 text-white md:py-32">
           <img
             src={heroImage}
@@ -276,15 +277,21 @@ export default function Home() {
 
           <div className="container relative">
             <div className="max-w-2xl">
+              {/* 1. Badge Dinâmico */}
               <div className="mb-6 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black">
-                {SITE_TEXTS.hero.badge}
+                {siteConfig?.heroSubtitle || SITE_TEXTS.hero.badge}
               </div>
+              
+              {/* 2. Título Dinâmico */}
               <h1 className="text-5xl font-bold md:text-6xl">
-                {SITE_TEXTS.hero.title}
+                {siteConfig?.heroTitle || SITE_TEXTS.hero.title}
               </h1>
+              
+              {/* 3. Descrição Dinâmica */}
               <p className="mt-6 max-w-xl text-lg text-gray-400">
-                {SITE_TEXTS.hero.description}
+                {siteConfig?.heroDescription || SITE_TEXTS.hero.description}
               </p>
+
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
                   size="lg"
@@ -294,7 +301,6 @@ export default function Home() {
                   Ver catálogo
                   <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
-
               </div>
             </div>
           </div>
