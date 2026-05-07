@@ -339,11 +339,15 @@ export const appRouter = router({
       }),
   }),
   shop: router({
+    // A ROTA PRECISA ESTAR AQUI PARA O 404 SUMIR
     users: router({
       list: publicProcedure.query(async ({ ctx }) => {
         if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
         return db.getUsers(); 
       }),
+    }),
+    categories: router({
+      list: publicProcedure.query(async () => db.getCategories()),
     }),
     categories: router({
       list: publicProcedure.query(async () => {
