@@ -216,19 +216,13 @@ export default function Home() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        // Chama o servidor para apagar os cookies
-                        await logout(); 
-                        
-                        // FATO TÉCNICO: Limpa o cache do navegador para o site não achar que você ainda está logado
-                        localStorage.clear();
-                        sessionStorage.clear();
-                  
-                        // Redireciona e força um recarregamento total da página
-                        window.location.href = "/";
+                        await logout();
                       } catch (error) {
                         console.error("Erro ao fazer logout:", error);
-                        // Mesmo com erro, forçamos a limpeza local por segurança
+                      } finally {
+                        // O FINALLY garante que o cache do navegador será limpo sempre!
                         localStorage.clear();
+                        sessionStorage.clear();
                         window.location.href = "/";
                       }
                     }}
