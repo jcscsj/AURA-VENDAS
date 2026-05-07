@@ -13,12 +13,15 @@ import {
   Edit2,
   ChevronUp,
   ChevronDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users" | "logs">("products");
+  const [visibleEmails, setVisibleEmails] = useState<Record<number, boolean>>({});
 
   // Proteger rota de admin
   useEffect(() => {
@@ -668,15 +671,36 @@ export default function Admin() {
 
         {activeTab === "users" && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Contas Logadas</h2>
-            <div className="border border-border rounded p-4">
+            <h2 className="text-2xl font-bold text-foreground">Contas Logadas</h2>
+            <div className="border border-border rounded p-4 bg-card">
               {storeUsers.map((u: any) => (
-                <div key={u.id} className="border-b py-2 flex justify-between items-center last:border-0">
-                  <span>{u.name} - {u.email || "Sem e-mail"}</span>
-                  <span className="text-xs text-muted-foreground font-mono">{u.discordId || "Sem ID"}</span>
+                <div key={u.id} className="border-b border-border/50 py-2 flex justify-between items-center last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{u.name}</span>
+                    <span className="text-slate-600">-</span>
+                    
+                    {/* E-MAIL COM EFEITO SPOILER */}
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {visibleEmails[u.id] ? (u.email || "Sem e-mail") : "••••••••••••@••••.com"}
+                    </span>
+                    
+                    {/* BOTÃO DO OLHINHO */}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 hover:bg-primary/10 hover:text-primary"
+                      onClick={() => setVisibleEmails(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
+                    >
+                      {visibleEmails[u.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  
+                  <span className="text-xs text-muted-foreground font-mono bg-background px-2 py-1 rounded border border-border">
+                    {u.discordId || "Sem ID"}
+                  </span>
                 </div>
               ))}
-              {storeUsers.length === 0 && <p className="text-center text-muted-foreground">Nenhum jogador logado ainda.</p>}
+              {storeUsers.length === 0 && <p className="text-center text-muted-foreground py-4">Nenhum jogador logado ainda.</p>}
             </div>
           </div>
         )}
