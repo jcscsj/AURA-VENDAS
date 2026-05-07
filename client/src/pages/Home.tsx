@@ -270,7 +270,7 @@ export default function Home() {
         <section className="relative bg-background py-20 text-white md:py-32">
           <img
             src={heroImage}
-            alt="Aurora City"
+            alt="Aura City"
             className="absolute inset-0 h-full w-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
