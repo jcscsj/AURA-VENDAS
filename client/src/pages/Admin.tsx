@@ -673,21 +673,6 @@ export default function Admin() {
         {activeTab === "users" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Contas Logadas</h2>
-            <div className="border border-border rounded p-4 bg-card">
-              {storeUsers.map((u: any) => (
-                <div key={u.id} className="border-b border-border/50 py-2 flex justify-between items-center last:border-0">
-                  <span className="font-medium">{u.name}</span>
-                  <span className="text-xs text-muted-foreground font-mono">{u.discordId || "Sem ID"}</span>
-                </div>
-              ))}
-              {storeUsers.length === 0 && <p className="text-center text-muted-foreground">Nenhum usuário logado.</p>}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "users" && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Contas Logadas</h2>
             <div className="border border-border rounded p-4">
               {storeUsers.map((u: any) => (
                 <div key={u.id} className="border-b py-2 flex justify-between items-center last:border-0">
