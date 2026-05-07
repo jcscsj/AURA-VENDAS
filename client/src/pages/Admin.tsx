@@ -29,16 +29,18 @@ export default function Admin() {
     }
   }, [user, loading, navigate]);
 
-  // Queries
+// Queries
   const { data: categories = [], refetch: refetchCategories } = trpc.shop.categories.list.useQuery();
   const { data: products = [], refetch: refetchProducts } = trpc.shop.products.list.useQuery();
   const { data: banners = [], refetch: refetchBanners } = trpc.shop.banners.list.useQuery();
   const { data: orders = [], refetch: refetchOrders } = trpc.shop.orders.list.useQuery(undefined, {
-    enabled: !!user, // Carrega se houver QUALQUER usuário logado
+    enabled: !!user,
   });
-  const { data: storeUsers = [] } = trpc.shop.users.list.useQuery(undefined, {
-    enabled: !!user; // Carrega se houver QUALQUER usuário logado
-  const { data: serverLogs = [] } = trpc.shop.admin.logs.useQuery();
+  const { data: storeUsers = [], refetch: refetchUsers } = trpc.shop.users.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const { data: serverLogs = [] } = trpc.shop.admin.logs.useQuery(undefined, {
+    enabled: !!user,
   });
   const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
 
