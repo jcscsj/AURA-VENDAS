@@ -19,7 +19,7 @@ import {
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users">("products");
 
   // Proteger rota de admin
   useEffect(() => {
@@ -266,7 +266,7 @@ export default function Admin() {
       <div className="container py-8">
         {/* Tabs */}
         <div className="flex gap-2 border-b border-border mb-8">
-          {(["products", "categories", "banners", "orders", "config"] as const).map((tab) => (
+          {(["products", "categories", "banners", "orders", "config", "users"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -619,7 +619,20 @@ export default function Admin() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      {activeTab === "users" && (
+          <div className="space-y-4">
+<div className="border border-border rounded p-4">
+            {storeUsers.map((u: any) => (
+              <div key={u.id} className="border-b py-2 flex justify-between">
+                <span>{u.name} - {u.email || "Sem e-mail"}</span>
+                <span className="text-muted-foreground">{u.discordId || "Sem Discord"}</span>
+              </div>
+            ))}
+          </div>
+          </div>
+        )}
+
+      </div> {/* ESTA DIV FECHA O "container py-8" */}
+    </div> {/* ESTA DIV FECHA O "min-h-screen" */}
   );
 }
