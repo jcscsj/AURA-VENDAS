@@ -58,10 +58,13 @@ export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // FATO TÉCNICO: Enviamos o 0 explicitamente para satisfazer a regra do banco
-    await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, 0)`);
+    // Busca a maior ordem atual
+    const lastCategory = await db.select().from(categories).orderBy(desc(categories.order)).limit(1).then(r => r[0]);
+    const nextOrder = lastCategory ? lastCategory.order + 1 : 1;
+
+    // Insere com a próxima ordem disponível
+    await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, ${nextOrder})`);
     
-    // Busca o item criado para retornar ao painel
     const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
     return res[0] || null;
   } catch (error) {
