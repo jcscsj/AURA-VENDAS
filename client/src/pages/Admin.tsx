@@ -178,6 +178,7 @@ export default function Admin() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [newBanner, setNewBanner] = useState<any>({});
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
+  const [configForm, setConfigForm] = useState<any>({});
 
   // Redirect if not admin
   useEffect(() => {
@@ -641,21 +642,55 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "logs" && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-orange-500">Console do Servidor</h2>
-            <div className="bg-black text-green-400 font-mono p-4 rounded-lg h-96 overflow-y-auto border-2 border-slate-800 shadow-2xl">
-              <p className="text-blue-400 mb-2">--- Sistema Aura City Inicializado ---</p>
-              {serverLogs && serverLogs.length > 0 ? (
-                serverLogs.map((log: any) => (
-                  <p key={log.id} className="text-sm mb-1 leading-relaxed">
-                    <span className="text-slate-600">[{new Date(log.createdAt).toLocaleTimeString()}]</span> 
-                    <span className={log.type === 'error' ? 'text-red-500' : 'text-green-500'}> [{log.type?.toUpperCase()}]</span> {log.message}
-                  </p>
-                ))
-              ) : (
-                <p className="text-slate-500 italic">Aguardando novos eventos do servidor...</p>
-              )}
+        {activeTab === "config" && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-foreground">Configurações do Site</h2>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Título do Hero</label>
+                <input
+                  type="text"
+                  defaultValue={siteConfig?.heroTitle || ""}
+                  onChange={(e) => setConfigForm({ ...configForm, heroTitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Eleve sua experiência no FiveM"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Subtítulo do Hero</label>
+                <input
+                  type="text"
+                  defaultValue={siteConfig?.heroSubtitle || ""}
+                  onChange={(e) => setConfigForm({ ...configForm, heroSubtitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Bem-vindo à Aura City"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
+                <textarea
+                  defaultValue={siteConfig?.heroDescription || ""}
+                  onChange={(e) => setConfigForm({ ...configForm, heroDescription: e.target.value })}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                  placeholder="Descubra pacotes VIP, veículos premium..."
+                  rows={3}
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  // Mesclamos o que já está salvo no banco com o que você acabou de editar
+                  updateConfigMut.mutate({
+                    heroTitle: configForm.heroTitle !== undefined ? configForm.heroTitle : siteConfig?.heroTitle,
+                    heroSubtitle: configForm.heroSubtitle !== undefined ? configForm.heroSubtitle : siteConfig?.heroSubtitle,
+                    heroDescription: configForm.heroDescription !== undefined ? configForm.heroDescription : siteConfig?.heroDescription,
+                  });
+                }}
+                disabled={updateConfigMut.isPending}
+                className="bg-primary hover:bg-orange-600 text-black font-semibold"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Salvar Configurações
+              </Button>
             </div>
           </div>
         )}
