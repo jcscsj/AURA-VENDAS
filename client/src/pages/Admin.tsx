@@ -651,14 +651,19 @@ export default function Admin() {
 
         {activeTab === "logs" && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Console do Servidor</h2>
-            <div className="bg-black text-green-500 font-mono p-4 rounded-lg h-96 overflow-y-auto border border-border">
-              {serverLogs.map((log: any) => (
-                <p key={log.id} className="text-sm mb-1">
-                  <span className="text-slate-500">[{new Date(log.createdAt).toLocaleTimeString()}]</span> {log.message}
-                </p>
-              ))}
-              {serverLogs.length === 0 && <p>Nenhum log registrado ainda...</p>}
+            <h2 className="text-2xl font-bold text-orange-500">Console do Servidor</h2>
+            <div className="bg-black text-green-400 font-mono p-4 rounded-lg h-96 overflow-y-auto border-2 border-slate-800 shadow-2xl">
+              <p className="text-blue-400 mb-2">--- Sistema Aura City Inicializado ---</p>
+              {serverLogs && serverLogs.length > 0 ? (
+                serverLogs.map((log: any) => (
+                  <p key={log.id} className="text-sm mb-1 leading-relaxed">
+                    <span className="text-slate-600">[{new Date(log.createdAt).toLocaleTimeString()}]</span> 
+                    <span className={log.type === 'error' ? 'text-red-500' : 'text-green-500'}> [{log.type?.toUpperCase()}]</span> {log.message}
+                  </p>
+                ))
+              ) : (
+                <p className="text-slate-500 italic">Aguardando novos eventos do servidor...</p>
+              )}
             </div>
           </div>
         )}
