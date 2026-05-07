@@ -339,7 +339,7 @@ export const appRouter = router({
       }),
   }),
   shop: router({
-    // DEVE ESTAR AQUI, LOGO ABAIXO DE SHOP
+    // ROTA DE USUÁRIOS (Corrigida para o caminho que o Admin espera)
     users: router({
       list: publicProcedure.query(async ({ ctx }) => {
         if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -608,7 +608,7 @@ export const appRouter = router({
       config: router({
         get: publicProcedure.query(async () => {
           const config = await db.getSiteConfig();
-          // Se não houver nada no banco, envia um objeto vazio em vez de "undefined"
+          // Retorna um objeto vazio em vez de dar erro 500 se não houver config
           return config || { heroTitle: "", heroSubtitle: "", heroDescription: "" };
         }),
         update: publicProcedure
