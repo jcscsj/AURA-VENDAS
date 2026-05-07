@@ -520,13 +520,12 @@ export const appRouter = router({
             id: z.number(),
             name: z.string().min(1),
             categoryId: z.number(),
-            description: z.string(),
+            description: z.string().optional(),
             price: z.number(),
             oldPrice: z.number().optional(),
-            image: z.string(),
-            tag: z.string(),
-            rarity: z.string(),
-            benefits: z.array(z.string()),
+            image: z.string().optional(),
+            // MUDANÇA AQUI: Aceita qualquer coisa (z.any) para não travar o salvamento
+            benefits: z.any().optional(), 
           }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
