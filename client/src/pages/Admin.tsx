@@ -34,9 +34,10 @@ export default function Admin() {
   const { data: products = [], refetch: refetchProducts } = trpc.shop.products.list.useQuery();
   const { data: banners = [], refetch: refetchBanners } = trpc.shop.banners.list.useQuery();
   const { data: orders = [], refetch: refetchOrders } = trpc.shop.orders.list.useQuery(undefined, {
-    enabled: user?.role === "admin";
-  const { data: storeUsers = [], refetch: refetchUsers } = trpc.shop.users.list.useQuery(undefined, {
-    enabled: user?.role === "admin",
+    enabled: !!user, // Carrega se houver QUALQUER usuário logado
+  });
+  const { data: storeUsers = [] } = trpc.shop.users.list.useQuery(undefined, {
+    enabled: !!user, // Carrega se houver QUALQUER usuário logado
   });
   const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
 
