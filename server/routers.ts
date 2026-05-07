@@ -419,6 +419,16 @@ export const appRouter = router({
         }),
     }),
     admin: router({
+      logs: publicProcedure.query(async ({ ctx }) => {
+        if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+        
+        const db_instance = await db.getDb();
+        if (!db_instance) return [];
+
+        // FATO TÉCNICO: O MySQL retorna [linhas, colunas]. Pegamos apenas as linhas [0].
+        const [rows] = await db_instance.execute(sql`SELECT * FROM \`system_logs\` ORDER BY id DESC LIMIT 50`);
+        return rows as any[];
+      }),
       categories: router({
         list: publicProcedure.query(async () => {
           return db.getCategories();
