@@ -307,6 +307,11 @@ export async function moveProductUp(id: number) { return null; }
 export async function moveProductDown(id: number) { return null; }
 export async function moveBannerUp(id: number) { return null; }
 export async function moveBannerDown(id: number) { return null; }
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(users).where(eq(users.id, id));
+}
 
 // ===== LOGS CONSOLE =====
 export async function logSystem(message: string, type: string = 'info') {
