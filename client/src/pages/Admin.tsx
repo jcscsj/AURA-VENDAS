@@ -632,12 +632,13 @@ export default function Admin() {
               </div>
               <Button
                 onClick={() => {
-                  // Mesclamos o que já está salvo no banco com o que você acabou de editar
-                  updateConfigMut.mutate({
-                    heroTitle: configForm.heroTitle !== undefined ? configForm.heroTitle : siteConfig?.heroTitle,
-                    heroSubtitle: configForm.heroSubtitle !== undefined ? configForm.heroSubtitle : siteConfig?.heroSubtitle,
-                    heroDescription: configForm.heroDescription !== undefined ? configForm.heroDescription : siteConfig?.heroDescription,
-                  });
+                  // FATO TÉCNICO: Garantimos que nada vá como "null" para o servidor
+                  const dataToSave = {
+                    heroTitle: newBanner.heroTitle || siteConfig?.heroTitle || "",
+                    heroSubtitle: newBanner.heroSubtitle || siteConfig?.heroSubtitle || "",
+                    heroDescription: newBanner.heroDescription || siteConfig?.heroDescription || "",
+                  };
+                  updateConfigMut.mutate(dataToSave);
                 }}
                 disabled={updateConfigMut.isPending}
                 className="bg-primary hover:bg-orange-600 text-black font-semibold"
