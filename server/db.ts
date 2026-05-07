@@ -49,10 +49,11 @@ export async function updateUserProfile(id: number, data: any) {
 
 // ===== CATEGORIAS (INSERÇÃO BLINDADA) =====
 export async function getCategories() {
-  const db = await getDb(); if (!db) return[];
-  return db.select().from(categories);
+  const db = await getDb(); 
+  if (!db) return [];
+  // FATO TÉCNICO: O .orderBy(asc(categories.order)) é o que faz o site respeitar a sua mudança
+  return db.select().from(categories).orderBy(asc(categories.order));
 }
-
 export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
@@ -249,21 +250,17 @@ export async function updateSiteConfig(data: any) {
 export async function moveCategoryUp(id: number) {
   const db = await getDb(); if (!db) return null;
   try {
-    // 1. Pega a categoria atual
     const current = await db.select().from(categories).where(eq(categories.id, id)).then(r => r[0]);
     if (!current) return null;
 
-    // 2. Procura a categoria que está IMEDIATAMENTE ACIMA (ordem menor)
     const prev = await db.select().from(categories)
       .where(lt(categories.order, current.order))
-      .orderBy(desc(categories.order))
-      .limit(1).then(r => r[0]);
+      .orderBy(desc(categories.order)).limit(1).then(r => r[0]);
 
     if (prev) {
-      // 3. Troca os valores de 'order' entre as duas
-      const currentOrder = current.order;
-      await db.update(categories).set({ order: prev.order }).where(eq(categories.id, current.id));
-      await db.update(categories).set({ order: currentOrder }).where(eq(categories.id, prev.id));
+      // Troca os valores usando SQL Direto para não ter erro
+      await db.execute(sql`UPDATE \`categories\` SET \`order\` = ${prev.order} WHERE \`id\` = ${current.id}`);
+      await db.execute(sql`UPDATE \`categories\` SET \`order\` = ${current.order} WHERE \`id\` = ${prev.id}`);
     }
     return current;
   } catch (e) { return null; }
@@ -274,16 +271,13 @@ export async function moveCategoryDown(id: number) {
     const current = await db.select().from(categories).where(eq(categories.id, id)).then(r => r[0]);
     if (!current) return null;
 
-    // Procura a categoria que está IMEDIATAMENTE ABAIXO (ordem maior)
     const next = await db.select().from(categories)
       .where(gt(categories.order, current.order))
-      .orderBy(asc(categories.order))
-      .limit(1).then(r => r[0]);
+      .orderBy(asc(categories.order)).limit(1).then(r => r[0]);
 
     if (next) {
-      const currentOrder = current.order;
-      await db.update(categories).set({ order: next.order }).where(eq(categories.id, current.id));
-      await db.update(categories).set({ order: currentOrder }).where(eq(categories.id, next.id));
+      await db.execute(sql`UPDATE \`categories\` SET \`order\` = ${next.order} WHERE \`id\` = ${current.id}`);
+      await db.execute(sql`UPDATE \`categories\` SET \`order\` = ${current.order} WHERE \`id\` = ${next.id}`);
     }
     return current;
   } catch (e) { return null; }
