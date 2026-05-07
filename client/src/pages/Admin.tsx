@@ -633,19 +633,17 @@ export default function Admin() {
               </div>
               <Button
                 onClick={() => {
-                  // FATO TÉCNICO: Garantimos que nada vá como "null" para o servidor
-                  const dataToSave = {
-                    heroTitle: newBanner.heroTitle || siteConfig?.heroTitle || "",
-                    heroSubtitle: newBanner.heroSubtitle || siteConfig?.heroSubtitle || "",
-                    heroDescription: newBanner.heroDescription || siteConfig?.heroDescription || "",
+                  // Pegamos o que já existe e juntamos com o que você digitou
+                  const dataToSend = {
+                    heroTitle: newBanner.heroTitle ?? siteConfig?.heroTitle,
+                    heroSubtitle: newBanner.heroSubtitle ?? siteConfig?.heroSubtitle,
+                    heroDescription: newBanner.heroDescription ?? siteConfig?.heroDescription,
                   };
-                  updateConfigMut.mutate(dataToSave);
+                  updateConfigMut.mutate(dataToSend);
                 }}
-                disabled={updateConfigMut.isPending}
                 className="bg-primary hover:bg-orange-600 text-black font-semibold"
               >
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Configurações
+                <Save className="mr-2 h-4 w-4" /> Salvar Configurações
               </Button>
             </div>
           </div>
