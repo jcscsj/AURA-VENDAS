@@ -278,19 +278,19 @@ export default function Home() {
           <div className="container relative">
             <div className="max-w-2xl">
               {/* 1. Badge Dinâmico */}
-              <div className="mb-6 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black">
-                {siteConfig?.heroSubtitle || SITE_TEXTS.hero.badge}
-              </div>
-              
-              {/* 2. Título Dinâmico */}
-              <h1 className="text-5xl font-bold md:text-6xl">
-                {siteConfig?.heroTitle || SITE_TEXTS.hero.title}
-              </h1>
-              
-              {/* 3. Descrição Dinâmica */}
-              <p className="mt-6 max-w-xl text-lg text-gray-400">
-                {siteConfig?.heroDescription || SITE_TEXTS.hero.description}
-              </p>
+            <div className="mb-6 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-black">
+              {siteConfig?.heroSubtitle || (siteConfig === undefined ? "Carregando..." : SITE_TEXTS.hero.badge)}
+            </div>
+            
+            {/* 2. Título Dinâmico */}
+            <h1 className="text-5xl font-bold md:text-6xl">
+              {siteConfig?.heroTitle || (siteConfig === undefined ? "" : SITE_TEXTS.hero.title)}
+            </h1>
+            
+            {/* 3. Descrição Dinâmica */}
+            <p className="mt-6 max-w-xl text-lg text-gray-400">
+              {siteConfig?.heroDescription || (siteConfig === undefined ? "" : SITE_TEXTS.hero.description)}
+            </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
