@@ -57,13 +57,12 @@ export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // Usamos SQL puro com crases (`) para proteger a palavra 'order'
+    // FATO: Enviamos apenas o nome, o banco cuida do ID e das datas sozinho.
     await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, 0)`);
-    
     const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
     return res[0] || null;
   } catch (error) {
-    console.error("Erro fatal na categoria:", error);
+    console.error("Erro no Banco:", error);
     return null;
   }
 }
