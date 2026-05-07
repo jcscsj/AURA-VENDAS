@@ -612,10 +612,8 @@ export const appRouter = router({
             benefitsTitle: z.string().optional(),
           }))
           .mutation(async ({ input, ctx }) => {
-            if (ctx.adminSession?.id) {
-              return db.updateSiteConfig(input);
-            }
-            throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.updateSiteConfig(input);
           }),
       }),
     }),
