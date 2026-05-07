@@ -642,9 +642,12 @@ export default function Admin() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Console do Servidor</h2>
             <div className="bg-black text-green-500 font-mono p-4 rounded-lg h-96 overflow-y-auto border border-border">
-              {/* Aqui vamos mapear os logs que virão do banco */}
-              <p className="">[SISTEMA] Console inicializado...</p>
-              <p className="text-yellow-500">[AVISO] Monitorando banco de dados TiDB...</p>
+              {serverLogs.map((log: any) => (
+                <p key={log.id} className="text-sm">
+                  <span className="text-slate-500">[{new Date(log.createdAt).toLocaleTimeString()}]</span> {log.message}
+                </p>
+              ))}
+              {serverLogs.length === 0 && <p>Nenhum log registrado ainda...</p>}
             </div>
           </div>
         )}
