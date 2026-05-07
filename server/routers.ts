@@ -629,24 +629,13 @@ export const appRouter = router({
       }),
       config: router({
         get: publicProcedure.query(async () => {
-          const config = await db.getSiteConfig();
-          // Retorna um objeto vazio em vez de dar erro 500 se não houver config
-          return config || { heroTitle: "", heroSubtitle: "", heroDescription: "" };
+          const db_instance = await db.getDb();
+          if (!db_instance) return null;
+          // Buscamos especificamente o ID 1
+          const res = await db_instance.execute(sql`SELECT * FROM \`siteConfig\` WHERE \`id\` = 1 LIMIT 1`);
+          const rows = res[0] as any[];
+          return rows[0] || { heroTitle: "", heroSubtitle: "", heroDescription: "" };
         }),
-        update: publicProcedure
-          .input(z.object({
-            // Adicionamos .nullable() para o servidor aceitar campos vazios sem reclamar
-            heroTitle: z.string().optional().nullable(),
-            heroSubtitle: z.string().optional().nullable(),
-            heroDescription: z.string().optional().nullable(),
-            welcomeText: z.string().optional().nullable(),
-            catalogTitle: z.string().optional().nullable(),
-            benefitsTitle: z.string().optional().nullable(),
-          }))
-          .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.updateSiteConfig(input);
-          }),
       }),
     }),
   }),
