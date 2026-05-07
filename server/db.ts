@@ -56,9 +56,20 @@ export async function getCategories() {
 export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
-  // FATO TÉCNICO: Enviamos apenas o nome para evitar o erro de 'default' no TiDB
-  await db.insert(categories).values({ name: data.name }); 
-  return db.select().from(categories).orderBy(desc(categories.id)).limit(1).then(r => r[0]);
+  try {
+    // FATO TÉCNICO: Enviamos apenas o nome. 
+    // Deixamos ID, order e datas para o banco gerar sozinho, evitando o erro de 'default'.
+    await db.insert(categories).values({
+      name: data.name
+    });
+    
+    // Após inserir, pegamos o último item criado para mostrar na tela
+    const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
+    return res[0] || null;
+  } catch (error) {
+    console.error("[DB Error] createCategory:", error);
+    return null;
+  }
 }
 
 export async function updateCategory(id: number, data: any) {
