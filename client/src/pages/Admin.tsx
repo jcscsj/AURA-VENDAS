@@ -601,7 +601,7 @@ export default function Admin() {
                 <label className="block text-sm font-medium mb-2">Título do Hero</label>
                 <input
                   type="text"
-                  value={siteConfig?.heroTitle || ""}
+                  defaultValue={siteConfig?.heroTitle || ""}
                   onChange={(e) => setNewBanner({ ...newBanner, heroTitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Eleve sua experiência no FiveM"
@@ -611,7 +611,7 @@ export default function Admin() {
                 <label className="block text-sm font-medium mb-2">Subtítulo do Hero</label>
                 <input
                   type="text"
-                  value={siteConfig?.heroSubtitle || ""}
+                  defaultValue={siteConfig?.heroSubtitle || ""}
                   onChange={(e) => setNewBanner({ ...newBanner, heroSubtitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Bem-vindo à Aura City"
@@ -620,7 +620,7 @@ export default function Admin() {
               <div>
                 <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
                 <textarea
-                  value={siteConfig?.heroDescription || ""}
+                  defaultValue={siteConfig?.heroDescription || ""}
                   onChange={(e) => setNewBanner({ ...newBanner, heroDescription: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Descubra pacotes VIP, veículos premium..."
@@ -638,7 +638,8 @@ export default function Admin() {
             </div>
           </div>
         )}
-      {activeTab === "logs" && (
+
+        {activeTab === "logs" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Console do Servidor</h2>
             <div className="bg-black text-green-500 font-mono p-4 rounded-lg h-96 overflow-y-auto border border-border">
@@ -651,16 +652,18 @@ export default function Admin() {
             </div>
           </div>
         )}
-      {activeTab === "users" && (
+
+        {activeTab === "users" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Contas Logadas</h2>
             <div className="border border-border rounded p-4">
               {storeUsers.map((u: any) => (
-                <div key={u.id} className="border-b py-2 flex justify-between">
+                <div key={u.id} className="border-b py-2 flex justify-between items-center last:border-0">
                   <span>{u.name} - {u.email || "Sem e-mail"}</span>
-                  <span className="text-muted-foreground">{u.discordId || "Sem Discord"}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{u.discordId || "Sem ID"}</span>
                 </div>
               ))}
+              {storeUsers.length === 0 && <p className="text-center text-muted-foreground">Nenhum jogador logado ainda.</p>}
             </div>
           </div>
         )}
