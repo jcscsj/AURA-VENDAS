@@ -85,8 +85,15 @@ export async function deleteCategory(id: number) {
 
 // ===== PRODUTOS (INSERÇÃO BLINDADA) =====
 export async function getProducts() {
-  const db = await getDb(); if (!db) return[];
-  return db.select().from(products);
+  const db = await getDb(); 
+  if (!db) return [];
+  const res = await db.select().from(products).orderBy(asc(products.order));
+  
+  // FATO TÉCNICO: Convertemos o texto do banco de volta para Lista (Array)
+  return res.map(p => ({
+    ...p,
+    benefits: typeof p.benefits === 'string' ? JSON.parse(p.benefits) : (p.benefits || [])
+  }));
 }
 
 export async function createProduct(data: any) {
@@ -111,8 +118,8 @@ export async function updateProduct(id: number, data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // FATO TÉCNICO: Convertemos o array de benefícios em texto para o MySQL não bugar
-    const benefitsString = Array.isArray(data.benefits) ? JSON.stringify(data.benefits) : (data.benefits || "[]");
+    // Transformamos a lista em texto para o MySQL aceitar
+    const benefitsString = Array.isArray(data.benefits) ? JSON.stringify(data.benefits) : "[]";
 
     await db.update(products)
       .set({
@@ -122,8 +129,6 @@ export async function updateProduct(id: number, data: any) {
         price: data.price,
         oldPrice: data.oldPrice || null,
         image: data.image,
-        tag: data.tag || 'Novo',
-        rarity: data.rarity || 'Premium',
         benefits: benefitsString,
         updatedAt: new Date()
       })
