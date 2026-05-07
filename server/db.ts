@@ -51,7 +51,7 @@ export async function updateUserProfile(id: number, data: any) {
 export async function getCategories() {
   const db = await getDb();
   if (!db) return [];
-  // FATO: O site precisa ler pelo campo 'order' para as setinhas funcionarem
+  // FATO TÉCNICO: Sem o .orderBy, o banco retorna por ordem de ID, ignorando as setas.
   return db.select().from(categories).orderBy(asc(categories.order));
 }
 export async function createCategory(data: any) {
