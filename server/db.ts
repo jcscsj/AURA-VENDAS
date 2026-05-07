@@ -248,11 +248,24 @@ export async function getSiteConfig() {
 }
 
 export async function updateSiteConfig(data: any) {
-  const db = await getDb(); if (!db) return null;
-  const curr = await getSiteConfig();
-  if (curr) await db.update(siteConfig).set(data).where(eq(siteConfig.id, curr.id));
-  else await db.insert(siteConfig).values(data);
-  return getSiteConfig();
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    // FATO TÉCNICO: Forçamos o ID 1 para garantir que só exista UMA configuração no banco todo
+    const existing = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
+    
+    if (existing.length > 0) {
+      await db.update(siteConfig).set(data).where(eq(siteConfig.id, 1));
+    } else {
+      await db.insert(siteConfig).values({ id: 1, ...data });
+    }
+    
+    const updated = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
+    return updated[0] || null;
+  } catch (error) {
+    console.error("Erro ao salvar config:", error);
+    return null;
+  }
 }
 
 export async function moveCategoryUp(id: number) {
