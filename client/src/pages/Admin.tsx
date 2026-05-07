@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
@@ -28,7 +28,7 @@ export default function Admin() {
     }
   }, [user, loading, navigate]);
 
-// Queries
+  // Queries
   const { data: categories = [], refetch: refetchCategories } = trpc.shop.categories.list.useQuery();
   const { data: products = [], refetch: refetchProducts } = trpc.shop.products.list.useQuery();
   const { data: banners = [], refetch: refetchBanners } = trpc.shop.banners.list.useQuery();
@@ -179,7 +179,6 @@ export default function Admin() {
   const [newBanner, setNewBanner] = useState<any>({});
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
   const [configForm, setConfigForm] = useState<any>({});
-  
 
   // Redirect if not admin
   useEffect(() => {
@@ -315,7 +314,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newProduct.name || ""}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, name: e.target.value })}
+                    onChange={(e: any) => setNewProduct({ ...newProduct, name: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="Nome do produto"
                   />
@@ -324,7 +323,7 @@ export default function Admin() {
                   <label className="block text-sm font-semibold text-foreground">Categoria</label>
                   <select
                     value={newProduct.categoryId || ""}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
+                    onChange={(e: any) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                   >
                     <option value="">Selecione uma categoria</option>
@@ -340,7 +339,7 @@ export default function Admin() {
                   <input
                     type="number"
                     value={newProduct.price || 0}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                    onChange={(e: any) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="0"
                   />
@@ -350,7 +349,7 @@ export default function Admin() {
                   <input
                     type="number"
                     value={newProduct.oldPrice || 0}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
+                    onChange={(e: any) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="0"
                   />
@@ -360,7 +359,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newProduct.image || ""}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, image: e.target.value })}
+                    onChange={(e: any) => setNewProduct({ ...newProduct, image: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="https://..."
                   />
@@ -438,7 +437,7 @@ export default function Admin() {
                 <input
                   type="text"
                   value={newCategoryName}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setNewCategoryName(e.target.value)}
+                  onChange={(e: any) => setNewCategoryName(e.target.value)}
                   className="flex-1 rounded border border-border bg-card px-3 py-2 text-foreground"
                   placeholder="Nome da categoria"
                 />
@@ -501,7 +500,7 @@ export default function Admin() {
                     <input
                       type="text"
                       value={newBanner.title ?? ""}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setNewBanner({ ...newBanner, title: e.target.value })}
+                      onChange={(e: any) => setNewBanner({ ...newBanner, title: e.target.value })}
                       className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                       placeholder="Título do banner"
                     />
@@ -511,7 +510,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newBanner.imageUrl ?? ""}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
+                    onChange={(e: any) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="https://..."
                   />
@@ -606,7 +605,7 @@ export default function Admin() {
                 <input
                   type="text"
                   defaultValue={siteConfig?.heroTitle || ""}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm({ ...configForm, heroTitle: e.target.value })}
+                  onChange={(e: any) => setConfigForm({ ...configForm, heroTitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Eleve sua experiência no FiveM"
                 />
@@ -616,7 +615,7 @@ export default function Admin() {
                 <input
                   type="text"
                   defaultValue={siteConfig?.heroSubtitle || ""}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm({ ...configForm, heroSubtitle: e.target.value })}
+                  onChange={(e: any) => setConfigForm({ ...configForm, heroSubtitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Bem-vindo à Aura City"
                 />
@@ -625,7 +624,7 @@ export default function Admin() {
                 <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
                 <textarea
                   defaultValue={siteConfig?.heroDescription || ""}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setConfigForm({ ...configForm, heroDescription: e.target.value })}
+                  onChange={(e: any) => setConfigForm({ ...configForm, heroDescription: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Descubra pacotes VIP, veículos premium..."
                   rows={3}
