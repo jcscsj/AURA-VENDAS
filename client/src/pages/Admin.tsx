@@ -258,7 +258,22 @@ export default function Admin() {
               <Home className="h-4 w-4" />
               Loja
             </Button>
-            <Button variant="ghost" size="sm" onClick={logout} className="gap-2 text-destructive">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={async () => {
+                try {
+                  await logout();
+                } catch (error) {
+                  console.error("Erro ao fazer logout:", error);
+                } finally {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = "/";
+                }
+              }} 
+              className="gap-2 text-destructive"
+            >
               <LogOut className="h-4 w-4" />
               Sair
             </Button>
