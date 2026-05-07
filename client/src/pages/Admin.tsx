@@ -632,7 +632,7 @@ export default function Admin() {
             </div>
           </div>
         )}
-      </div> {/* ESTA DIV FECHA O "container py-8" */}
-    </div> {/* ESTA DIV FECHA O "min-h-screen" */}
+      </div>
+    </div>
   );
 }
