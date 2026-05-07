@@ -19,7 +19,7 @@ import {
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users" | "logs">("products");
 
   // Proteger rota de admin
   useEffect(() => {
@@ -284,7 +284,7 @@ export default function Admin() {
       <div className="container py-8">
         {/* Tabs */}
         <div className="flex gap-2 border-b border-border mb-8">
-          {(["products", "categories", "banners", "orders", "config", "users"] as const).map((tab) => (
+          {(["products", "categories", "banners", "orders", "config", "users", "logs"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -634,6 +634,16 @@ export default function Admin() {
                 <Save className="mr-2 h-4 w-4" />
                 Salvar Configurações
               </Button>
+            </div>
+          </div>
+        )}
+      {activeTab === "logs" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Console do Servidor</h2>
+            <div className="bg-black text-green-500 font-mono p-4 rounded-lg h-96 overflow-y-auto border border-border">
+              {/* Aqui vamos mapear os logs que virão do banco */}
+              <p className="">[SISTEMA] Console inicializado...</p>
+              <p className="text-yellow-500">[AVISO] Monitorando banco de dados TiDB...</p>
             </div>
           </div>
         )}
