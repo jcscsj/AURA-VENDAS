@@ -54,9 +54,12 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: any) {
-  const db = await getDb(); if (!db) return null;
-  const res = await db.insert(categories).values(data);
-  return db.select().from(categories).where(eq(categories.id, (res as any)[0].insertId)).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  // FATO TÉCNICO: O TiDB não retorna o ID assim. Inserimos e puxamos a última linha.
+  await db.insert(categories).values(data);
+  const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
+  return res[0] || null;
 }
 
 export async function updateCategory(id: number, data: any) {
