@@ -607,7 +607,9 @@ export const appRouter = router({
       }),
       config: router({
         get: publicProcedure.query(async () => {
-          return db.getSiteConfig();
+          const config = await db.getSiteConfig();
+          // Se não houver nada no banco, envia um objeto vazio em vez de "undefined"
+          return config || { heroTitle: "", heroSubtitle: "", heroDescription: "" };
         }),
         update: publicProcedure
           .input(z.object({
