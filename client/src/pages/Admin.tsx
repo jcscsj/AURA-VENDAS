@@ -300,7 +300,7 @@ export default function Admin() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "users" ? "Contas Logadas" : tab === "logs" ? "Console" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -658,8 +658,7 @@ export default function Admin() {
               {serverLogs && serverLogs.length > 0 ? (
                 serverLogs.map((log: any) => (
                   <p key={log.id} className="text-sm mb-1 leading-relaxed">
-                    <span className="text-slate-600">[{new Date(log.createdAt).toLocaleTimeString()}]</span> 
-                    <span className={log.type === 'error' ? 'text-red-500' : 'text-green-500'}> [{log.type?.toUpperCase()}]</span> {log.message}
+                    <span className="text-slate-600">[{new Date(log.createdAt).toLocaleTimeString()}]</span> {log.message}
                   </p>
                 ))
               ) : (
