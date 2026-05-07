@@ -104,9 +104,32 @@ export async function createProduct(data: any) {
   }
 }
 export async function updateProduct(id: number, data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.update(products).set(data).where(eq(products.id, id));
-  return db.select().from(products).where(eq(products.id, id)).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    // FATO TÉCNICO: Convertemos o array de benefícios em texto para o MySQL não bugar
+    const benefitsString = Array.isArray(data.benefits) ? JSON.stringify(data.benefits) : (data.benefits || "[]");
+
+    await db.update(products)
+      .set({
+        name: data.name,
+        categoryId: data.categoryId,
+        description: data.description,
+        price: data.price,
+        oldPrice: data.oldPrice || null,
+        image: data.image,
+        tag: data.tag || 'Novo',
+        rarity: data.rarity || 'Premium',
+        benefits: benefitsString,
+        updatedAt: new Date()
+      })
+      .where(eq(products.id, id));
+
+    return db.select().from(products).where(eq(products.id, id)).then(r => r[0]);
+  } catch (error) {
+    console.error("Erro ao atualizar produto:", error);
+    return null;
+  }
 }
 
 export async function deleteProduct(id: number) {
@@ -127,11 +150,23 @@ export async function createBanner(data: any) {
 }
 
 export async function updateBanner(id: number, data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.update(banners).set({ title: data.title, imageUrl: data.imageUrl }).where(eq(banners.id, id));
-  return db.select().from(banners).where(eq(banners.id, id)).then(r => r[0]);
-}
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    await db.update(banners)
+      .set({
+        title: data.title,
+        imageUrl: data.imageUrl,
+        updatedAt: new Date()
+      })
+      .where(eq(banners.id, id));
 
+    return db.select().from(banners).where(eq(banners.id, id)).then(r => r[0]);
+  } catch (error) {
+    console.error("Erro ao atualizar banner:", error);
+    return null;
+  }
+}
 export async function deleteBanner(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(banners).where(eq(banners.id, id));
