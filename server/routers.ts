@@ -549,15 +549,14 @@ export const appRouter = router({
             return db.createBanner(input as any);
           }),
         update: publicProcedure
-          .input(z.object({
-            id: z.number(),
-            title: z.string().min(1),
-            imageUrl: z.string(),
+          .input(z.object({ 
+            id: z.number(), 
+            title: z.string().optional(), 
+            imageUrl: z.string().optional() 
           }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            const { id, ...data } = input;
-            return db.updateBanner(id, data);
+            return db.updateBanner(input.id, input);
           }),
         delete: publicProcedure
           .input(z.object({ id: z.number() }))
