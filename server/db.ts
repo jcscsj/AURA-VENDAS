@@ -286,3 +286,11 @@ export async function moveProductUp(id: number) { return null; }
 export async function moveProductDown(id: number) { return null; }
 export async function moveBannerUp(id: number) { return null; }
 export async function moveBannerDown(id: number) { return null; }
+
+// ===== LOGS CONSOLE =====
+export async function logSystem(message: string, type: string = 'info') {
+  const db = await getDb();
+  if (db) {
+    await db.execute(sql`INSERT INTO \`system_logs\` (\`message\`, \`type\`) VALUES (${message}, ${type})`);
+  }
+}
