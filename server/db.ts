@@ -20,7 +20,7 @@ export async function getDb() {
 
 // ===== USUÁRIOS =====
 export async function getUsers() {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(users).orderBy(desc(users.id));
 }
 
@@ -47,24 +47,21 @@ export async function updateUserProfile(id: number, data: any) {
   return db.select().from(users).where(eq(users.id, id)).then(r => r[0]);
 }
 
-// ===== CATEGORIAS =====
+// ===== CATEGORIAS (INSERÇÃO BLINDADA) =====
 export async function getCategories() {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(categories);
 }
 
 export async function createCategory(data: any) {
-  const db = await getDb();
-  if (!db) return null;
-  // FATO TÉCNICO: O TiDB não retorna o ID assim. Inserimos e puxamos a última linha.
-  await db.insert(categories).values(data);
-  const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
-  return res[0] || null;
+  const db = await getDb(); if (!db) return null;
+  await db.insert(categories).values({ name: data.name }); // Força só o nome
+  return db.select().from(categories).orderBy(desc(categories.id)).limit(1).then(r => r[0]);
 }
 
 export async function updateCategory(id: number, data: any) {
   const db = await getDb(); if (!db) return null;
-  await db.update(categories).set(data).where(eq(categories.id, id));
+  await db.update(categories).set({ name: data.name }).where(eq(categories.id, id));
   return db.select().from(categories).where(eq(categories.id, id)).then(r => r[0]);
 }
 
@@ -73,18 +70,20 @@ export async function deleteCategory(id: number) {
   await db.delete(categories).where(eq(categories.id, id));
 }
 
-// ===== PRODUTOS =====
+// ===== PRODUTOS (INSERÇÃO BLINDADA) =====
 export async function getProducts() {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(products);
 }
 
 export async function createProduct(data: any) {
-  const db = await getDb();
-  if (!db) return null;
-  await db.insert(products).values(data);
-  const res = await db.select().from(products).orderBy(desc(products.id)).limit(1);
-  return res[0] || null;
+  const db = await getDb(); if (!db) return null;
+  await db.insert(products).values({
+    name: data.name, categoryId: data.categoryId, description: data.description,
+    price: data.price, oldPrice: data.oldPrice, image: data.image,
+    tag: data.tag, rarity: data.rarity, benefits: data.benefits ||[]
+  });
+  return db.select().from(products).orderBy(desc(products.id)).limit(1).then(r => r[0]);
 }
 
 export async function updateProduct(id: number, data: any) {
@@ -98,23 +97,21 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-// ===== BANNERS (O QUE ESTAVA FALTANDO) =====
+// ===== BANNERS (INSERÇÃO BLINDADA) =====
 export async function getBanners() {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(banners);
 }
 
 export async function createBanner(data: any) {
-  const db = await getDb();
-  if (!db) return null;
-  await db.insert(banners).values(data);
-  const res = await db.select().from(banners).orderBy(desc(banners.id)).limit(1);
-  return res[0] || null;
+  const db = await getDb(); if (!db) return null;
+  await db.insert(banners).values({ title: data.title, imageUrl: data.imageUrl });
+  return db.select().from(banners).orderBy(desc(banners.id)).limit(1).then(r => r[0]);
 }
 
 export async function updateBanner(id: number, data: any) {
   const db = await getDb(); if (!db) return null;
-  await db.update(banners).set(data).where(eq(banners.id, id));
+  await db.update(banners).set({ title: data.title, imageUrl: data.imageUrl }).where(eq(banners.id, id));
   return db.select().from(banners).where(eq(banners.id, id)).then(r => r[0]);
 }
 
@@ -125,13 +122,17 @@ export async function deleteBanner(id: number) {
 
 // ===== PEDIDOS (ORDERS) =====
 export async function getOrders() {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(orders);
 }
 
 export async function createOrder(data: any) {
   const db = await getDb(); if (!db) return null;
-  await db.insert(orders).values(data);
+  await db.insert(orders).values({
+    playerNick: data.playerNick, gameId: data.gameId, discordId: data.discordId,
+    discord: data.discord, items: data.items, subtotal: data.subtotal,
+    discount: data.discount, total: data.total, status: data.status || 'pending'
+  });
   return db.select().from(orders).orderBy(desc(orders.id)).limit(1).then(r => r[0]);
 }
 
@@ -142,7 +143,7 @@ export async function updateOrderStatus(id: number, status: string) {
 }
 
 export async function getOrdersByGameId(gameId: string) {
-  const db = await getDb(); if (!db) return [];
+  const db = await getDb(); if (!db) return[];
   return db.select().from(orders).where(eq(orders.gameId, gameId));
 }
 
