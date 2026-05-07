@@ -621,17 +621,17 @@ export default function Admin() {
         )}
       {activeTab === "users" && (
           <div className="space-y-4">
-<div className="border border-border rounded p-4">
-            {storeUsers.map((u: any) => (
-              <div key={u.id} className="border-b py-2 flex justify-between">
-                <span>{u.name} - {u.email || "Sem e-mail"}</span>
-                <span className="text-muted-foreground">{u.discordId || "Sem Discord"}</span>
-              </div>
-            ))}
-          </div>
+            <h2 className="text-2xl font-bold">Contas Logadas</h2>
+            <div className="border border-border rounded p-4">
+              {storeUsers.map((u: any) => (
+                <div key={u.id} className="border-b py-2 flex justify-between">
+                  <span>{u.name} - {u.email || "Sem e-mail"}</span>
+                  <span className="text-muted-foreground">{u.discordId || "Sem Discord"}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-
       </div> {/* ESTA DIV FECHA O "container py-8" */}
     </div> {/* ESTA DIV FECHA O "min-h-screen" */}
   );
