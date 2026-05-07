@@ -437,11 +437,17 @@ export const appRouter = router({
         create: publicProcedure
           .input(z.object({ name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
-            // Checagem de admin (E-mail ou Discord)
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) {
-              throw new TRPCError({ code: "FORBIDDEN" });
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+
+            // 1. Verificar se o nome já existe
+            const existing = await db.getCategories();
+            if (existing.some(c => c.name.toLowerCase() === input.name.toLowerCase())) {
+              throw new TRPCError({ 
+                code: "BAD_REQUEST", 
+                message: "Já existe uma categoria com este nome." 
+              });
             }
-            // Chama a nossa nova função de SQL Puro
+            // 2. Criar a categoria
             return db.createCategory(input);
           }),
         update: publicProcedure
