@@ -339,6 +339,13 @@ export const appRouter = router({
       }),
   }),
   shop: router({
+    // DEVE ESTAR AQUI, LOGO ABAIXO DE SHOP
+    users: router({
+      list: publicProcedure.query(async ({ ctx }) => {
+        if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+        return db.getUsers(); 
+      }),
+    }),
     categories: router({
       list: publicProcedure.query(async () => {
         return db.getCategories();
