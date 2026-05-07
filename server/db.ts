@@ -57,16 +57,17 @@ export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // FATO: Enviamos apenas o nome, o banco cuida do ID e das datas sozinho.
+    // FATO TÉCNICO: Enviamos o 0 explicitamente para a coluna 'order' 
+    // para satisfazer a regra de 'NOT NULL' do banco.
     await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, 0)`);
+    
     const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
     return res[0] || null;
   } catch (error) {
-    console.error("Erro no Banco:", error);
+    console.error("Erro ao criar categoria:", error);
     return null;
   }
 }
-
 export async function updateCategory(id: number, data: any) {
   const db = await getDb(); if (!db) return null;
   await db.update(categories).set({ name: data.name }).where(eq(categories.id, id));
@@ -88,18 +89,17 @@ export async function createProduct(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // Inserção direta via SQL para evitar o erro de 'default'
     await db.execute(sql`
       INSERT INTO \`products\` 
-      (\`name\`, \`categoryId\`, \`description\`, \`price\`, \`image\`, \`tag\`, \`rarity\`) 
+      (\`name\`, \`categoryId\`, \`description\`, \`price\`, \`image\`, \`tag\`, \`rarity\`, \`order\`) 
       VALUES 
-      (${data.name}, ${data.categoryId}, ${data.description || ''}, ${data.price}, ${data.image || ''}, 'Novo', 'Premium')
+      (${data.name}, ${data.categoryId}, ${data.description || ''}, ${data.price}, ${data.image || ''}, 'Novo', 'Premium', 0)
     `);
     
     const res = await db.select().from(products).orderBy(desc(products.id)).limit(1);
     return res[0] || null;
   } catch (error) {
-    console.error("Erro fatal no produto:", error);
+    console.error("Erro ao criar produto:", error);
     return null;
   }
 }
@@ -246,8 +246,48 @@ export async function updateSiteConfig(data: any) {
   return getSiteConfig();
 }
 
-export async function moveCategoryUp(id: number) { return null; }
-export async function moveCategoryDown(id: number) { return null; }
+export async function moveCategoryUp(id: number) {
+  const db = await getDb(); if (!db) return null;
+  try {
+    // 1. Pega a categoria atual
+    const current = await db.select().from(categories).where(eq(categories.id, id)).then(r => r[0]);
+    if (!current) return null;
+
+    // 2. Procura a categoria que está IMEDIATAMENTE ACIMA (ordem menor)
+    const prev = await db.select().from(categories)
+      .where(lt(categories.order, current.order))
+      .orderBy(desc(categories.order))
+      .limit(1).then(r => r[0]);
+
+    if (prev) {
+      // 3. Troca os valores de 'order' entre as duas
+      const currentOrder = current.order;
+      await db.update(categories).set({ order: prev.order }).where(eq(categories.id, current.id));
+      await db.update(categories).set({ order: currentOrder }).where(eq(categories.id, prev.id));
+    }
+    return current;
+  } catch (e) { return null; }
+}
+export async function moveCategoryDown(id: number) {
+  const db = await getDb(); if (!db) return null;
+  try {
+    const current = await db.select().from(categories).where(eq(categories.id, id)).then(r => r[0]);
+    if (!current) return null;
+
+    // Procura a categoria que está IMEDIATAMENTE ABAIXO (ordem maior)
+    const next = await db.select().from(categories)
+      .where(gt(categories.order, current.order))
+      .orderBy(asc(categories.order))
+      .limit(1).then(r => r[0]);
+
+    if (next) {
+      const currentOrder = current.order;
+      await db.update(categories).set({ order: next.order }).where(eq(categories.id, current.id));
+      await db.update(categories).set({ order: currentOrder }).where(eq(categories.id, next.id));
+    }
+    return current;
+  } catch (e) { return null; }
+}
 export async function moveProductUp(id: number) { return null; }
 export async function moveProductDown(id: number) { return null; }
 export async function moveBannerUp(id: number) { return null; }
