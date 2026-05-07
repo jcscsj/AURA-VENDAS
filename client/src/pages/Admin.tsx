@@ -1,10 +1,9 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { useState } from "react";
 import {
   Trash2,
   Plus,
@@ -170,7 +169,7 @@ export default function Admin() {
       refetchConfig(); 
       toast.success("Configurações atualizadas!");
     },
-    onError: (error) => toast.error("Erro ao salvar: " + error.message),
+    onError: (error: any) => toast.error("Erro ao salvar: " + error.message),
   });
 
   // Local state
@@ -316,7 +315,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newProduct.name || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, name: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="Nome do produto"
                   />
@@ -325,11 +324,11 @@ export default function Admin() {
                   <label className="block text-sm font-semibold text-foreground">Categoria</label>
                   <select
                     value={newProduct.categoryId || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                   >
                     <option value="">Selecione uma categoria</option>
-                    {categories.map((cat) => (
+                    {categories.map((cat: any) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}
                       </option>
@@ -341,7 +340,7 @@ export default function Admin() {
                   <input
                     type="number"
                     value={newProduct.price || 0}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="0"
                   />
@@ -351,7 +350,7 @@ export default function Admin() {
                   <input
                     type="number"
                     value={newProduct.oldPrice || 0}
-                    onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="0"
                   />
@@ -361,7 +360,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newProduct.image || ""}
-                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewProduct({ ...newProduct, image: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="https://..."
                   />
@@ -383,7 +382,7 @@ export default function Admin() {
             <div>
               <h3 className="text-xl font-bold mb-4">Produtos Existentes</h3>
               <div className="grid gap-3">
-                {products.map((product) => (
+                {products.map((product: any) => (
                   <div key={product.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
                     <div className="flex-1">
                       <h4 className="font-semibold text-foreground">{product.name}</h4>
@@ -439,7 +438,7 @@ export default function Admin() {
                 <input
                   type="text"
                   value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setNewCategoryName(e.target.value)}
                   className="flex-1 rounded border border-border bg-card px-3 py-2 text-foreground"
                   placeholder="Nome da categoria"
                 />
@@ -457,7 +456,7 @@ export default function Admin() {
             <div>
               <h3 className="text-xl font-bold mb-4">Categorias Existentes</h3>
               <div className="grid gap-3">
-                {categories.map((category) => (
+                {categories.map((category: any) => (
                   <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
                     <h4 className="font-semibold text-foreground">{category.name}</h4>
                     <div className="flex gap-2">
@@ -502,7 +501,7 @@ export default function Admin() {
                     <input
                       type="text"
                       value={newBanner.title ?? ""}
-                      onChange={(e) => setNewBanner({ ...newBanner, title: e.target.value })}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setNewBanner({ ...newBanner, title: e.target.value })}
                       className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                       placeholder="Título do banner"
                     />
@@ -512,7 +511,7 @@ export default function Admin() {
                   <input
                     type="text"
                     value={newBanner.imageUrl ?? ""}
-                    onChange={(e) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="https://..."
                   />
@@ -534,7 +533,7 @@ export default function Admin() {
             <div>
               <h3 className="text-xl font-bold mb-4">Banners Existentes</h3>
               <div className="grid gap-4">
-                {banners.map((banner) => (
+                {banners.map((banner: any) => (
                   <div key={banner.id} className="rounded-lg border border-border bg-background p-4">
                     <img src={banner.imageUrl ?? ""} alt={banner.title ?? ""} className="h-32 w-full object-cover rounded mb-3" />
                     <h4 className="font-semibold text-foreground mb-2">{banner.title ?? ""}</h4>
@@ -570,7 +569,7 @@ export default function Admin() {
           <div>
             <h2 className="text-2xl font-bold mb-4">Pedidos Recentes</h2>
             <div className="grid gap-4">
-              {orders.map((order) => (
+              {orders.map((order: any) => (
                 <div key={order.id} className="rounded-lg border border-border bg-background p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -607,7 +606,7 @@ export default function Admin() {
                 <input
                   type="text"
                   defaultValue={siteConfig?.heroTitle || ""}
-                  onChange={(e) => setConfigForm({ ...configForm, heroTitle: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm({ ...configForm, heroTitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Eleve sua experiência no FiveM"
                 />
@@ -617,7 +616,7 @@ export default function Admin() {
                 <input
                   type="text"
                   defaultValue={siteConfig?.heroSubtitle || ""}
-                  onChange={(e) => setConfigForm({ ...configForm, heroSubtitle: e.target.value })}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setConfigForm({ ...configForm, heroSubtitle: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Bem-vindo à Aura City"
                 />
@@ -626,7 +625,7 @@ export default function Admin() {
                 <label className="block text-sm font-medium mb-2">Descrição do Hero</label>
                 <textarea
                   defaultValue={siteConfig?.heroDescription || ""}
-                  onChange={(e) => setConfigForm({ ...configForm, heroDescription: e.target.value })}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setConfigForm({ ...configForm, heroDescription: e.target.value })}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   placeholder="Descubra pacotes VIP, veículos premium..."
                   rows={3}
