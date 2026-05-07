@@ -339,7 +339,6 @@ export const appRouter = router({
       }),
   }),
   shop: router({
-    // ROTA DE USUÁRIOS (Corrigida para o caminho que o Admin espera)
     users: router({
       list: publicProcedure.query(async ({ ctx }) => {
         if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
