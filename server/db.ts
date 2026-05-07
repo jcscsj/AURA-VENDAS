@@ -248,26 +248,11 @@ export async function getSiteConfig() {
 }
 
 export async function updateSiteConfig(data: any) {
-  const db = await getDb();
-  if (!db) return null;
-  try {
-    // FATO TÉCNICO: Usamos SQL puro para garantir que ele SEMPRE atualize a linha 1
-    await db.execute(sql`
-      INSERT INTO \`siteConfig\` (id, heroTitle, heroSubtitle, heroDescription)
-      VALUES (1, ${data.heroTitle || ''}, ${data.heroSubtitle || ''}, ${data.heroDescription || ''})
-      ON DUPLICATE KEY UPDATE
-      heroTitle = VALUES(heroTitle),
-      heroSubtitle = VALUES(heroSubtitle),
-      heroDescription = VALUES(heroDescription),
-      updatedAt = NOW()
-    `);
-    return getSiteConfig();
-  } catch (error) {
-    console.error("Erro no DB:", error);
-    return null;
-  }
+  const db = await getDb(); if (!db) return null;
+  await db.execute(sql`INSERT INTO \`siteConfig\` (id, heroTitle, heroSubtitle, heroDescription) VALUES (1, ${data.heroTitle || ''}, ${data.heroSubtitle || ''}, ${data.heroDescription || ''}) ON DUPLICATE KEY UPDATE heroTitle = VALUES(heroTitle), heroSubtitle = VALUES(heroSubtitle), heroDescription = VALUES(heroDescription), updatedAt = NOW()`);
+  return getSiteConfig();
 }
-    
+
     const res = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
     return res[0] || null;
   } catch (error) {
