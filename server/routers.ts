@@ -3,6 +3,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, publicProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import { sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "./_core/env";
 import crypto from "crypto";
