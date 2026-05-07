@@ -37,7 +37,8 @@ export default function Admin() {
     enabled: !!user, // Carrega se houver QUALQUER usuário logado
   });
   const { data: storeUsers = [] } = trpc.shop.users.list.useQuery(undefined, {
-    enabled: !!user, // Carrega se houver QUALQUER usuário logado
+    enabled: !!user; // Carrega se houver QUALQUER usuário logado
+  const { data: serverLogs = [] } = trpc.shop.admin.logs.useQuery();
   });
   const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
 
