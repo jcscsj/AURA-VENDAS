@@ -166,10 +166,11 @@ export default function Admin() {
 
   const updateConfigMut = trpc.shop.admin.config.update.useMutation({
     onSuccess: () => {
-      refetchConfig();
+      // FATO TÉCNICO: Isso obriga o site a buscar os dados novos do banco na hora
+      refetchConfig(); 
       toast.success("Configurações atualizadas!");
     },
-    onError: () => toast.error("Erro ao atualizar configurações"),
+    onError: (error) => toast.error("Erro ao salvar: " + error.message),
   });
 
   // Local state
