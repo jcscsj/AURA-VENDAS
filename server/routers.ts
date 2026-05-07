@@ -1,6 +1,6 @@
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
+import { publicProcedure, router, publicProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
@@ -56,7 +56,7 @@ export const appRouter = router({
     me: publicProcedure.query(async ({ ctx }) => {
       return ctx.user || null;
     }),
-    logout: protectedProcedure.mutation(async ({ ctx }) => {
+    logout: publicProcedure.mutation(async ({ ctx }) => {
       // Garante que apaga todas as chaves possíveis do site
       ctx.res.clearCookie("app_session_id");
       ctx.res.clearCookie("adminSession"); 
@@ -173,7 +173,7 @@ export const appRouter = router({
         message: "Não autenticado",
       });
     }),
-    updateProfile: protectedProcedure
+    updateProfile: publicProcedure
       .input(
         z.object({
           name: z.string().optional(),
@@ -250,7 +250,7 @@ export const appRouter = router({
           role: "admin",
         };
       }),
-    adminLogout: protectedProcedure.mutation(async ({ ctx }) => {
+    adminLogout: publicProcedure.mutation(async ({ ctx }) => {
       ctx.res.clearCookie("adminSession");
       return { success: true };
     }),
@@ -401,7 +401,7 @@ export const appRouter = router({
         .query(async ({ input }) => {
           return db.getOrdersByGameId(input.gameId);
         }),
-      updateStatus: protectedProcedure
+      updateStatus: publicProcedure
         .input(z.object({ orderId: z.number(), status: z.string() }))
         .mutation(async ({ input, ctx }) => {
           if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -413,31 +413,31 @@ export const appRouter = router({
         list: publicProcedure.query(async () => {
           return db.getCategories();
         }),
-        create: protectedProcedure
+        create: publicProcedure
           .input(z.object({ name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createCategory({ name: input.name } as any);
           }),
-        update: protectedProcedure
+        update: publicProcedure
           .input(z.object({ id: z.number(), name: z.string().min(1) }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.updateCategory(input.id, { name: input.name });
           }),
-        delete: protectedProcedure
+        delete: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteCategory(input.id);
           }),
-        moveUp: protectedProcedure
+        moveUp: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveCategoryUp(input.id);
           }),
-        moveDown: protectedProcedure
+        moveDown: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -448,7 +448,7 @@ export const appRouter = router({
         list: publicProcedure.query(async () => {
           return db.getProducts();
         }),
-        uploadImage: protectedProcedure
+        uploadImage: publicProcedure
           .input(z.object({
             image: z.string(),
           }))
@@ -468,7 +468,7 @@ export const appRouter = router({
               throw new TRPCError({ code: "BAD_REQUEST", message: "Erro ao processar imagem" });
             }
           }),
-        create: protectedProcedure
+        create: publicProcedure
           .input(z.object({
             name: z.string().min(1),
             categoryId: z.number(),
@@ -484,7 +484,7 @@ export const appRouter = router({
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createProduct(input);
           }),
-        update: protectedProcedure
+        update: publicProcedure
           .input(z.object({
             id: z.number(),
             name: z.string().min(1),
@@ -502,19 +502,19 @@ export const appRouter = router({
             const { id, ...data } = input;
             return db.updateProduct(id, data);
           }),
-        delete: protectedProcedure
+        delete: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteProduct(input.id);
           }),
-        moveUp: protectedProcedure
+        moveUp: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveProductUp(input.id);
           }),
-        moveDown: protectedProcedure
+        moveDown: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -525,7 +525,7 @@ export const appRouter = router({
         list: publicProcedure.query(async () => {
           return db.getBanners();
         }),
-        create: protectedProcedure
+        create: publicProcedure
           .input(z.object({
             title: z.string().min(1),
             imageUrl: z.string(),
@@ -534,7 +534,7 @@ export const appRouter = router({
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createBanner(input as any);
           }),
-        update: protectedProcedure
+        update: publicProcedure
           .input(z.object({
             id: z.number(),
             title: z.string().min(1),
@@ -545,19 +545,19 @@ export const appRouter = router({
             const { id, ...data } = input;
             return db.updateBanner(id, data);
           }),
-        delete: protectedProcedure
+        delete: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.deleteBanner(input.id);
           }),
-        moveUp: protectedProcedure
+        moveUp: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.moveBannerUp(input.id);
           }),
-        moveDown: protectedProcedure
+        moveDown: publicProcedure
           .input(z.object({ id: z.number() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -565,7 +565,7 @@ export const appRouter = router({
           }),
       }),
       payment: router({
-        createCheckoutSession: protectedProcedure
+        createCheckoutSession: publicProcedure
           .input(z.object({
             items: z.array(z.object({
               productId: z.number(),
@@ -602,7 +602,7 @@ export const appRouter = router({
         get: publicProcedure.query(async () => {
           return db.getSiteConfig();
         }),
-        update: protectedProcedure
+        update: publicProcedure
           .input(z.object({
             heroTitle: z.string().optional(),
             heroSubtitle: z.string().optional(),
