@@ -57,7 +57,9 @@ export const appRouter = router({
       return ctx.user || null;
     }),
     logout: protectedProcedure.mutation(async ({ ctx }) => {
+      // Garante que apaga todas as chaves possíveis do site
       ctx.res.clearCookie("app_session_id");
+      ctx.res.clearCookie("adminSession"); 
       ctx.res.clearCookie("localSession");
       return { success: true };
     }),
