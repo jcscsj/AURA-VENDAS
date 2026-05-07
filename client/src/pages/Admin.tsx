@@ -180,6 +180,7 @@ export default function Admin() {
   const [newBanner, setNewBanner] = useState<any>({});
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
   const [configForm, setConfigForm] = useState<any>({});
+  
 
   // Redirect if not admin
   useEffect(() => {
@@ -633,8 +634,6 @@ export default function Admin() {
               </div>
               <Button
                 onClick={() => {
-                  // FATO TÉCNICO: Agora usamos 'configForm' (onde você digitou) 
-                  // em vez de 'newBanner' (que era de outra aba)
                   const dataToSend = {
                     heroTitle: configForm.heroTitle ?? siteConfig?.heroTitle,
                     heroSubtitle: configForm.heroSubtitle ?? siteConfig?.heroSubtitle,
@@ -642,6 +641,7 @@ export default function Admin() {
                   };
                   updateConfigMut.mutate(dataToSend);
                 }}
+                disabled={updateConfigMut.isPending}
                 className="bg-primary hover:bg-orange-600 text-black font-semibold"
               >
                 <Save className="mr-2 h-4 w-4" /> Salvar Configurações
@@ -649,7 +649,7 @@ export default function Admin() {
             </div>
           </div>
         )}
-        
+
         {activeTab === "logs" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-orange-500">Console do Servidor</h2>
