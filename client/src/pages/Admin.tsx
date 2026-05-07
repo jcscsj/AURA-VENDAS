@@ -649,6 +649,35 @@ export default function Admin() {
           </div>
         )}
 
+        {activeTab === "logs" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Console do Servidor</h2>
+            <div className="bg-black text-green-500 font-mono p-4 rounded-lg h-96 overflow-y-auto border border-border">
+              {serverLogs.map((log: any) => (
+                <p key={log.id} className="text-sm mb-1">
+                  <span className="text-slate-500">[{new Date(log.createdAt).toLocaleTimeString()}]</span> {log.message}
+                </p>
+              ))}
+              {serverLogs.length === 0 && <p>Nenhum log registrado ainda...</p>}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "users" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Contas Logadas</h2>
+            <div className="border border-border rounded p-4 bg-card">
+              {storeUsers.map((u: any) => (
+                <div key={u.id} className="border-b border-border/50 py-2 flex justify-between items-center last:border-0">
+                  <span className="font-medium">{u.name}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{u.discordId || "Sem ID"}</span>
+                </div>
+              ))}
+              {storeUsers.length === 0 && <p className="text-center text-muted-foreground">Nenhum usuário logado.</p>}
+            </div>
+          </div>
+        )}
+
         {activeTab === "users" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Contas Logadas</h2>
