@@ -54,9 +54,18 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.insert(categories).values({ name: data.name }); 
-  return db.select().from(categories).orderBy(desc(categories.id)).limit(1).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    // Usamos SQL puro com crases (`) para proteger a palavra 'order'
+    await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, 0)`);
+    
+    const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
+    return res[0] || null;
+  } catch (error) {
+    console.error("Erro fatal na categoria:", error);
+    return null;
+  }
 }
 
 export async function updateCategory(id: number, data: any) {
@@ -77,15 +86,24 @@ export async function getProducts() {
 }
 
 export async function createProduct(data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.insert(products).values({
-    name: data.name, categoryId: data.categoryId, description: data.description,
-    price: data.price, oldPrice: data.oldPrice, image: data.image,
-    tag: data.tag, rarity: data.rarity, benefits: data.benefits ||[]
-  });
-  return db.select().from(products).orderBy(desc(products.id)).limit(1).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    // Inserção direta via SQL para evitar o erro de 'default'
+    await db.execute(sql`
+      INSERT INTO \`products\` 
+      (\`name\`, \`categoryId\`, \`description\`, \`price\`, \`image\`, \`tag\`, \`rarity\`) 
+      VALUES 
+      (${data.name}, ${data.categoryId}, ${data.description || ''}, ${data.price}, ${data.image || ''}, 'Novo', 'Premium')
+    `);
+    
+    const res = await db.select().from(products).orderBy(desc(products.id)).limit(1);
+    return res[0] || null;
+  } catch (error) {
+    console.error("Erro fatal no produto:", error);
+    return null;
+  }
 }
-
 export async function updateProduct(id: number, data: any) {
   const db = await getDb(); if (!db) return null;
   await db.update(products).set(data).where(eq(products.id, id));
