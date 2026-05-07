@@ -251,17 +251,20 @@ export async function updateSiteConfig(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // FATO TÉCNICO: Forçamos o ID 1 para garantir que só exista UMA configuração no banco todo
-    const existing = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
+    // FATO TÉCNICO: Usamos 'ON DUPLICATE KEY UPDATE' para garantir que 
+    // ele sempre escreva por cima da linha 1, em vez de criar novas.
+    await db.execute(sql`
+      INSERT INTO \`siteConfig\` (id, heroTitle, heroSubtitle, heroDescription)
+      VALUES (1, ${data.heroTitle || ''}, ${data.heroSubtitle || ''}, ${data.heroDescription || ''})
+      ON DUPLICATE KEY UPDATE
+      heroTitle = VALUES(heroTitle),
+      heroSubtitle = VALUES(heroSubtitle),
+      heroDescription = VALUES(heroDescription),
+      updatedAt = NOW()
+    `);
     
-    if (existing.length > 0) {
-      await db.update(siteConfig).set(data).where(eq(siteConfig.id, 1));
-    } else {
-      await db.insert(siteConfig).values({ id: 1, ...data });
-    }
-    
-    const updated = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
-    return updated[0] || null;
+    const res = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).limit(1);
+    return res[0] || null;
   } catch (error) {
     console.error("Erro ao salvar config:", error);
     return null;
