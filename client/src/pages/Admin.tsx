@@ -633,11 +633,12 @@ export default function Admin() {
               </div>
               <Button
                 onClick={() => {
-                  // Pegamos o que já existe e juntamos com o que você digitou
+                  // FATO TÉCNICO: Agora usamos 'configForm' (onde você digitou) 
+                  // em vez de 'newBanner' (que era de outra aba)
                   const dataToSend = {
-                    heroTitle: newBanner.heroTitle ?? siteConfig?.heroTitle,
-                    heroSubtitle: newBanner.heroSubtitle ?? siteConfig?.heroSubtitle,
-                    heroDescription: newBanner.heroDescription ?? siteConfig?.heroDescription,
+                    heroTitle: configForm.heroTitle ?? siteConfig?.heroTitle,
+                    heroSubtitle: configForm.heroSubtitle ?? siteConfig?.heroSubtitle,
+                    heroDescription: configForm.heroDescription ?? siteConfig?.heroDescription,
                   };
                   updateConfigMut.mutate(dataToSend);
                 }}
@@ -648,7 +649,7 @@ export default function Admin() {
             </div>
           </div>
         )}
-
+        
         {activeTab === "logs" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-orange-500">Console do Servidor</h2>
