@@ -13,12 +13,13 @@ async function notifyDiscordOrder(order: any, items: any[]) {
   if (!ENV.discordWebhookUrl) return;
   
   try {
+    // FATO TÉCNICO: Pega o nome do produto correto, matando o erro "undefined"
     const itemsText = items.map(item => {
       const nomeDoProduto = item.name || item.productName || item.title || "Pacote da Loja";
-      return `• ${nomeDoProduto} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`;
+      return `- ${nomeDoProduto} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`;
     }).join("\n");
     
-    // Criar mention se tiver discordId
+    // Criar mention se tiver discordId (Apenas visual, NÃO apita)
     let mention = "";
     if (order.discordId) {
       mention = `<@${order.discordId}>`;
@@ -27,7 +28,7 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     const embed = {
       title: "🛒 Novo Pedido Realizado!",
       color: 16744192, // Laranja
-      fields: [
+      fields:[
         { name: "Jogador", value: `${mention} ${order.playerNick}`, inline: true },
         { name: "ID do Jogo", value: order.gameId || "Não informado", inline: true },
         { name: "Discord", value: order.discord || "Não informado", inline: true },
@@ -45,7 +46,7 @@ async function notifyDiscordOrder(order: any, items: any[]) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        content: mention ? `${mention}` : undefined,
+        // Enviamos apenas o embed. Nada de avisos fora dele.
         embeds: [embed] 
       }),
     });
@@ -53,7 +54,6 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     console.error("[Discord] Erro ao enviar notificação:", error);
   }
 }
-
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -399,6 +399,23 @@ export const appRouter = router({
         }),
       list: publicProcedure.query(async () => {
         return db.getOrders();
+      }),
+      myOrders: publicProcedure.query(async ({ ctx }) => {
+        // Se não estiver logado, retorna vazio direto (mata o loading infinito)
+        if (!ctx.user || !ctx.user.discordId) return[]; 
+        
+        const db_instance = await db.getDb();
+        if (!db_instance) return[];
+        
+        // Busca no banco apenas onde o discordId for igual ao do jogador logado
+        const [rows] = await db_instance.execute(sql`SELECT * FROM \`orders\` WHERE \`discordId\` = ${ctx.user.discordId} ORDER BY id DESC`);
+        
+        // FATO TÉCNICO: O banco salva os itens como "texto". 
+        // Aqui transformamos em "lista" de novo para o site conseguir ler o nome e preço.
+        return (rows as any[]).map(row => ({
+          ...row,
+          items: typeof row.items === 'string' ? JSON.parse(row.items) : (row.items ||[])
+        }));
       }),
       getByGameId: publicProcedure
         .input(z.object({ gameId: z.string() }))
