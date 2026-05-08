@@ -378,20 +378,20 @@ export const appRouter = router({
             total: z.number(),
           })
         )
-        .mutation(async ({ input }) => {
-          const order = await db.createOrder({
-            playerNick: input.playerNick,
-            gameId: input.gameId,
-            discord: input.discord,
-            discordId: input.discordId,
-            items: input.items,
-            subtotal: input.subtotal,
-            discount: input.discount,
-            total: input.total,
+        .mutation(async ({ input, ctx }) => {
+          // FATO TÉCNICO: O servidor ignora o que o cliente enviou e usa o 
+          // Discord ID real da sessão logada por segurança.
+          const orderData = {
+            ...input,
+            discordId: ctx.user?.discordId || input.discordId,
+            discord: input.discord || ctx.user?.name || "Não informado",
             status: "pending",
-          });
+          };
+
+          const order = await db.createOrder(orderData);
 
           if (order) {
+            // Enviamos para o Discord com os dados validados
             await notifyDiscordOrder(order, input.items);
           }
 
