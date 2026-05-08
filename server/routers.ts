@@ -373,20 +373,25 @@ export const appRouter = router({
           })
         )
         .mutation(async ({ input, ctx }) => {
-          // FATO TÉCNICO: Pegamos os dados do usuário logado se o formulário vier vazio
+          // FATO TÉCNICO: Verificamos quem é o usuário real da sessão.
+          // Se for um login de Discord, o openId começa com 'discord_'
+          const isDiscordUser = ctx.user?.openId?.startsWith('discord_');
+          
           const orderData = {
             ...input,
-            discord: input.discord || ctx.user?.name || "Não informado",
-            discordId: input.discordId || ctx.user?.discordId || null,
+            // Se for login de Discord, pegamos o ID e Nome da sessão, senão usamos o que veio do formulário
+            discord: isDiscordUser ? ctx.user?.name : (input.discord || "Não informado"),
+            discordId: isDiscordUser ? ctx.user?.discordId : (input.discordId || null),
             status: "pending",
           };
 
-          const order = await db.createOrder(orderData);
+          // LOG DE DEBUG: Isso vai aparecer no seu novo console do site!
+          console.log(`[Pedido] Novo pedido de ${orderData.discord} (ID: ${orderData.discordId})`);
 
+          const order = await db.createOrder(orderData);
           if (order) {
             await notifyDiscordOrder(order, input.items);
           }
-
           return order;
         }),
       list: publicProcedure.query(async () => {
