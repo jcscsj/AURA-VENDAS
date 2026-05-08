@@ -373,25 +373,27 @@ export const appRouter = router({
           })
         )
         .mutation(async ({ input, ctx }) => {
-          // FATO TÉCNICO: Verificamos quem é o usuário real da sessão.
-          // Se for um login de Discord, o openId começa com 'discord_'
-          const isDiscordUser = ctx.user?.openId?.startsWith('discord_');
+          // 1. Fato Técnico: Se não estiver logado, barramos aqui.
+          if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
+
+          // 2. Buscamos os dados REAIS do usuário no banco para não ter erro de "Não informado"
+          const dbUser = await db.getUserByOpenId(ctx.user.openId);
           
           const orderData = {
             ...input,
-            // Se for login de Discord, pegamos o ID e Nome da sessão, senão usamos o que veio do formulário
-            discord: isDiscordUser ? ctx.user?.name : (input.discord || "Não informado"),
-            discordId: isDiscordUser ? ctx.user?.discordId : (input.discordId || null),
+            // Pegamos o nome e o ID do Discord que já estão salvos no banco (o que você viu na aba Contas)
+            discord: dbUser?.name || ctx.user.name || "Não informado",
+            discordId: dbUser?.discordId || (ctx.user as any).discordId || null,
             status: "pending",
           };
 
-          // LOG DE DEBUG: Isso vai aparecer no seu novo console do site!
-          console.log(`[Pedido] Novo pedido de ${orderData.discord} (ID: ${orderData.discordId})`);
-
           const order = await db.createOrder(orderData);
+
           if (order) {
+            // Agora o 'order' tem o discordId real, e a função abaixo vai enviar o <@ID>
             await notifyDiscordOrder(order, input.items);
           }
+
           return order;
         }),
       list: publicProcedure.query(async () => {
