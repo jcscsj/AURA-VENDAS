@@ -410,7 +410,7 @@ export const appRouter = router({
         }),
     }),
     admin: router({
-      // 1. ROTA DE USUÁRIOS (Aqui é onde o 404 morre)
+      // ROTA DE USUÁRIOS (Precisa estar exatamente aqui para o caminho ser shop.admin.users)
       users: router({
         list: publicProcedure.query(async ({ ctx }) => {
           if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
