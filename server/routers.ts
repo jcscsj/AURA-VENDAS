@@ -364,34 +364,26 @@ export const appRouter = router({
           z.object({
             playerNick: z.string(),
             gameId: z.string(),
-            discord: z.string().optional(),
-            discordId: z.string().optional(),
-            items: z.array(
-              z.object({
-                productId: z.number(),
-                quantity: z.number(),
-                price: z.number(),
-              })
-            ),
+            discord: z.string().optional().nullable(),   // ACEITA O NOME
+            discordId: z.string().optional().nullable(), // ACEITA O ID
+            items: z.array(z.any()),
             subtotal: z.number(),
             discount: z.number(),
             total: z.number(),
           })
         )
         .mutation(async ({ input, ctx }) => {
-          // FATO TÉCNICO: O servidor ignora o que o cliente enviou e usa o 
-          // Discord ID real da sessão logada por segurança.
+          // FATO TÉCNICO: Pegamos os dados do usuário logado se o formulário vier vazio
           const orderData = {
             ...input,
-            discordId: ctx.user?.discordId || input.discordId,
             discord: input.discord || ctx.user?.name || "Não informado",
+            discordId: input.discordId || ctx.user?.discordId || null,
             status: "pending",
           };
 
           const order = await db.createOrder(orderData);
 
           if (order) {
-            // Enviamos para o Discord com os dados validados
             await notifyDiscordOrder(order, input.items);
           }
 
