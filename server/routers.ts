@@ -410,7 +410,7 @@ export const appRouter = router({
         }),
     }),
     admin: router({
-      // ROTA DE USUÁRIOS (Movida para cá para bater com o visual)
+      // 1. ROTA DE USUÁRIOS (Aqui é onde o 404 morre)
       users: router({
         list: publicProcedure.query(async ({ ctx }) => {
           if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
@@ -423,14 +423,12 @@ export const appRouter = router({
             return db.deleteUser(input.id);
           }),
       }),
+
+      // 2. ROTA DE LOGS
       logs: publicProcedure.query(async ({ ctx }) => {
         if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-        
-        const db_instance = await db.getDb();
-        if (!db_instance) return [];
-
-        // FATO TÉCNICO: O MySQL retorna [linhas, colunas]. Pegamos apenas as linhas [0].
-        const [rows] = await db_instance.execute(sql`SELECT * FROM \`system_logs\` ORDER BY id DESC LIMIT 50`);
+        const db_i = await db.getDb(); if (!db_i) return [];
+        const [rows] = await db_i.execute(sql`SELECT * FROM \`system_logs\` ORDER BY id DESC LIMIT 50`);
         return rows as any[];
       }),
       categories: router({
