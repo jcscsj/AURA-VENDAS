@@ -170,7 +170,7 @@ export default function Home() {
     createOrderMut.mutate({
       playerNick,
       gameId: gameId || "",
-      // Enviamos os dados que o hook useAuth pegou do Discord
+      // Enviamos o nome e o ID que o useAuth capturou do Discord
       discord: user?.name || "", 
       discordId: user?.discordId || "",
       items,
