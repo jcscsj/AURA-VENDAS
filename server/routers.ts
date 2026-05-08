@@ -356,43 +356,35 @@ export const appRouter = router({
       }),
     }),
     orders: router({
-      create: publicProcedure
-        .input(
-          z.object({
-            playerNick: z.string(),
-            gameId: z.string(),
-            discord: z.string().optional().nullable(),   // ACEITA O NOME
-            discordId: z.string().optional().nullable(), // ACEITA O ID
-            items: z.array(z.any()),
-            subtotal: z.number(),
-            discount: z.number(),
-            total: z.number(),
-          })
-        )
-        .mutation(async ({ input, ctx }) => {
-          // 1. Fato Técnico: Se não estiver logado, barramos aqui.
-          if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
-
-          // 2. Buscamos os dados REAIS do usuário no banco para não ter erro de "Não informado"
-          const dbUser = await db.getUserByOpenId(ctx.user.openId);
+      create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
           
+          // FATO TÉCNICO: Ignoramos o frontend e buscamos o usuário direto na fonte (DB)
+          let realDiscordId = input.discordId || null;
+          let realDiscordName = input.discord || "Não informado";
+
+          if (ctx.user?.openId) {
+            const dbUser = await db.getUserByOpenId(ctx.user.openId);
+            if (dbUser && dbUser.discordId) {
+              realDiscordId = dbUser.discordId;
+              realDiscordName = dbUser.name;
+            }
+          }
+
+          // Montamos o pedido com as informações reais
           const orderData = {
             ...input,
-            // Pegamos o nome e o ID do Discord que já estão salvos no banco (o que você viu na aba Contas)
-            discord: dbUser?.name || ctx.user.name || "Não informado",
-            discordId: dbUser?.discordId || (ctx.user as any).discordId || null,
-            status: "pending",
+            discordId: realDiscordId,
+            discord: realDiscordName,
+            status: "pending"
           };
 
           const order = await db.createOrder(orderData);
-
+          
           if (order) {
-            // Agora o 'order' tem o discordId real, e a função abaixo vai enviar o <@ID>
             await notifyDiscordOrder(order, input.items);
           }
-
           return order;
-        }),
+      }),
       list: publicProcedure.query(async () => {
         return db.getOrders();
       }),
