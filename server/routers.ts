@@ -44,7 +44,13 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      return ctx.user || null;
+      // FATO TÉCNICO: Se houver um usuário logado, buscamos os dados REAIS no banco,
+      // incluindo o discordId que estava "sumido" para o visual.
+      if (ctx.user?.openId) {
+        const fullUser = await db.getUserByOpenId(ctx.user.openId);
+        if (fullUser) return fullUser;
+      }
+      return ctx.user || ctx.adminSession || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
       // Garante que apaga todas as chaves possíveis do site
