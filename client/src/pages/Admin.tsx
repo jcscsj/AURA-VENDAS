@@ -38,7 +38,7 @@ export default function Admin() {
   const { data: orders = [], refetch: refetchOrders } = trpc.shop.orders.list.useQuery(undefined, {
     enabled: !!user,
   });
-  const { data: storeUsers = [], refetch: refetchUsers } = trpc.shop.users.list.useQuery(undefined, {
+  const { data: storeUsers = [], refetch: refetchUsers } = trpc.shop.admin.users.list.useQuery(undefined, {
     enabled: !!user,
   });
   const { data: serverLogs = [] } = trpc.shop.admin.logs.useQuery(undefined, {
