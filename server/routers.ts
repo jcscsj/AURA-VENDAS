@@ -13,25 +13,27 @@ async function notifyDiscordOrder(order: any, items: any[]) {
   if (!ENV.discordWebhookUrl) return;
   
   try {
-    const itemsText = items.map(item => {
-      const nomeProd = item.name || item.productName || "Pacote";
-      return `- ${nomeProd} x${item.quantity}`;
-    }).join("\n");
+    // Proteção para o nome do produto não ficar undefined
+    const itemsText = items.map(item => `- ${item.name || item.productName || item.title || "Pacote da Loja"} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`).join("\n");
     
-    // FATO TÉCNICO: Montamos a menção exata que você pediu
-    // Se tiver ID, vira <@4544...>, senão fica o texto original
-    const mentionFormat = order.discordId ? `<@${order.discordId}>` : "Não informado";
+    // Criar mention se tiver discordId
+    let mention = "";
+    if (order.discordId) {
+      mention = `<@${order.discordId}>`;
+    }
     
     const embed = {
       title: "🛒 Novo Pedido Realizado!",
-      color: 16744192,
-      fields: [
-        { name: "Jogador (Menção)", value: mentionFormat, inline: true }, // Menção aqui
-        { name: "Nick no Jogo", value: order.playerNick, inline: true },
-        { name: "ID do Jogo", value: order.gameId, inline: true },
+      color: 16744192, // Laranja
+      fields:[
+        { name: "Jogador", value: `${mention} ${order.playerNick}`.trim(), inline: true },
+        { name: "ID do Jogo", value: order.gameId || "Não informado", inline: true },
+        { name: "Discord", value: order.discord || "Não informado", inline: true },
         { name: "Produtos", value: itemsText || "N/A", inline: false },
+        { name: "Subtotal", value: `R$ ${(order.subtotal / 100).toFixed(2)}`, inline: true },
+        { name: "Desconto", value: `R$ ${(order.discount / 100).toFixed(2)}`, inline: true },
         { name: "Total", value: `R$ ${(order.total / 100).toFixed(2)}`, inline: true },
-        { name: "Status", value: "⏳ Pendente", inline: true },
+        { name: "Status", value: "⏳ Pendente", inline: false },
       ],
       timestamp: new Date().toISOString(),
       footer: { text: "Aura City - Sistema de Vendas" },
@@ -40,9 +42,14 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     await fetch(ENV.discordWebhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] }),
+      body: JSON.stringify({ 
+        content: mention ? `${mention}` : undefined,
+        embeds: [embed] 
+      }),
     });
-  } catch (error) { console.error("[Discord] Erro:", error); }
+  } catch (error) {
+    console.error("[Discord] Erro ao enviar notificação:", error);
+  }
 }
 export const appRouter = router({
   system: systemRouter,
