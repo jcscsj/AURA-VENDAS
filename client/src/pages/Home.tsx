@@ -170,10 +170,9 @@ export default function Home() {
     createOrderMut.mutate({
       playerNick,
       gameId: gameId || "",
-      // FATO TÉCNICO: Se o campo 'discord' estiver vazio, 
-      // enviamos o nome do usuário logado (user.name)
-      discord: discord || user?.name || "Não informado",
-      discordId: user?.discordId || undefined,
+      // Enviamos os dados que o hook useAuth pegou do Discord
+      discord: user?.name || "", 
+      discordId: user?.discordId || "",
       items,
       subtotal,
       discount,
