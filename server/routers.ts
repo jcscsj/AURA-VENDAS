@@ -11,45 +11,34 @@ import crypto from "crypto";
 // Função para enviar notificação Discord com @mention
 async function notifyDiscordOrder(order: any, items: any[]) {
   if (!ENV.discordWebhookUrl) return;
-  
   try {
-    // Proteção para o nome do produto não ficar undefined
-    const itemsText = items.map(item => `- ${item.name || item.productName || item.title || "Pacote da Loja"} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`).join("\n");
+    const itemsText = items.map(item => {
+      const n = item.name || item.productName || item.title || "Pacote";
+      return `- ${n} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`;
+    }).join("\n");
     
-    // Criar mention se tiver discordId
-    let mention = "";
-    if (order.discordId) {
-      mention = `<@${order.discordId}>`;
-    }
+    // FATO TÉCNICO: A Menção oficial do Discord
+    const mention = order.discordId ? `<@${order.discordId}>` : "Não informado";
     
     const embed = {
-      title: "🛒 Novo Pedido Realizado!",
-      color: 16744192, // Laranja
+      title: "🛒 Novo Pedido Realizado!", color: 16744192,
       fields:[
-        { name: "Jogador", value: `${mention} ${order.playerNick}`.trim(), inline: true },
-        { name: "ID do Jogo", value: order.gameId || "Não informado", inline: true },
-        { name: "Discord", value: order.discord || "Não informado", inline: true },
+        { name: "Discord (Menção)", value: mention, inline: true },
+        { name: "Nick no Jogo", value: order.playerNick || "N/A", inline: true },
+        { name: "ID do Jogo", value: order.gameId || "N/A", inline: true },
         { name: "Produtos", value: itemsText || "N/A", inline: false },
-        { name: "Subtotal", value: `R$ ${(order.subtotal / 100).toFixed(2)}`, inline: true },
-        { name: "Desconto", value: `R$ ${(order.discount / 100).toFixed(2)}`, inline: true },
         { name: "Total", value: `R$ ${(order.total / 100).toFixed(2)}`, inline: true },
-        { name: "Status", value: "⏳ Pendente", inline: false },
+        { name: "Status", value: "⏳ Pendente", inline: true },
       ],
       timestamp: new Date().toISOString(),
-      footer: { text: "Aura City - Sistema de Vendas" },
+      footer: { text: "Aura City - Vendas" },
     };
     
     await fetch(ENV.discordWebhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        content: mention ? `${mention}` : undefined,
-        embeds: [embed] 
-      }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ embeds:[embed] }),
     });
-  } catch (error) {
-    console.error("[Discord] Erro ao enviar notificação:", error);
-  }
+  } catch (e) { console.error("[Discord Error]:", e); }
 }
 export const appRouter = router({
   system: systemRouter,
@@ -358,31 +347,20 @@ export const appRouter = router({
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
           
-          // FATO TÉCNICO: Ignoramos o frontend e buscamos o usuário direto na fonte (DB)
-          let realDiscordId = input.discordId || null;
-          let realDiscordName = input.discord || "Não informado";
+          // FATO TÉCNICO (A Rede Dupla): Pega o que o frontend enviou, 
+          // mas se falhar, puxa direto da sua sessão logada no servidor (ctx.user)
+          const finalDiscordId = input.discordId || ctx.user?.discordId || null;
+          const finalDiscordName = input.discord || ctx.user?.name || "Não informado";
 
-          if (ctx.user?.openId) {
-            const dbUser = await db.getUserByOpenId(ctx.user.openId);
-            if (dbUser && dbUser.discordId) {
-              realDiscordId = dbUser.discordId;
-              realDiscordName = dbUser.name;
-            }
-          }
-
-          // Montamos o pedido com as informações reais
           const orderData = {
             ...input,
-            discordId: realDiscordId,
-            discord: realDiscordName,
+            discordId: finalDiscordId,
+            discord: finalDiscordName,
             status: "pending"
           };
 
           const order = await db.createOrder(orderData);
-          
-          if (order) {
-            await notifyDiscordOrder(order, input.items);
-          }
+          if (order) await notifyDiscordOrder(order, input.items);
           return order;
       }),
       list: publicProcedure.query(async () => {
