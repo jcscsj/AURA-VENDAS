@@ -579,25 +579,34 @@ export default function Admin() {
             <h2 className="text-2xl font-bold mb-4">Pedidos Recentes</h2>
             <div className="grid gap-4">
               {orders.map((order: any) => (
-                <div key={order.id} className="rounded-lg border border-border bg-background p-4">
+                <div key={order.id} className="rounded-lg border border-border bg-background p-4 hover:border-primary/30 transition-colors">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-semibold text-foreground">{order.playerNick}</h4>
-                      <p className="text-sm text-muted-foreground">Discord: {order.discord || "N/A"}</p>
+                      <h4 className="font-bold text-foreground text-lg">{order.playerNick}</h4>
+                      <p className="text-sm text-primary font-medium">Discord: {order.discord || "Não informado"}</p>
+                      {order.discordId && (
+                        <p className="text-[10px] text-muted-foreground font-mono">ID: {order.discordId}</p>
+                      )}
                     </div>
-                    <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                      order.status === "completed" ? "bg-green-500/20 text-green-700" :
-                      order.status === "cancelled" ? "bg-red-500/20 text-red-700" :
-                      "bg-yellow-500/20 text-yellow-700"
+                    <span className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                      order.status === "completed" ? "bg-green-500/20 text-green-500" :
+                      order.status === "cancelled" ? "bg-red-500/20 text-red-500" :
+                      "bg-orange-500/20 text-orange-500"
                     }`}>
-                      {order.status}
+                      {order.status === "pending" ? "⏳ Pendente" : order.status}
                     </span>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Total:</strong> R$ {(order.total ? order.total / 100 : 0).toFixed(2)}</p>
-                    <p><strong>Itens:</strong> {order.items?.length || 0}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("pt-BR") : "N/A"}
+                  <div className="space-y-2 text-sm border-t border-border/50 pt-3 mt-3">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total do Pedido:</span>
+                      <span className="font-bold text-primary">R$ {(order.total ? order.total / 100 : 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">ID do Jogo:</span>
+                      <span className="text-foreground">{order.gameId || "N/A"}</span>
+                    </div>
+                    <p className="text-muted-foreground text-[10px] pt-2">
+                      Realizado em: {order.createdAt ? new Date(order.createdAt).toLocaleString("pt-BR") : "N/A"}
                     </p>
                   </div>
                 </div>
