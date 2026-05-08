@@ -161,7 +161,8 @@ export default function Home() {
     createOrderMut.mutate({
       playerNick,
       gameId: gameId || "",
-      discord: user?.name || "Não informado", 
+      // Agora o 'user' já carregou o discordId do banco graças ao passo 1
+      discord: user?.name || "Não informado",
       discordId: user?.discordId || null,
       items,
       subtotal,
