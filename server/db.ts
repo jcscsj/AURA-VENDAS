@@ -188,13 +188,24 @@ export async function getOrders() {
 }
 
 export async function createOrder(data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.insert(orders).values({
-    playerNick: data.playerNick, gameId: data.gameId, discordId: data.discordId,
-    discord: data.discord, items: data.items, subtotal: data.subtotal,
-    discount: data.discount, total: data.total, status: data.status || 'pending'
-  });
-  return db.select().from(orders).orderBy(desc(orders.id)).limit(1).then(r => r[0]);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const itemsJson = JSON.stringify(data.items);
+    // Inserção direta para garantir que todos os campos sejam preenchidos
+    await db.execute(sql`
+      INSERT INTO \`orders\` 
+      (\`playerNick\`, \`gameId\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
+      VALUES 
+      (${data.playerNick}, ${data.gameId}, ${data.discord || 'Não informado'}, ${data.discordId || ''}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
+    `);
+    
+    const res = await db.select().from(orders).orderBy(desc(orders.id)).limit(1);
+    return res[0] || null;
+  } catch (error) {
+    console.error("Erro ao salvar pedido:", error);
+    return null;
+  }
 }
 
 export async function updateOrderStatus(id: number, status: string) {
