@@ -340,20 +340,6 @@ export const appRouter = router({
       }),
   }),
   shop: router({
-    // A ROTA PRECISA ESTAR AQUI PARA O 404 SUMIR
-    users: router({
-        list: publicProcedure.query(async ({ ctx }) => {
-          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-          return db.getUsers(); 
-        }),
-        // ADICIONAMOS ESTA ROTA ABAIXO:
-        delete: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.deleteUser(input.id);
-          }),
-      }),
     categories: router({
       list: publicProcedure.query(async () => {
         return db.getCategories();
@@ -424,6 +410,19 @@ export const appRouter = router({
         }),
     }),
     admin: router({
+      // ROTA DE USUÁRIOS (Movida para cá para bater com o visual)
+      users: router({
+        list: publicProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getUsers(); 
+        }),
+        delete: publicProcedure
+          .input(z.object({ id: z.number() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.deleteUser(input.id);
+          }),
+      }),
       logs: publicProcedure.query(async ({ ctx }) => {
         if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
         
