@@ -127,6 +127,15 @@ export default function Profile() {
             </div>
           </div>
 
+          <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                ID do Discord
+              </p>
+              <p className="text-sm font-mono text-primary bg-primary/10 px-2 py-1 rounded w-fit">
+                {user?.discordId || "Não vinculado"}
+              </p>
+            </div>
+
           {/* Ações */}
           <div className="mt-8 flex gap-4">
             <Button
