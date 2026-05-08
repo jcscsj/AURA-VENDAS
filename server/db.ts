@@ -192,7 +192,7 @@ export async function createOrder(data: any) {
   if (!db) return null;
   try {
     const itemsJson = JSON.stringify(data.items);
-    // Inserção direta para garantir que todos os campos sejam preenchidos
+    // FATO TÉCNICO: Usamos SQL puro com crases para evitar conflitos com o TiDB
     await db.execute(sql`
       INSERT INTO \`orders\` 
       (\`playerNick\`, \`gameId\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
@@ -200,10 +200,11 @@ export async function createOrder(data: any) {
       (${data.playerNick}, ${data.gameId}, ${data.discord || 'Não informado'}, ${data.discordId || ''}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
     `);
     
+    // Puxa o último ID inserido para confirmar o sucesso
     const res = await db.select().from(orders).orderBy(desc(orders.id)).limit(1);
     return res[0] || null;
   } catch (error) {
-    console.error("Erro ao salvar pedido:", error);
+    console.error("Erro fatal ao salvar pedido:", error);
     return null;
   }
 }
