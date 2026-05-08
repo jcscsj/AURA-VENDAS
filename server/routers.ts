@@ -13,7 +13,10 @@ async function notifyDiscordOrder(order: any, items: any[]) {
   if (!ENV.discordWebhookUrl) return;
   
   try {
-    const itemsText = items.map(item => `- ${item.name} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`).join("\n");
+    const itemsText = items.map(item => {
+      const nomeDoProduto = item.name || item.productName || item.title || "Pacote da Loja";
+      return `• ${nomeDoProduto} x${item.quantity} - R$ ${(item.price / 100).toFixed(2)}`;
+    }).join("\n");
     
     // Criar mention se tiver discordId
     let mention = "";
