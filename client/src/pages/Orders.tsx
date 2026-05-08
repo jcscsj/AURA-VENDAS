@@ -1,72 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Loader2, ChevronRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function Orders() {
   const [, navigate] = useLocation();
-  const { user, loading: authLoading } = useAuth();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
 
-  const getOrdersQuery = trpc.shop.orders.getByGameId.useQuery(
-    { gameId: user?.gameId || "" },
-    { enabled: !!user?.gameId }
-  );
+  // FATO TÉCNICO: Usamos a nossa nova rota 'myOrders' que busca pelo Discord ID.
+  const { data: orders =[], isLoading: ordersLoading } = trpc.shop.orders.myOrders.useQuery(undefined, {
+    enabled: !!user, // Só busca se o usuário estiver logado
+  });
 
+  // Trava de Segurança
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
+    if (!authLoading && !isAuthenticated) {
       toast.error("Você precisa estar logado para ver seus pedidos");
-      navigate("/login");
-      return;
+      navigate("/");
     }
-
-    if (getOrdersQuery.data) {
-      setOrders(getOrdersQuery.data);
-      setIsLoading(false);
-    } else if (getOrdersQuery.error) {
-      toast.error("Erro ao carregar pedidos");
-      setIsLoading(false);
-    }
-  }, [authLoading, user, getOrdersQuery.data, getOrdersQuery.error, navigate]);
+  }, [authLoading, isAuthenticated, navigate]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "pending": return "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30";
+      case "approved": return "bg-green-500/20 text-green-500 border border-green-500/30";
+      case "rejected": return "bg-red-500/20 text-red-500 border border-red-500/30";
+      case "completed": return "bg-blue-500/20 text-blue-500 border border-blue-500/30";
+      default: return "bg-slate-500/20 text-slate-500 border border-slate-500/30";
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status?.toLowerCase()) {
-      case "pending":
-        return "⏳ Pendente";
-      case "approved":
-        return "✅ Aprovado";
-      case "rejected":
-        return "❌ Rejeitado";
-      case "completed":
-        return "🎉 Concluído";
-      default:
-        return status || "Desconhecido";
+      case "pending": return "⏳ Pendente";
+      case "approved": return "✅ Aprovado";
+      case "rejected": return "❌ Rejeitado";
+      case "completed": return "🎉 Concluído";
+      default: return status || "Desconhecido";
     }
   };
 
-  if (authLoading || isLoading) {
+  // Se estiver verificando o login OU buscando os pedidos, mostra a bolinha girando.
+  if (authLoading || (isAuthenticated && ordersLoading)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -76,84 +55,88 @@ export default function Orders() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="container max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Meus Pedidos</h1>
-          <p className="text-muted-foreground">Histórico de compras e status dos pedidos</p>
+      <div className="container max-w-4xl mx-auto py-8">
+        <div className="mb-8 border-b border-border pb-4">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Meus Pedidos</h1>
+          <p className="text-muted-foreground">Histórico de compras e status dos seus pedidos na Aura City.</p>
         </div>
 
+        {/* MENSAGEM SE NÃO TIVER PEDIDOS */}
         {orders.length === 0 ? (
-          <Card className="bg-card border border-border p-8 shadow-lg text-center">
-            <p className="text-muted-foreground mb-4">Você ainda não fez nenhuma compra</p>
-            <Button
-              onClick={() => navigate("/")}
-              className="bg-primary hover:bg-orange-600 text-black font-semibold"
-            >
+          <Card className="bg-card border border-border p-12 text-center flex flex-col items-center">
+            <h2 className="text-xl font-bold text-foreground mb-2">Nenhum pedido encontrado</h2>
+            <p className="text-muted-foreground mb-6">Você ainda não fez nenhuma compra na nossa loja.</p>
+            <Button onClick={() => navigate("/")} className="bg-primary hover:bg-orange-600 text-black font-semibold">
               Ir para Loja
             </Button>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <Card key={order.id} className="bg-card border border-border p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex items-start justify-between mb-4">
+          <div className="space-y-6">
+            {orders.map((order: any) => (
+              <Card key={order.id} className="bg-card border border-border p-6 shadow-md hover:border-primary/50 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">Pedido #{order.id}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                      Pedido #{order.id}
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${getStatusColor(order.status)}`}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
                       {new Date(order.createdAt).toLocaleDateString("pt-BR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
+                        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
                       })}
                     </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
-                    {getStatusLabel(order.status)}
-                  </span>
                 </div>
 
                 {/* Itens do Pedido */}
                 <div className="border-t border-border pt-4 mb-4">
-                  <h4 className="text-sm font-medium text-foreground mb-2">Itens:</h4>
-                  <div className="space-y-2">
-                    {order.items && order.items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between text-sm text-muted-foreground">
-                        <span>{item.name} x{item.quantity}</span>
-                        <span>R$ {(item.price / 100).toFixed(2)}</span>
-                      </div>
-                    ))}
+                  <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">Produtos</h4>
+                  <div className="space-y-2 bg-background p-4 rounded-md border border-border">
+                    {order.items && order.items.map((item: any, idx: number) => {
+                      // Pegamos o nome exato do produto para evitar undefined
+                      const nomeProduto = item.name || item.productName || item.title || "Pacote da Loja";
+                      return (
+                        <div key={idx} className="flex justify-between text-sm text-muted-foreground">
+                          <span><span className="text-primary font-bold">{item.quantity}x</span> {nomeProduto}</span>
+                          <span className="font-mono">R$ {(item.price / 100).toFixed(2)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Resumo Financeiro */}
-                <div className="border-t border-border pt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="text-foreground">R$ {(order.subtotal / 100).toFixed(2)}</span>
-                  </div>
-                  {order.discount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Desconto:</span>
-                      <span className="text-green-600">-R$ {(order.discount / 100).toFixed(2)}</span>
+                {/* Resumo Financeiro e Info */}
+                <div className="border-t border-border pt-4 grid md:grid-cols-2 gap-6">
+                  {/* Dados do Jogador */}
+                  <div className="space-y-3 bg-background p-4 rounded-md border border-border">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold">Nick no Jogo</p>
+                      <p className="text-sm font-medium text-foreground">{order.playerNick}</p>
                     </div>
-                  )}
-                  <div className="flex justify-between text-lg font-semibold border-t border-border pt-2">
-                    <span className="text-foreground">Total:</span>
-                    <span className="text-primary">R$ {(order.total / 100).toFixed(2)}</span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-bold">ID no Jogo</p>
+                      <p className="text-sm font-medium text-foreground">{order.gameId || "Não informado"}</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Informações do Jogador */}
-                <div className="border-t border-border pt-4 mt-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Nick do Jogador</p>
-                    <p className="text-sm font-medium text-foreground">{order.playerNick}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">ID do Jogo</p>
-                    <p className="text-sm font-medium text-foreground">{order.gameId || "N/A"}</p>
+                  {/* Totais */}
+                  <div className="space-y-2 flex flex-col justify-center bg-background p-4 rounded-md border border-border">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-foreground font-mono">R$ {(order.subtotal / 100).toFixed(2)}</span>
+                    </div>
+                    {order.discount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Desconto</span>
+                        <span className="text-green-500 font-mono">-R$ {(order.discount / 100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-lg font-bold border-t border-border/50 pt-2 mt-2">
+                      <span className="text-foreground">Total</span>
+                      <span className="text-primary font-mono">R$ {(order.total / 100).toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -161,14 +144,9 @@ export default function Orders() {
           </div>
         )}
 
-        {/* Botão Voltar */}
-        <div className="mt-8">
-          <Button
-            onClick={() => navigate("/")}
-            variant="outline"
-            className="w-full"
-          >
-            Voltar à Loja
+        <div className="mt-8 flex justify-center">
+          <Button onClick={() => navigate("/")} variant="outline" className="w-full md:w-auto border-border">
+            Voltar para a Loja
           </Button>
         </div>
       </div>
