@@ -434,18 +434,6 @@ export const appRouter = router({
         const [rows] = await db_instance.execute(sql`SELECT * FROM \`system_logs\` ORDER BY id DESC LIMIT 50`);
         return rows as any[];
       }),
-      users: router({
-        list: publicProcedure.query(async ({ ctx }) => {
-          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-          return db.getUsers(); 
-        }),
-        delete: publicProcedure
-          .input(z.object({ id: z.number() }))
-          .mutation(async ({ input, ctx }) => {
-            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-            return db.deleteUser(input.id);
-          }),
-      }),
       categories: router({
         list: publicProcedure.query(async () => {
           return db.getCategories();
