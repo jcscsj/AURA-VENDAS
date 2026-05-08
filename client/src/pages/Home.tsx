@@ -140,23 +140,13 @@ export default function Home() {
   });
 
   const submitOrder = () => {
-    // FATO TÉCNICO: Impede que o comando seja enviado se não houver usuário logado
     if (!isAuthenticated) {
-      toast.error("Você precisa estar logado com seu Discord para finalizar o pedido.");
-      // Opcional: Redireciona para o login após 2 segundos
-      setTimeout(() => { window.location.href = getLoginUrl(); }, 2000);
+      toast.error("Você precisa entrar com seu Discord para finalizar o pedido.");
       return;
     }
+
     if (!cart.length) {
       toast.error("Adicione pelo menos um item antes de finalizar.");
-      return;
-    }
-    if (!cart.length) {
-      toast.error("Adicione pelo menos um item antes de finalizar.");
-      return;
-    }
-    if (!playerNick.trim()) {
-      toast.error("Informe o nick do jogador para prosseguir.");
       return;
     }
 
@@ -167,12 +157,12 @@ export default function Home() {
       name: item.name,
     }));
 
+    // FATO TÉCNICO: Garantimos que o "user" (que tem o seu ID) seja empacotado aqui
     createOrderMut.mutate({
       playerNick,
       gameId: gameId || "",
-      // Enviamos o nome e o ID que o useAuth capturou do Discord
-      discord: user?.name || "", 
-      discordId: user?.discordId || "",
+      discord: user?.name || "Não informado", 
+      discordId: user?.discordId || null,
       items,
       subtotal,
       discount,
