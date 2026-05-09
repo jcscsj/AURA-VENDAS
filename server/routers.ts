@@ -18,7 +18,7 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     }).join("\n");
     
     // FATO TÉCNICO: A Menção oficial do Discord
-    const mention = order.discordId ? `<@${order.discordId}>` : "Não informado";
+    let mention = order.discordId ? `<@${order.discordId}>` : "Não informado";
     
     const embed = {
       title: "🛒 Novo Pedido Realizado!", color: 16744192,
@@ -53,10 +53,9 @@ export const appRouter = router({
       return session || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
-      // Garante que apaga todas as chaves possíveis do site
-      ctx.res.clearCookie("app_session_id");
-      ctx.res.clearCookie("adminSession"); 
-      ctx.res.clearCookie("localSession");
+      ctx.res.clearCookie("app_session_id", { path: '/' });
+      ctx.res.clearCookie("adminSession", { path: '/' });
+      ctx.res.clearCookie("localSession", { path: '/' });
       return { success: true };
     }),
     register: publicProcedure
@@ -352,23 +351,33 @@ export const appRouter = router({
     }),
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
-          
-          // FATO TÉCNICO (A Rede Dupla): Pega o que o frontend enviou, 
-          // mas se falhar, puxa direto da sua sessão logada no servidor (ctx.user)
-          const finalDiscordId = input.discordId || ctx.user?.discordId || null;
-          const finalDiscordName = input.discord || ctx.user?.name || "Não informado";
+      // 1. Fato Técnico: Se não houver login, barramos aqui.
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
 
-          const orderData = {
-            ...input,
-            discordId: finalDiscordId,
-            discord: finalDiscordName,
-            status: "pending"
-          };
+      // 2. BUSCA DIRETO NO BANCO (A mesma lógica da aba Contas)
+      // Buscamos o seu cadastro completo para pegar o discordId real
+      const userRecord = await db.getUserByOpenId(ctx.user.openId);
+      
+      // 3. Pegamos as informações que estão gravadas no banco
+      const realDiscordId = userRecord?.discordId || null;
+      const realDiscordName = userRecord?.name || "Não informado";
 
-          const order = await db.createOrder(orderData);
-          if (order) await notifyDiscordOrder(order, input.items);
-          return order;
-      }),
+      // Montamos o pedido com os dados que vieram do Banco de Dados
+      const orderData = {
+        ...input,
+        discordId: realDiscordId,
+        discord: realDiscordName,
+        status: "pending"
+      };
+
+      const order = await db.createOrder(orderData);
+      
+      if (order) {
+        // Agora o 'order' tem o ID real, e a função abaixo vai enviar o <@ID>
+        await notifyDiscordOrder(order, input.items);
+      }
+      return order;
+    }),
       list: publicProcedure.query(async () => {
         return db.getOrders();
       }),
