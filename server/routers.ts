@@ -356,9 +356,17 @@ export const appRouter = router({
     }),
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
+      // FATO TÉCNICO: Se existir uma sessão de admin (e-mail), barramos a compra na hora
+      if (ctx.adminSession) {
+        throw new TRPCError({ 
+          code: "FORBIDDEN", 
+          message: "Administradores não podem fazer pedidos. Logue com uma conta de jogador (Discord)." 
+        });
+      }
+
       if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      // Busca o registro que acabamos de blindar no Passo 1
+      // Busca o registro que acabamos de blindar
       const userRecord = await db.getUserByOpenId(ctx.user.openId);
       
       const orderData = {
