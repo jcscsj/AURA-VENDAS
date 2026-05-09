@@ -410,7 +410,7 @@ export default function Home() {
                         disabled={user?.role === "admin"}
                         onClick={() => addToCart(product)}
                       >
-                        {user?.role === "admin" ? "Admin não compra" : (
+                        {user?.role === "admin" ? "Modo Visualização" : (
                           <>
                             <Plus className="mr-2 h-4 w-4" />
                             Adicionar
