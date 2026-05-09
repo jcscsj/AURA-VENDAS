@@ -25,9 +25,27 @@ export async function getUsers() {
 }
 
 export async function upsertUser(data: any) {
-  const db = await getDb(); if (!db) return;
-  if (data.openId === ENV.ownerOpenId) data.role = 'admin';
-  await db.insert(users).values(data).onDuplicateKeyUpdate({ set: data });
+  const db = await getDb();
+  if (!db || !data.openId) return;
+
+  try {
+    // FATO TÉCNICO: Forçamos o SQL puro para o TiDB não travar no 'insert' automático
+    const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
+    
+    await db.execute(sql`
+      INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
+      VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, ${data.loginMethod || 'discord'}, ${data.discordId || ''}, ${role}, NOW())
+      ON DUPLICATE KEY UPDATE
+      \`name\` = VALUES(\`name\`),
+      \`email\` = VALUES(\`email\`),
+      \`discordId\` = VALUES(\`discordId\`),
+      \`lastSignedIn\` = NOW()
+    `);
+    
+    console.log(`[DB] Usuário ${data.name} salvo/atualizado com sucesso.`);
+  } catch (error) {
+    console.error("[DB Error] Erro no upsertUser:", error);
+  }
 }
 
 export async function getUserByOpenId(openId: string) {
