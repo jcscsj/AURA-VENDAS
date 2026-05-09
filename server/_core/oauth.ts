@@ -34,9 +34,12 @@ export function registerOAuthRoutes(app: Express) {
       const openId = `discord_${discordUser.id}`;
       const userName = discordUser.global_name || discordUser.username;
 
+      // FATO TÉCNICO: Log de segurança para você ver no Render se o ID chegou
+      console.log(`[AUTH] Tentando salvar usuário: ${userName} | ID: ${discordUser.id}`);
+
       // 4. Salva ou atualiza no banco de dados TiDB
       await db.upsertUser({
-        openId,
+        openId: openId,
         name: userName,
         email: discordUser.email || null,
         loginMethod: "discord",
