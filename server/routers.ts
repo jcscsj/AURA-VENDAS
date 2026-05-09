@@ -44,13 +44,8 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      // Se houver alguém logado (Discord ou Admin)
-      const session = ctx.user || ctx.adminSession;
-      if (session?.openId) {
-        const fullUser = await db.getUserByOpenId(session.openId);
-        if (fullUser) return fullUser; // Retorna o usuário com DiscordId do banco!
-      }
-      return session || null;
+      // Retorna exatamente o que o Contexto validou
+      return ctx.user || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
       ctx.res.clearCookie("app_session_id", { path: '/' });
