@@ -25,20 +25,29 @@ export async function getUsers() {
 }
 
 export async function upsertUser(data: any) {
-  const db = await getDb();
-  if (!db || !data.openId) return;
+  const db_instance = await getDb();
+  if (!db_instance || !data.openId) return;
 
   try {
     const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
-    await db.execute(sql`
+    
+    // FATO TÉCNICO: Usamos 'ON DUPLICATE KEY UPDATE' com proteção COALESCE.
+    // Isso garante que se o sistema mandar um nome vazio (undefined), 
+    // o banco MANTÉM o nome que já estava lá e não apaga nada.
+    await db_instance.execute(sql`
       INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
       VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = COALESCE(NULLIF(${data.name || ''}, ''), \`name\`),
-      \`discordId\` = COALESCE(NULLIF(${data.discordId || ''}, ''), \`discordId\`),
+      \`name\` = CASE WHEN ${data.name || ''} != '' THEN ${data.name || ''} ELSE \`name\` END,
+      \`email\` = CASE WHEN ${data.email || ''} != '' THEN ${data.email || ''} ELSE \`email\` END,
+      \`discordId\` = CASE WHEN ${data.discordId || ''} != '' THEN ${data.discordId || ''} ELSE \`discordId\` END,
       \`lastSignedIn\` = NOW()
     `);
-  } catch (e) { console.error(e); }
+    
+    console.log(`[DB] Usuário ${data.openId} sincronizado sem duplicidade.`);
+  } catch (error) {
+    console.error("[DB Error] Erro no upsertUser:", error);
+  }
 }
 
 export async function getUserByOpenId(openId: string) {
