@@ -31,25 +31,23 @@ export async function upsertUser(data: any) {
   try {
     const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
     
-    // FATO TÉCNICO: Usamos 'ON DUPLICATE KEY UPDATE' com proteção COALESCE.
-    // Isso garante que se o sistema mandar um nome vazio (undefined), 
-    // o banco MANTÉM o nome que já estava lá e não apaga nada.
+    // FATO TÉCNICO: Usamos IF(VALUES(`coluna`) != '', ...)
+    // Isso protege seus dados. Se o 'name' novo vier vazio, o banco mantém o antigo.
     await db_instance.execute(sql`
       INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
       VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = CASE WHEN ${data.name || ''} != '' THEN ${data.name || ''} ELSE \`name\` END,
-      \`email\` = CASE WHEN ${data.email || ''} != '' THEN ${data.email || ''} ELSE \`email\` END,
-      \`discordId\` = CASE WHEN ${data.discordId || ''} != '' THEN ${data.discordId || ''} ELSE \`discordId\` END,
+      \`name\` = IF(VALUES(\`name\`) != '', VALUES(\`name\`), \`name\`),
+      \`email\` = IF(VALUES(\`email\`) != '', VALUES(\`email\`), \`email\`),
+      \`discordId\` = IF(VALUES(\`discordId\`) != '', VALUES(\`discordId\`), \`discordId\`),
       \`lastSignedIn\` = NOW()
     `);
     
-    console.log(`[DB] Usuário ${data.openId} sincronizado sem duplicidade.`);
+    console.log(`[DB] Usuário ${data.openId} sincronizado com proteção de dados.`);
   } catch (error) {
     console.error("[DB Error] Erro no upsertUser:", error);
   }
 }
-
 export async function getUserByOpenId(openId: string) {
   const db_instance = await getDb();
   if (!db_instance) return undefined;
