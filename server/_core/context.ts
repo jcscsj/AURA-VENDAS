@@ -36,10 +36,11 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
     adminSession = null; 
   }
 
-  return {
-    req,
-    res,
-    user: adminSession || user,
+ return {
+    req: opts.req,
+    res: opts.res,
+    // FATO TÉCNICO: Se for Admin, injetamos um openId falso para o servidor de imagens não crashar
+    user: adminSession ? { ...adminSession, openId: `admin_${adminSession.id}` } : user,
     adminSession,
   };
 }
