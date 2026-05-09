@@ -400,6 +400,13 @@ export const appRouter = router({
           if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
           return db.updateOrderStatus(input.orderId, input.status);
         }),
+      delete: publicProcedure
+        .input(z.object({ orderId: z.number() }))
+        .mutation(async ({ input, ctx }) => {
+          // TRAVA DE SEGURANÇA: Só admin (E-mail ou Discord) pode apagar
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.deleteOrder(input.orderId);
+        }),
     }),
     admin: router({
       // ROTA DE USUÁRIOS (Precisa estar exatamente aqui para o caminho ser shop.admin.users)
