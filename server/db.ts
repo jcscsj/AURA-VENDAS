@@ -49,9 +49,19 @@ export async function upsertUser(data: any) {
 }
 
 export async function getUserByOpenId(openId: string) {
-  const db = await getDb(); if (!db) return undefined;
-  const res = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-  return res[0];
+  const db_instance = await getDb();
+  if (!db_instance) return undefined;
+  
+  try {
+    // FATO TÉCNICO: Usamos SQL puro para garantir que a busca pelo openId (ex: discord_4544...) funcione
+    const [rows] = await db_instance.execute(sql`SELECT * FROM \`users\` WHERE \`openId\` = ${openId} LIMIT 1`);
+    const users_list = rows as any[];
+    
+    return users_list.length > 0 ? users_list[0] : undefined;
+  } catch (error) {
+    console.error("[DB Error] Erro ao buscar usuário por openId:", error);
+    return undefined;
+  }
 }
 
 export async function updateUserRole(userId: number, role: string) {
