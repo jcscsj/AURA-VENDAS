@@ -712,43 +712,30 @@ export default function Admin() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Contas Logadas</h2>
             <div className="border border-border rounded p-4 bg-card">
-              {/* FATO TÉCNICO: O .filter remove as contas que não têm nome nem e-mail da sua visão */}
-              {storeUsers
-                .filter((u: any) => u.name || u.email || u.discordId)
-                .map((u: any) => (
+              {storeUsers.filter((u: any) => u.name || u.email).map((u: any) => (
                 <div key={u.id} className="border-b border-border/50 py-3 flex justify-between items-center last:border-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{u.name || "Sem Nome"}</span>
-                    <span className="text-slate-500">-</span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {visibleEmails[u.id] ? (u.email || "Sem e-mail") : "••••••••••••@••••.com"}
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7"
-                      onClick={() => setVisibleEmails(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
-                    >
+                    <span className="font-semibold text-sm">{u.name}</span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setVisibleEmails(prev => ({ ...prev, [u.id]: !prev[u.id] }))}>
                       {visibleEmails[u.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                     </Button>
+                    <span className="font-mono text-xs text-muted-foreground">{visibleEmails[u.id] ? u.email : "••••@••••.com"}</span>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
+
+                  <div className="flex items-center gap-4">
+                    {/* FATO TÉCNICO: Exibe a data e hora formatada do Brasil */}
+                    <div className="text-right">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Último Acesso</p>
+                      <p className="text-xs font-mono text-slate-300">
+                        {u.lastSignedIn ? new Date(u.lastSignedIn).toLocaleString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Sem registro"}
+                      </p>
+                    </div>
+
                     <span className="text-xs text-muted-foreground font-mono bg-background px-2 py-1 rounded border border-border">
-                      {u.discordId || "Sem ID"}
+                      {u.discordId}
                     </span>
                     
-                    {/* BOTÃO DE DELETAR COM CONFIRMAÇÃO */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        if (window.confirm(`VOCÊ TEM CERTEZA QUE DESEJA APAGAR A CONTA DE "${u.name || u.discordId}"?`)) {
-                          deleteUserMut.mutate({ id: u.id });
-                        }
-                      }}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => { if (window.confirm(`APAGAR CONTA DE ${u.name}?`)) deleteUserMut.mutate({ id: u.id }); }}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
