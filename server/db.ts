@@ -29,20 +29,21 @@ export async function upsertUser(data: any) {
   if (!db || !data.openId) return;
 
   try {
-    const role = data.openId === ENV.ownerOpenId ? 'admin' : (data.role || 'user');
+    const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
     
-    // FATO TÉCNICO: O NULLIF transforma '' em NULL, e o COALESCE mantém o valor antigo se o novo for NULL.
+    // FATO TÉCNICO: Usamos SQL direto para garantir que o 'discordId' e o 'name' 
+    // nunca sejam apagados por um valor vazio vindo do login.
     await db.execute(sql`
-      INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
-      VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, ${data.loginMethod || 'discord'}, ${data.discordId || ''}, ${role}, NOW())
+      INSERT INTO \`users\` 
+      (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
+      VALUES 
+      (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = COALESCE(NULLIF(${data.name || ''}, ''), \`name\`),
-      \`email\` = COALESCE(NULLIF(${data.email || ''}, ''), \`email\`),
-      \`discordId\` = COALESCE(NULLIF(${data.discordId || ''}, ''), \`discordId\`),
+      \`name\` = CASE WHEN ${data.name || ''} = '' THEN \`name\` ELSE ${data.name || ''} END,
+      \`email\` = CASE WHEN ${data.email || ''} = '' THEN \`email\` ELSE ${data.email || ''} END,
+      \`discordId\` = CASE WHEN ${data.discordId || ''} = '' THEN \`discordId\` ELSE ${data.discordId || ''} END,
       \`lastSignedIn\` = NOW()
     `);
-    
-    console.log(`[DB] Upsert inteligente para: ${data.openId}`);
   } catch (error) {
     console.error("[DB Error] upsertUser:", error);
   }
