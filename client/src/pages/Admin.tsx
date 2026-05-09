@@ -166,14 +166,6 @@ export default function Admin() {
     onError: () => toast.error("Erro ao mover banner"),
   });
 
-  const deleteOrderMut = trpc.shop.orders.delete.useMutation({
-    onSuccess: () => {
-      refetchOrders();
-      toast.success("Pedido excluído permanentemente!");
-    },
-    onError: (err) => toast.error("Erro ao excluir: " + err.message),
-  });
-
   const updateConfigMut = trpc.shop.admin.config.update.useMutation({
     onSuccess: () => {
       // FATO TÉCNICO: Isso obriga o site a buscar os dados novos do banco na hora
@@ -188,6 +180,13 @@ export default function Admin() {
       toast.success("Conta removida com sucesso!");
     },
     onError: (err) => toast.error("Erro ao remover: " + err.message),
+  });
+  const deleteOrderMut = trpc.shop.orders.delete.useMutation({
+    onSuccess: () => {
+      refetchOrders();
+      toast.success("Pedido excluído permanentemente!");
+    },
+    onError: (err) => toast.error("Erro ao excluir: " + err.message),
   });
 
   // Local state
