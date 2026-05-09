@@ -238,6 +238,16 @@ export async function createOrder(data: any) {
   }
 }
 
+export async function deleteOrder(id: number) {
+  const db_instance = await getDb();
+  if (!db_instance) return;
+  try {
+    await db_instance.delete(orders).where(eq(orders.id, id));
+  } catch (error) {
+    console.error("Erro ao deletar pedido no banco:", error);
+  }
+}
+
 export async function updateOrderStatus(id: number, status: string) {
   const db = await getDb(); if (!db) return null;
   await db.update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, id));
