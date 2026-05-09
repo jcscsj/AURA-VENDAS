@@ -14,30 +14,32 @@ export type TrpcContext = {
   } | null;
 };
 
-export async function createContext(
-  opts: CreateExpressContextOptions
-): Promise<TrpcContext> {
+export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {
   let user: User | null = null;
   let adminSession: any = null;
 
-  try {
-    user = await sdk.authenticateRequest(opts.req);
-  } catch (error) {
-    // Authentication is optional for public procedures.
-    user = null;
+  // 1. Pega a sessão básica (Cookie)
+  const session = await sdk.authenticateRequest(opts.req).catch(() => null);
+
+  // 2. FATO TÉCNICO: Se houver sessão, checamos se o usuário ainda existe no banco
+  if (session?.openId) {
+    const dbUser = await db.getUserByOpenId(session.openId);
+    if (dbUser) {
+      user = dbUser; // Usuário válido
+    } else {
+      // Se não existe no banco, limpamos o cookie para deslogar o cara na hora!
+      opts.res.clearCookie("app_session_id");
+      user = null;
+    }
   }
 
   // Check for admin session
   try {
     const adminSessionCookie = opts.req.cookies?.adminSession;
     if (adminSessionCookie) {
-      const sessionData = Buffer.from(adminSessionCookie, "base64").toString("utf-8");
-      adminSession = JSON.parse(sessionData);
+      adminSession = JSON.parse(Buffer.from(adminSessionCookie, "base64").toString("utf-8"));
     }
-  } catch (error) {
-    // Invalid admin session, ignore
-    adminSession = null;
-  }
+  } catch (e) { adminSession = null; }
 
   return {
     req: opts.req,
