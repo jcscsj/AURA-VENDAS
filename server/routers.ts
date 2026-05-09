@@ -44,23 +44,17 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      // 1. Se for admin de e-mail, retorna ele direto
       if (ctx.adminSession) return ctx.adminSession;
 
-      // 2. Se for usuário de Discord, checamos se ele ainda existe no banco
       if (ctx.user?.openId) {
         const dbUser = await db.getUserByOpenId(ctx.user.openId);
-        
-        if (dbUser) {
-          return dbUser; // Usuário existe e está tudo certo
-        } else {
-          // FATO TÉCNICO: Se o usuário foi DELETADO no Admin, ele não existe no banco.
-          // Mandamos o navegador apagar o cookie dele agora!
+        if (!dbUser) {
+          // Se o usuário não existe mais no banco (foi deletado), limpa o cookie
           ctx.res.clearCookie("app_session_id");
           return null;
         }
+        return dbUser;
       }
-      
       return null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
