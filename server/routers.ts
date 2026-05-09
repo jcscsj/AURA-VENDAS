@@ -352,15 +352,20 @@ export const appRouter = router({
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
       // 1. Fato Técnico: Se não houver login, barramos aqui.
-      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
+      if (!ctx.user) {
+        console.log("DEBUG 1 - Sessão: Ninguém logado no ctx.user");
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
+      }
 
-      // 2. BUSCA DIRETO NO BANCO (A mesma lógica da aba Contas)
-      // Buscamos o seu cadastro completo para pegar o discordId real
+      console.log("DEBUG 2 - ctx.user atual:", JSON.stringify(ctx.user));
+
       const userRecord = await db.getUserByOpenId(ctx.user.openId);
+      console.log("DEBUG 3 - userRecord vindo do banco:", JSON.stringify(userRecord));
       
-      // 3. Pegamos as informações que estão gravadas no banco
       const realDiscordId = userRecord?.discordId || null;
       const realDiscordName = userRecord?.name || "Não informado";
+
+      console.log(`DEBUG 4 - Valores finais: ID=${realDiscordId} | Nome=${realDiscordName}`);
 
       // Montamos o pedido com os dados que vieram do Banco de Dados
       const orderData = {
