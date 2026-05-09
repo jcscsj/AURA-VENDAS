@@ -405,11 +405,17 @@ export default function Home() {
                       </div>
 
                       <Button
-                        className="mt-4 w-full bg-primary hover:bg-orange-600 text-black font-semibold"
+                        className="mt-4 w-full bg-primary hover:bg-orange-600 text-black font-semibold disabled:opacity-50"
+                        // FATO TÉCNICO: Desativa o botão se for admin
+                        disabled={user?.role === "admin"}
                         onClick={() => addToCart(product)}
                       >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Adicionar
+                        {user?.role === "admin" ? "Admin não compra" : (
+                          <>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Adicionar
+                          </>
+                        )}
                       </Button>
                     </div>
                   </article>
