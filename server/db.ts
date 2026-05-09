@@ -29,23 +29,22 @@ export async function upsertUser(data: any) {
   if (!db || !data.openId) return;
 
   try {
-    const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
+    const role = data.openId === ENV.ownerOpenId ? 'admin' : (data.role || 'user');
     
-    // FATO TÉCNICO: Usamos COALESCE. 
-    // Se o dado novo for vazio, o banco MANTÉM o que já estava lá (o dado antigo).
+    // FATO TÉCNICO: O NULLIF transforma '' em NULL, e o COALESCE mantém o valor antigo se o novo for NULL.
     await db.execute(sql`
       INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
       VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, ${data.loginMethod || 'discord'}, ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = IF(VALUES(\`name\`) != '', VALUES(\`name\`), \`name\`),
-      \`email\` = IF(VALUES(\`email\`) != '', VALUES(\`email\`), \`email\`),
-      \`discordId\` = IF(VALUES(\`discordId\`) != '', VALUES(\`discordId\`), \`discordId\`),
+      \`name\` = COALESCE(NULLIF(${data.name || ''}, ''), \`name\`),
+      \`email\` = COALESCE(NULLIF(${data.email || ''}, ''), \`email\`),
+      \`discordId\` = COALESCE(NULLIF(${data.discordId || ''}, ''), \`discordId\`),
       \`lastSignedIn\` = NOW()
     `);
     
-    console.log(`[DB] Upsert finalizado para ${data.openId}. Proteção anti-vazio ativa.`);
+    console.log(`[DB] Upsert inteligente para: ${data.openId}`);
   } catch (error) {
-    console.error("[DB Error] Erro no upsertUser:", error);
+    console.error("[DB Error] upsertUser:", error);
   }
 }
 
