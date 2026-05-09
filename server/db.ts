@@ -216,23 +216,23 @@ export async function getOrders() {
 }
 
 export async function createOrder(data: any) {
-  const db = await getDb();
-  if (!db) return null;
+  const db_instance = await getDb();
+  if (!db_instance) return null;
   try {
     const itemsJson = JSON.stringify(data.items);
-    // FATO TÉCNICO: Usamos SQL puro com crases para evitar conflitos com o TiDB
-    await db.execute(sql`
+    // FATO TÉCNICO: Gravamos o discord e o discordId exatamente como chegam
+    await db_instance.execute(sql`
       INSERT INTO \`orders\` 
       (\`playerNick\`, \`gameId\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
       VALUES 
-      (${data.playerNick}, ${data.gameId}, ${data.discord || 'Não informado'}, ${data.discordId || ''}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
+      (${data.playerNick}, ${data.gameId}, ${data.discord}, ${data.discordId}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
     `);
     
-    // Puxa o último ID inserido para confirmar o sucesso
-    const res = await db.select().from(orders).orderBy(desc(orders.id)).limit(1);
+    const res = await db_instance.select().from(orders).orderBy(desc(orders.id)).limit(1);
     return res[0] || null;
   } catch (error) {
-    console.error("Erro fatal ao salvar pedido:", error);
+    // Escreve o erro direto no console do seu site para você ler!
+    await logSystem(`ERRO NO BANCO: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, 'error');
     return null;
   }
 }
