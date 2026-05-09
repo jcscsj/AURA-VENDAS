@@ -596,14 +596,30 @@ export default function Admin() {
                         <p className="text-[10px] text-muted-foreground font-mono">ID: {order.discordId}</p>
                       )}
                     </div>
-                    <span className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                      order.status === "completed" ? "bg-green-500/20 text-green-500" :
-                      order.status === "cancelled" ? "bg-red-500/20 text-red-500" :
-                      "bg-orange-500/20 text-orange-500"
-                    }`}>
-                      {order.status === "pending" ? "⏳ Pendente" : order.status}
-                    </span>
-                  </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                        order.status === "completed" ? "bg-green-500/20 text-green-500" :
+                        order.status === "cancelled" ? "bg-red-500/20 text-red-500" :
+                        "bg-orange-500/20 text-orange-500"
+                      }`}>
+                        {order.status === "pending" ? "⏳ Pendente" : order.status}
+                      </span>
+                      
+                      {/* BOTÃO DE APAGAR PEDIDO */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          if (window.confirm(`VOCÊ DESEJA MESMO APAGAR O PEDIDO DE "${order.playerNick}"?`)) {
+                            deleteOrderMut.mutate({ orderId: order.id });
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
                   <div className="space-y-2 text-sm border-t border-border/50 pt-3 mt-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total do Pedido:</span>
