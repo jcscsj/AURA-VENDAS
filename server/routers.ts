@@ -44,21 +44,13 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      // FATO TÉCNICO: Se houver alguém logado (Discord ou Admin)
-      const openId = ctx.user?.openId || ctx.adminSession?.openId;
-      
-      if (openId) {
-        const fullUser = await db.getUserByOpenId(openId);
-        if (fullUser) {
-          // Retornamos o usuário completo do banco, com discordId e tudo!
-          return {
-            ...fullUser,
-            // Garante que o front-end saiba que ele é admin se estiver no banco ou na sessão
-            role: fullUser.role === 'admin' || ctx.adminSession ? 'admin' : 'user'
-          };
-        }
+      // Se houver alguém logado (Discord ou Admin)
+      const session = ctx.user || ctx.adminSession;
+      if (session?.openId) {
+        const fullUser = await db.getUserByOpenId(session.openId);
+        if (fullUser) return fullUser; // Retorna o usuário com DiscordId do banco!
       }
-      return ctx.user || ctx.adminSession || null;
+      return session || null;
     }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
       // Garante que apaga todas as chaves possíveis do site
