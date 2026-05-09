@@ -30,23 +30,15 @@ export async function upsertUser(data: any) {
 
   try {
     const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
-    
-    // FATO TÉCNICO: Usamos SQL direto para garantir que o 'discordId' e o 'name' 
-    // nunca sejam apagados por um valor vazio vindo do login.
     await db.execute(sql`
-      INSERT INTO \`users\` 
-      (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
-      VALUES 
-      (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
+      INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
+      VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = CASE WHEN ${data.name || ''} = '' THEN \`name\` ELSE ${data.name || ''} END,
-      \`email\` = CASE WHEN ${data.email || ''} = '' THEN \`email\` ELSE ${data.email || ''} END,
-      \`discordId\` = CASE WHEN ${data.discordId || ''} = '' THEN \`discordId\` ELSE ${data.discordId || ''} END,
+      \`name\` = COALESCE(NULLIF(${data.name || ''}, ''), \`name\`),
+      \`discordId\` = COALESCE(NULLIF(${data.discordId || ''}, ''), \`discordId\`),
       \`lastSignedIn\` = NOW()
     `);
-  } catch (error) {
-    console.error("[DB Error] upsertUser:", error);
-  }
+  } catch (e) { console.error(e); }
 }
 
 export async function getUserByOpenId(openId: string) {
