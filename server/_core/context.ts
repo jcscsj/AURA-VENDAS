@@ -15,35 +15,30 @@ export type TrpcContext = {
 };
 
 export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {
+  const { req, res } = opts;
   let user: User | null = null;
   let adminSession: any = null;
 
-  // 1. Pega a sessão básica (Cookie)
-  const session = await sdk.authenticateRequest(opts.req).catch(() => null);
-
-  // 2. FATO TÉCNICO: Se houver sessão, checamos se o usuário ainda existe no banco
-  if (session?.openId) {
-    const dbUser = await db.getUserByOpenId(session.openId);
-    if (dbUser) {
-      user = dbUser; // Usuário válido
-    } else {
-      // Se não existe no banco, limpamos o cookie para deslogar o cara na hora!
-      opts.res.clearCookie("app_session_id");
-      user = null;
-    }
+  // 1. Pega a sessão básica do Cookie (Rápido)
+  const session = await sdk.authenticateRequest(req).catch(() => null);
+  if (session) {
+    user = session as User;
   }
 
-  // Check for admin session
+  // 2. Pega a sessão de Admin
   try {
-    const adminSessionCookie = opts.req.cookies?.adminSession;
+    const adminSessionCookie = req.cookies?.adminSession;
     if (adminSessionCookie) {
-      adminSession = JSON.parse(Buffer.from(adminSessionCookie, "base64").toString("utf-8"));
+      const sessionData = Buffer.from(adminSessionCookie, "base64").toString("utf-8");
+      adminSession = JSON.parse(sessionData);
     }
-  } catch (e) { adminSession = null; }
+  } catch (e) { 
+    adminSession = null; 
+  }
 
   return {
-    req: opts.req,
-    res: opts.res,
+    req,
+    res,
     user: adminSession || user,
     adminSession,
   };
