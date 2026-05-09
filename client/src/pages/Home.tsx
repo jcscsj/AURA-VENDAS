@@ -578,12 +578,6 @@ export default function Home() {
                         className="mt-1 w-full rounded border border-border bg-background px-3 py-2 text-foreground"
                       />
                     </label>
-                    {isAuthenticated && user?.discordId && (
-                      <div className="rounded border border-border bg-background px-3 py-2">
-                        <p className="text-xs text-muted-foreground">Discord ID</p>
-                        <p className="text-sm font-semibold text-foreground">{user.discordId}</p>
-                      </div>
-                    )}
                   </div>
                   <Button
                     className="w-full bg-primary hover:bg-orange-600 text-white font-semibold"
