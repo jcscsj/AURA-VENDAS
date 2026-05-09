@@ -44,11 +44,19 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(async ({ ctx }) => {
-      // FATO TÉCNICO: Se houver um usuário logado, buscamos os dados REAIS no banco,
-      // incluindo o discordId que estava "sumido" para o visual.
-      if (ctx.user?.openId) {
-        const fullUser = await db.getUserByOpenId(ctx.user.openId);
-        if (fullUser) return fullUser;
+      // FATO TÉCNICO: Se houver alguém logado (Discord ou Admin)
+      const openId = ctx.user?.openId || ctx.adminSession?.openId;
+      
+      if (openId) {
+        const fullUser = await db.getUserByOpenId(openId);
+        if (fullUser) {
+          // Retornamos o usuário completo do banco, com discordId e tudo!
+          return {
+            ...fullUser,
+            // Garante que o front-end saiba que ele é admin se estiver no banco ou na sessão
+            role: fullUser.role === 'admin' || ctx.adminSession ? 'admin' : 'user'
+          };
+        }
       }
       return ctx.user || ctx.adminSession || null;
     }),
