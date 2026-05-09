@@ -618,7 +618,7 @@ export default function Admin() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-
+                  </div>
                   <div className="space-y-2 text-sm border-t border-border/50 pt-3 mt-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total do Pedido:</span>
@@ -634,7 +634,7 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
-             </div>
+            </div>
           </div>
         )}
 
