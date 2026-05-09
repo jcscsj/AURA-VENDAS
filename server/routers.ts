@@ -351,34 +351,20 @@ export const appRouter = router({
     }),
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
-      // 1. Fato Técnico: Se não houver login, barramos aqui.
-      if (!ctx.user) {
-        console.log("DEBUG 1 - Sessão: Ninguém logado no ctx.user");
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Logue no Discord primeiro!" });
-      }
+      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      console.log("DEBUG 2 - ctx.user atual:", JSON.stringify(ctx.user));
-
+      // Busca o registro que acabamos de blindar no Passo 1
       const userRecord = await db.getUserByOpenId(ctx.user.openId);
-      console.log("DEBUG 3 - userRecord vindo do banco:", JSON.stringify(userRecord));
       
-      const realDiscordId = userRecord?.discordId || null;
-      const realDiscordName = userRecord?.name || "Não informado";
-
-      console.log(`DEBUG 4 - Valores finais: ID=${realDiscordId} | Nome=${realDiscordName}`);
-
-      // Montamos o pedido com os dados que vieram do Banco de Dados
       const orderData = {
         ...input,
-        discordId: realDiscordId,
-        discord: realDiscordName,
+        discordId: userRecord?.discordId || null,
+        discord: userRecord?.name || "Não informado",
         status: "pending"
       };
 
       const order = await db.createOrder(orderData);
-      
       if (order) {
-        // Agora o 'order' tem o ID real, e a função abaixo vai enviar o <@ID>
         await notifyDiscordOrder(order, input.items);
       }
       return order;
