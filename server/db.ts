@@ -29,20 +29,21 @@ export async function upsertUser(data: any) {
   if (!db || !data.openId) return;
 
   try {
-    // FATO TÉCNICO: Forçamos o SQL puro para o TiDB não travar no 'insert' automático
     const role = data.openId === ENV.ownerOpenId ? 'admin' : 'user';
     
+    // FATO TÉCNICO: Usamos COALESCE. 
+    // Se o dado novo for vazio, o banco MANTÉM o que já estava lá (o dado antigo).
     await db.execute(sql`
       INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
       VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, ${data.loginMethod || 'discord'}, ${data.discordId || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
-      \`name\` = VALUES(\`name\`),
-      \`email\` = VALUES(\`email\`),
-      \`discordId\` = VALUES(\`discordId\`),
+      \`name\` = IF(VALUES(\`name\`) != '', VALUES(\`name\`), \`name\`),
+      \`email\` = IF(VALUES(\`email\`) != '', VALUES(\`email\`), \`email\`),
+      \`discordId\` = IF(VALUES(\`discordId\`) != '', VALUES(\`discordId\`), \`discordId\`),
       \`lastSignedIn\` = NOW()
     `);
     
-    console.log(`[DB] Usuário ${data.name} salvo/atualizado com sucesso.`);
+    console.log(`[DB] Upsert finalizado para ${data.openId}. Proteção anti-vazio ativa.`);
   } catch (error) {
     console.error("[DB Error] Erro no upsertUser:", error);
   }
