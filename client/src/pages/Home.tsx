@@ -323,13 +323,14 @@ export default function Home() {
         </section>
 
         {/* Seção de Banners Dinâmicos (Vindos do Admin) */}
-        {banners && banners.length > 0 && (
-          <section className="container py-8">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {banners.map((banner) => (
-                <div 
+        {banners.map((banner) => (
+                // FATO TÉCNICO: Se tiver link, vira um <a>, senão vira uma <div> normal
+                <a 
                   key={banner.id} 
-                  className="group relative h-56 overflow-hidden rounded-2xl border border-orange-500/20 bg-card transition-all hover:border-primary"
+                  href={banner.link || "#"} 
+                  target={banner.link ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
+                  className="group relative h-56 overflow-hidden rounded-2xl border border-orange-500/20 bg-card transition-all hover:border-primary block cursor-pointer"
                 >
                   <img
                     src={banner.imageUrl}
@@ -341,7 +342,7 @@ export default function Home() {
                       <p className="text-white font-bold text-lg">{banner.title}</p>
                     </div>
                   )}
-                </div>
+                </a>
               ))}
             </div>
           </section>
