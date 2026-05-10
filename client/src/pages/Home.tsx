@@ -17,7 +17,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 
-const heroImage = "/hero-banner.png";
+const heroImage = "/hero-banner.webp";
 
 // Textos da página (podem ser editados)
 const SITE_TEXTS = {
@@ -187,7 +187,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-border bg-card">
         <div className="container flex h-16 items-center justify-between gap-4">
           <a href="#" className="flex items-center gap-2" aria-label="Aura City">
-            <img src="/logo.png" alt="Aura City" className="h-10 w-10 object-contain" />
+            <img src="/logo.webp" alt="Aura City" className="h-10 w-10 object-contain" />
             <div>
               <p className="text-lg font-bold text-foreground">Aura City</p>
             </div>
