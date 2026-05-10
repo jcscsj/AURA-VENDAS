@@ -322,8 +322,33 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Seção de Banners Dinâmicos (Vindos do Admin) */}
+        {banners && banners.length > 0 && (
+          <section className="container py-8">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {banners.map((banner) => (
+                <div 
+                  key={banner.id} 
+                  className="group relative h-56 overflow-hidden rounded-2xl border border-orange-500/20 bg-card transition-all hover:border-primary"
+                >
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title || "Destaque"}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  {banner.title && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex items-end p-6">
+                      <p className="text-white font-bold text-lg">{banner.title}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Benefícios */}
-        <section id="beneficios" className="container py-16">
+        <section id="beneficios" className="container py-16 scroll-mt-20">
           <div className="grid gap-6 md:grid-cols-3">
             {SITE_TEXTS.benefits.map((item) => (
               <div key={item.title} className="rounded-lg border border-border bg-card p-6">
@@ -335,7 +360,7 @@ export default function Home() {
         </section>
 
         {/* Catálogo */}
-        <section id="catalogo" className="bg-background py-16">
+        <section id="catalogo" className="bg-background py-16 scroll-mt-20">
           <div className="container">
             <div className="mb-10">
               <h2 className="text-4xl font-bold text-foreground">Catálogo de Produtos</h2>
