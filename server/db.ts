@@ -69,12 +69,28 @@ export async function updateUserRole(userId: number, role: string) {
   await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 
-export async function updateUserProfile(id: number, data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.update(users).set(data).where(eq(users.id, id));
-  return db.select().from(users).where(eq(users.id, id)).then(r => r[0]);
-}
+export async function updateUserProfile(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
 
+  try {
+    // Garante que estamos salvando os nomes corretos das colunas
+    await db.update(users)
+      .set({
+        name: data.name,
+        gameId: data.gameId,          // ID do FiveM
+        characterName: data.characterName, // Nome do Personagem
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+    
+    const result = await db.select().from(users).where(eq(users.id, userId));
+    return result[0] || null;
+  } catch (error) {
+    console.error("Erro ao atualizar perfil:", error);
+    throw error;
+  }
+}
 // ===== CATEGORIAS (INSERÇÃO BLINDADA) =====
 export async function getCategories() {
   const db = await getDb();
