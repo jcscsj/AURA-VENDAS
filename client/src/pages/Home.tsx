@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
@@ -71,15 +71,17 @@ export default function Home() {
 
   useEffect(() => {
     if (checkoutOpen && user) {
-      // Só preenche se o campo estiver vazio para não sobrescrever o que o usuário digitar
-      if (playerNick === "" && user.characterName) {
+      // Este log vai aparecer no seu F12 para a gente ver o que tem no seu perfil
+      console.log("DEBUG - DADOS NO SEU PERFIL:", user);
+
+      if (!playerNick && user.characterName) {
         setPlayerNick(user.characterName);
       }
-      if (gameId === "" && user.gameId) {
+      if (!gameId && user.gameId) {
         setGameId(user.gameId);
       }
     }
-  }, [checkoutOpen, user]);
+  }, [checkoutOpen, user, playerNick, gameId]);
 
   // Filtrar produtos
   const filteredProducts = useMemo(() => {
