@@ -69,6 +69,18 @@ export default function Home() {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (checkoutOpen && user) {
+      // Só preenche se o campo estiver vazio para não sobrescrever o que o usuário digitar
+      if (playerNick === "" && user.characterName) {
+        setPlayerNick(user.characterName);
+      }
+      if (gameId === "" && user.gameId) {
+        setGameId(user.gameId);
+      }
+    }
+  }, [checkoutOpen, user]);
+
   // Filtrar produtos
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
