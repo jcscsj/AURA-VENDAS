@@ -71,18 +71,15 @@ export default function Home() {
 
   useEffect(() => {
     if (checkoutOpen && user) {
-      // Este log vai aparecer no seu F12 para a gente ver o que tem no seu perfil
-      console.log("DEBUG - DADOS NO SEU PERFIL:", user);
-
-      if (!playerNick && user.characterName) {
+      // Só preenche se o campo estiver vazio para não sobrescrever o que o usuário digitar
+      if (playerNick === "" && user.characterName) {
         setPlayerNick(user.characterName);
       }
-      if (!gameId && user.gameId) {
+      if (gameId === "" && user.gameId) {
         setGameId(user.gameId);
       }
     }
-  }, [checkoutOpen, user, playerNick, gameId]);
-
+  }, [checkoutOpen, user]);
   // Filtrar produtos
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
