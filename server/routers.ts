@@ -350,10 +350,25 @@ export const appRouter = router({
       }),
     }),
     banners: router({
-      list: publicProcedure.query(async () => {
-        return db.getBanners();
+        create: publicProcedure
+          .input(z.object({ title: z.string().optional(), imageUrl: z.string(), link: z.string().optional() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.createBanner(input);
+          }),
+        delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.deleteBanner(input.id);
+        }),
+        moveUp: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerUp(input.id);
+        }),
+        moveDown: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.moveBannerDown(input.id);
+        }),
       }),
-    }),
     orders: router({
       create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
       // FATO TÉCNICO: Se existir uma sessão de admin (e-mail), barramos a compra na hora
