@@ -202,27 +202,68 @@ export async function createBanner(data: any) {
   return db.select().from(banners).orderBy(desc(banners.id)).limit(1).then(r => r[0]);
 }
 
+export async function getBanners() {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(banners).orderBy(asc(banners.order));
+}
+
+// 2. CRIAR BANNER (Agora com Link)
+export async function createBanner(data: any) {
+  const db = await getDb(); if (!db) return null;
+  try {
+    const last = await db.select().from(banners).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
+    const nextOrder = last ? last.order + 1 : 1;
+    // Inserção com Link
+    await db.execute(sql`INSERT INTO \`banners\` (\`title\`, \`imageUrl\`, \`link\`, \`order\`) VALUES (${data.title || ''}, ${data.imageUrl}, ${data.link || ''}, ${nextOrder})`);
+    return db.select().from(banners).orderBy(desc(banners.id)).limit(1).then((r:any) => r[0]);
+  } catch (e) { return null; }
+}
+
+// 3. ATUALIZAR BANNER (Agora com Link)
 export async function updateBanner(id: number, data: any) {
-  const db = await getDb();
-  if (!db) return null;
+  const db = await getDb(); if (!db) return null;
   try {
     await db.update(banners)
       .set({
         title: data.title,
         imageUrl: data.imageUrl,
+        link: data.link || '', // FATO TÉCNICO: Adicionamos o salvamento do link aqui
         updatedAt: new Date()
       })
       .where(eq(banners.id, id));
-
     return db.select().from(banners).where(eq(banners.id, id)).then(r => r[0]);
-  } catch (error) {
-    console.error("Erro ao atualizar banner:", error);
-    return null;
-  }
+  } catch (error) { return null; }
 }
+
+// 4. DELETAR BANNER
 export async function deleteBanner(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(banners).where(eq(banners.id, id));
+}
+
+// 5. FUNÇÕES DE MOVER (Para as setas do Admin funcionarem)
+export async function moveBannerUp(id: number) {
+  const db = await getDb(); if (!db) return null;
+  const curr = await db.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const prev = await db.select().from(banners).where(lt(banners.order, curr.order)).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
+  if (prev) {
+    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+  }
+  return curr;
+}
+
+export async function moveBannerDown(id: number) {
+  const db = await getDb(); if (!db) return null;
+  const curr = await db.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const next = await db.select().from(banners).where(gt(banners.order, curr.order)).orderBy(asc(banners.order)).limit(1).then((r:any) => r[0]);
+  if (next) {
+    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+  }
+  return curr;
 }
 
 // ===== PEDIDOS (ORDERS) =====
