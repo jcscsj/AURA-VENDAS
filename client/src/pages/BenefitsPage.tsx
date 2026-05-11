@@ -55,7 +55,7 @@ export default function BenefitsPage() {
   const createOrderMut = trpc.shop.orders.create.useMutation({
     onSuccess: () => {
       toast.success("Pedido realizado com sucesso!");
-      setCheckoutOpen(false); setCartOpen(false); setCart([]); setPlayerNick(""); setGameId("");
+      setCheckoutOpen(false); setCartOpen(false); clearCart(); setPlayerNick(""); setGameId("");
     },
     onError: (error) => toast.error("Erro ao criar pedido: " + error.message),
   });
