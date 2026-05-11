@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { useShop } from "@/contexts/ShopContext";
 import { toast } from "sonner";
 import {
   Check,
