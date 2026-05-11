@@ -50,7 +50,7 @@ export default function Login() {
         <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
           <p className="text-center text-[10px] text-muted-foreground leading-relaxed uppercase font-bold tracking-tight">
             A Aura City não armazena sua senha. <br />
-            O acesso é feito via protocolo seguro OAuth2.
+            O acesso é feito via protocolo OAuth2.
           </p>
         </div>
       </div>
