@@ -19,6 +19,7 @@ export default function BenefitsPage() {
   const { data: products =[] } = trpc.shop.products.list.useQuery();
 
   // States
+  const { cart, cartOpen, setCartOpen, addToCart, updateQuantity, removeItem, clearCart } = useShop();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -26,7 +27,6 @@ export default function BenefitsPage() {
   const[gameId, setGameId] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const[appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const { cart, cartOpen, setCartOpen, addToCart, updateQuantity, removeItem, clearCart } = useShop();
 
   // FATO TÉCNICO: Preenchimento Automático
   useEffect(() => {
