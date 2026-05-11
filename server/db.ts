@@ -102,19 +102,18 @@ export async function createCategory(data: any) {
   const db = await getDb();
   if (!db) return null;
   try {
-    // Busca a maior ordem atual
-    const lastCategory = await db.select().from(categories).orderBy(desc(categories.order)).limit(1).then(r => r[0]);
-    const nextOrder = lastCategory ? lastCategory.order + 1 : 1;
-
-    // Insere com a próxima ordem disponível
-    await db.execute(sql`INSERT INTO \`categories\` (\`name\`, \`order\`) VALUES (${data.name}, ${nextOrder})`);
+    const last = await db.select().from(categories).orderBy(desc(categories.order)).limit(1).then((r:any) => r[0]);
+    const nextOrder = last ? last.order + 1 : 1;
+    
+    // FATO TÉCNICO: Agora inserimos o nome E o tipo (catalog ou benefits)
+    await db.execute(sql`
+      INSERT INTO \`categories\` (\`name\`, \`type\`, \`order\`) 
+      VALUES (${data.name}, ${data.type || 'catalog'}, ${nextOrder})
+    `);
     
     const res = await db.select().from(categories).orderBy(desc(categories.id)).limit(1);
     return res[0] || null;
-  } catch (error) {
-    console.error("Erro ao criar categoria:", error);
-    return null;
-  }
+  } catch (e) { return null; }
 }
 export async function updateCategory(id: number, data: any) {
   const db = await getDb(); if (!db) return null;
