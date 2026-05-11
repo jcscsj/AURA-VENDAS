@@ -191,6 +191,7 @@ export default function Admin() {
 
   // Local state
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [newProduct, setNewProduct] = useState<any>({});
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [newBanner, setNewBanner] = useState<any>({});
