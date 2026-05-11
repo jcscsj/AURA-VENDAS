@@ -192,67 +192,71 @@ export async function deleteProduct(id: number) {
 
 // ===== BANNERS (INSERÇÃO BLINDADA) =====
 export async function getBanners() {
-  const db = await getDb(); if (!db) return [];
-  return db.select().from(banners).orderBy(asc(banners.order));
+  const db_i = await getDb(); if (!db_i) return [];
+  return db_i.select().from(banners).orderBy(asc(banners.order));
 }
 
-// 2. CRIAR BANNER (Agora com Link)
+// CRIAR BANNER
 export async function createBanner(data: any) {
-  const db = await getDb(); if (!db) return null;
+  const db_i = await getDb(); if (!db_i) return null;
   try {
-    const last = await db.select().from(banners).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
+    const last = await db_i.select().from(banners).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
     const nextOrder = last ? last.order + 1 : 1;
-    // Inserção com Link
-    await db.execute(sql`INSERT INTO \`banners\` (\`title\`, \`imageUrl\`, \`link\`, \`order\`) VALUES (${data.title || ''}, ${data.imageUrl}, ${data.link || ''}, ${nextOrder})`);
-    return db.select().from(banners).orderBy(desc(banners.id)).limit(1).then((r:any) => r[0]);
+    await db_i.execute(sql`INSERT INTO \`banners\` (\`title\`, \`imageUrl\`, \`link\`, \`order\`) VALUES (${data.title || ''}, ${data.imageUrl}, ${data.link || ''}, ${nextOrder})`);
+    return db_i.select().from(banners).orderBy(desc(banners.id)).limit(1).then((r:any) => r[0]);
   } catch (e) { return null; }
 }
 
-// 3. ATUALIZAR BANNER (Agora com Link)
+// ATUALIZAR BANNER
 export async function updateBanner(id: number, data: any) {
-  const db = await getDb(); if (!db) return null;
+  const db_i = await getDb(); if (!db_i) return null;
   try {
-    await db.update(banners)
-      .set({
-        title: data.title,
-        imageUrl: data.imageUrl,
-        link: data.link || '', // FATO TÉCNICO: Adicionamos o salvamento do link aqui
-        updatedAt: new Date()
-      })
-      .where(eq(banners.id, id));
-    return db.select().from(banners).where(eq(banners.id, id)).then(r => r[0]);
-  } catch (error) { return null; }
+    await db_i.execute(sql`UPDATE \`banners\` SET \`title\` = ${data.title || ''}, \`imageUrl\` = ${data.imageUrl}, \`link\` = ${data.link || ''}, \`updatedAt\` = NOW() WHERE \`id\` = ${id}`);
+    return db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+  } catch (e) { return null; }
 }
 
-// 4. DELETAR BANNER
-export async function deleteBanner(id: number) {
-  const db = await getDb(); if (!db) return;
-  await db.delete(banners).where(eq(banners.id, id));
-}
-
-// 5. FUNÇÕES DE MOVER (Para as setas do Admin funcionarem)
 export async function moveBannerUp(id: number) {
-  const db = await getDb(); if (!db) return null;
-  const curr = await db.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
-  if (!curr) return null;
-  const prev = await db.select().from(banners).where(lt(banners.order, curr.order)).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
-  if (prev) {
-    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
-    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
-  }
-  return curr;
+  const db_i = await getDb(); if (!db_i) return null;
+  try {
+    // 1. Pega o banner atual
+    const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    // 2. Procura o banner que está IMEDIATAMENTE ACIMA (ordem menor)
+    const prev = await db_i.select().from(banners)
+      .where(lt(banners.order, curr.order))
+      .orderBy(desc(banners.order))
+      .limit(1).then((r:any) => r[0]);
+
+    if (prev) {
+      // 3. Troca os valores usando SQL Direto (blindado contra erros do TiDB)
+      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
 }
 
+// MOVER BANNER PARA BAIXO
 export async function moveBannerDown(id: number) {
-  const db = await getDb(); if (!db) return null;
-  const curr = await db.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
-  if (!curr) return null;
-  const next = await db.select().from(banners).where(gt(banners.order, curr.order)).orderBy(asc(banners.order)).limit(1).then((r:any) => r[0]);
-  if (next) {
-    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
-    await db.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
-  }
-  return curr;
+  const db_i = await getDb(); if (!db_i) return null;
+  try {
+    const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    // Procura o banner que está IMEDIATAMENTE ABAIXO (ordem maior)
+    const next = await db_i.select().from(banners)
+      .where(gt(banners.order, curr.order))
+      .orderBy(asc(banners.order))
+      .limit(1).then((r:any) => r[0]);
+
+    if (next) {
+      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
 }
 // ===== PEDIDOS (ORDERS) =====
 export async function getOrders() {
