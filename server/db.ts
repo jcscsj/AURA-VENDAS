@@ -34,12 +34,15 @@ export async function upsertUser(data: any) {
     // FATO TÉCNICO: Usamos IF(VALUES(`coluna`) != '', ...)
     // Isso protege seus dados. Se o 'name' novo vier vazio, o banco mantém o antigo.
     await db_instance.execute(sql`
-      INSERT INTO \`users\` (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`role\`, \`lastSignedIn\`)
-      VALUES (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${role}, NOW())
+      INSERT INTO \`users\` 
+      (\`openId\`, \`name\`, \`email\`, \`loginMethod\`, \`discordId\`, \`profilePicture\`, \`role\`, \`lastSignedIn\`)
+      VALUES 
+      (${data.openId}, ${data.name || ''}, ${data.email || ''}, 'discord', ${data.discordId || ''}, ${data.profilePicture || ''}, ${role}, NOW())
       ON DUPLICATE KEY UPDATE
       \`name\` = IF(VALUES(\`name\`) != '', VALUES(\`name\`), \`name\`),
       \`email\` = IF(VALUES(\`email\`) != '', VALUES(\`email\`), \`email\`),
       \`discordId\` = IF(VALUES(\`discordId\`) != '', VALUES(\`discordId\`), \`discordId\`),
+      \`profilePicture\` = IF(VALUES(\`profilePicture\`) != '', VALUES(\`profilePicture\`), \`profilePicture\`),
       \`lastSignedIn\` = NOW()
     `);
     
