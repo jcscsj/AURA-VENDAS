@@ -207,6 +207,18 @@ export async function createBanner(data: any) {
   } catch (e) { return null; }
 }
 
+// EXCLUIR BANNER
+export async function deleteBanner(id: number) {
+  const db_i = await getDb();
+  if (!db_i) return;
+  try {
+    await db_i.delete(banners).where(eq(banners.id, id));
+    console.log(`[DB] Banner ${id} removido com sucesso.`);
+  } catch (error) {
+    console.error("[DB Error] Erro ao deletar banner:", error);
+  }
+}
+
 // ATUALIZAR BANNER
 export async function updateBanner(id: number, data: any) {
   const db_i = await getDb(); if (!db_i) return null;
