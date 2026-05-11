@@ -400,14 +400,16 @@ export default function Home() {
                   >
                     Todos
                   </button>
-                  {categories.map((category) => (
+                  {categories
+                  .filter((category) => category.type === "benefits")
+                  .map((category) => (
                     <button
                       key={category.id}
                       onClick={() => setActiveCategory(category.id)}
                       className={`w-full rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
                         activeCategory === category.id
                           ? "bg-primary text-black"
-                          : "bg-card text-foreground hover:bg-card/80 border border-border"
+                          : "hover:bg-background"
                       }`}
                     >
                       {category.name}
