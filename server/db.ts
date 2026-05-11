@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import * as schema from "../drizzle/schema";
 import { ENV } from './_core/env';
 
-const { users, categories, products, banners, orders, admins, localAccounts, siteConfig } = schema;
+const { users, categories, products, banners, orders, admins, localAccounts, siteConfig, coupons } = schema;
 let _db: any = null;
 
 export async function getDb() {
