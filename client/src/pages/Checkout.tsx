@@ -25,19 +25,23 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { cart, clearCart } = useShop();
-  const checkCoupon = trpc.shop.admin.coupons.check.useQuery(
-    { code: couponInput },
-    { enabled: false }
-  );
-  const { data: siteConfig = { couponBannerEnabled: false, couponBannerText: "" } } = trpc.shop.admin.config.get.useQuery();
 
+  // 1. PRIMEIRO: CRIAMOS AS "CAIXAS" (ESTADOS)
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [couponInput, setCouponInput] = useState("");
+  const [couponInput, setCouponInput] = useState(""); // <--- A CAIXA É CRIADA AQUI
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
+
+  // 2. DEPOIS: USAMOS AS CAIXAS NAS CONSULTAS (QUERIES)
+  const checkCoupon = trpc.shop.admin.coupons.check.useQuery(
+    { code: couponInput }, // <--- AGORA O CÓDIGO SABE O QUE É ISSO
+    { enabled: false }
+  );
+
+  const { data: siteConfig = { couponBannerEnabled: false, couponBannerText: "" } } = trpc.shop.admin.config.get.useQuery();
 
   useEffect(() => {
     if (user) {
