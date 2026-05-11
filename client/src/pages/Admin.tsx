@@ -465,50 +465,55 @@ export default function Admin() {
                 <input
                   type="text"
                   value={newCategoryName}
-                  onChange={(e: any) => setNewCategoryName(e.target.value)}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
                   className="flex-1 rounded border border-border bg-card px-3 py-2 text-foreground"
                   placeholder="Nome da categoria"
                 />
-                <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={() => {
-                  if (newCategoryName.trim()) {
-                    createCategoryMut.mutate({ name: newCategoryName });
-                  }
-                }}>
-                  <Plus className="h-4 w-4" />
-                  Adicionar
+                <Button 
+                  className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" 
+                  onClick={() => {
+                    if (!newCategoryName.trim()) return;
+                    if (editingCategoryId) {
+                      updateCategoryMut.mutate({ id: editingCategoryId, name: newCategoryName });
+                    } else {
+                      createCategoryMut.mutate({ name: newCategoryName });
+                    }
+                  }}
+                >
+                  {editingCategoryId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingCategoryId ? "Salvar" : "Adicionar"}
                 </Button>
+                {editingCategoryId && (
+                  <Button variant="ghost" onClick={() => { setEditingCategoryId(null); setNewCategoryName(""); }}>
+                    Cancelar
+                  </Button>
+                )}
               </div>
             </div>
 
             <div>
               <h3 className="text-xl font-bold mb-4">Categorias Existentes</h3>
               <div className="grid gap-3">
-                {categories.map((category: any) => (
+                {categories.map((category) => (
                   <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
                     <h4 className="font-semibold text-foreground">{category.name}</h4>
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveCategoryUpMut.mutate({ id: category.id })}
+                      <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
+                      
+                      {/* BOTÃO DE EDITAR (NOVO) */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setEditingCategoryId(category.id);
+                          setNewCategoryName(category.name);
+                        }}
                       >
-                        <ChevronUp className="h-4 w-4" />
+                        <Edit2 className="h-4 w-4 text-primary" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveCategoryDownMut.mutate({ id: category.id })}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteCategoryMut.mutate({ id: category.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar categoria?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
