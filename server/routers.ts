@@ -350,11 +350,18 @@ export const appRouter = router({
       }),
     }),
     banners: router({
+        list: publicProcedure.query(async () => db.getBanners()),
         create: publicProcedure
           .input(z.object({ title: z.string().optional(), imageUrl: z.string(), link: z.string().optional() }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
             return db.createBanner(input);
+          }),
+        update: publicProcedure
+          .input(z.object({ id: z.number(), title: z.string().optional(), imageUrl: z.string().optional(), link: z.string().optional() }))
+          .mutation(async ({ input, ctx }) => {
+            if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+            return db.updateBanner(input.id, input);
           }),
         delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
