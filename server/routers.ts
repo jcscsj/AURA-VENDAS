@@ -630,6 +630,26 @@ export const appRouter = router({
             };
           }),
       }),
+
+      coupons: router({
+        list: publicProcedure.query(async ({ ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.getCoupons();
+        }),
+        create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.createCoupon(input);
+        }),
+        delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
+          return db.deleteCoupon(input.id);
+        }),
+        // Rota pública para o Checkout validar o cupom
+        check: publicProcedure.input(z.object({ code: z.string() })).query(async ({ input }) => {
+          return db.getCouponByCode(input.code);
+        }),
+      }),
+      
       config: router({
         get: publicProcedure.query(async () => {
           const config = await db.getSiteConfig();
