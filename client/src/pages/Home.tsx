@@ -389,10 +389,10 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="flex lg:flex-col gap-2 overflow-x-auto pb-3 lg:pb-0 no-scrollbar flex-nowrap">
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className={`w-full rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
+                    className={`whitespace-nowrap rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
                       activeCategory === null
                         ? "bg-primary text-black"
                         : "bg-card text-foreground hover:bg-card/80 border border-border"
@@ -401,20 +401,20 @@ export default function Home() {
                     Todos
                   </button>
                   {categories
-                  .filter((category) => category.type === "benefits")
-                  .map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => setActiveCategory(category.id)}
-                      className={`w-full rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
-                        activeCategory === category.id
-                          ? "bg-primary text-black"
-                          : "hover:bg-background"
-                      }`}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
+                    .filter((category) => category.type === "benefits")
+                    .map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setActiveCategory(category.id)}
+                        className={`whitespace-nowrap rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
+                          activeCategory === category.id
+                            ? "bg-primary text-black"
+                            : "bg-card text-foreground hover:bg-card/80 border border-border"
+                        }`}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
                 </div>
               </aside>
 
