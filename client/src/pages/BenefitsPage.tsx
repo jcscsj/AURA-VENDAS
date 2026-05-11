@@ -26,6 +26,7 @@ export default function BenefitsPage() {
   const[gameId, setGameId] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const[appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const { cart, cartOpen, setCartOpen, addToCart, updateQuantity, removeItem, clearCart } = useShop();
 
   // FATO TÉCNICO: Preenchimento Automático
   useEffect(() => {
