@@ -56,6 +56,16 @@ export default function Admin() {
     onError: () => toast.error("Erro ao criar categoria"),
   });
 
+  const updateCategoryMut = trpc.shop.admin.categories.update.useMutation({
+    onSuccess: () => {
+      refetchCategories();
+      toast.success("Categoria renomeada!");
+      setEditingCategoryId(null);
+      setNewCategoryName("");
+    },
+    onError: () => toast.error("Erro ao renomear categoria"),
+  });
+
   const deleteCategoryMut = trpc.shop.admin.categories.delete.useMutation({
     onSuccess: () => {
       refetchCategories();
