@@ -270,39 +270,32 @@ export default function BenefitsPage() {
               )}
             </div>
 
-            <div className="border-t border-border p-5 space-y-4 bg-muted/30">
-              <div className="flex gap-2">
-                <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Cupom" className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm focus:border-primary outline-none" />
-                <Button size="sm" variant="outline" className="border-primary text-primary" onClick={() => {
-                  if (couponInput === "SP25") { setAppliedCoupon("SP25"); toast.success("Cupom ativado!"); } 
-                  else { toast.error("Inválido."); }
-                }}>Aplicar</Button>
-              </div>
-
+            <div className="border-t border-border p-5 space-y-4 bg-card">
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-                {appliedCoupon && <div className="flex justify-between text-primary font-bold"><span>Cupom SP25</span><span>- {formatCurrency(discount)}</span></div>}
-                <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-primary"><span>Total</span><span>{formatCurrency(total)}</span></div>
+                <div className="flex justify-between items-center py-2 font-bold text-foreground">
+                  <span className="text-muted-foreground font-medium">Valor total:</span>
+                  <span className="text-xl text-primary">{formatCurrency(subtotal)}</span>
+                </div>
               </div>
 
-              {!checkoutOpen ? (
-                <Button disabled={!cart.length} className="w-full bg-primary hover:bg-orange-600 text-black font-bold py-6" onClick={() => setCheckoutOpen(true)}>Finalizar Compra</Button>
-              ) : (
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase text-muted-foreground">Nick do Jogador</label>
-                    <input value={playerNick} onChange={(e) => setPlayerNick(e.target.value)} placeholder="Ex: Maxzin_Silva" className="w-full rounded border border-border bg-background px-3 py-2 text-sm" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase text-muted-foreground">ID no Jogo</label>
-                    <input value={gameId} onChange={(e) => setGameId(e.target.value)} placeholder="Ex: 1234" className="w-full rounded border border-border bg-background px-3 py-2 text-sm" />
-                  </div>
-                  <Button className="w-full bg-primary hover:bg-orange-600 text-black font-bold py-6" onClick={submitOrder} disabled={createOrderMut.isPending}>
-                    {createOrderMut.isPending ? "Processando..." : "Confirmar Pedido"}
-                  </Button>
-                  <Button variant="ghost" className="w-full text-xs" onClick={() => setCheckoutOpen(false)}>Voltar ao carrinho</Button>
-                </div>
-              )}
+              <Button 
+                disabled={cart.length === 0}
+                className="w-full bg-primary hover:bg-orange-600 text-black font-bold py-7 text-lg shadow-lg shadow-primary/10" 
+                onClick={() => {
+                  setCartOpen(false);
+                  navigate("/checkout");
+                }}
+              >
+                Ir para a compra
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setCartOpen(false)}
+              >
+                Continuar comprando
+              </Button>
             </div>
           </aside>
         </div>
