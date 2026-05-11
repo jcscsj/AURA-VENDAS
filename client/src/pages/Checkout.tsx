@@ -180,28 +180,30 @@ export default function Checkout() {
 
               {/* BOX DE AUTENTICAÇÃO DINÂMICO */}
               {!isAuthenticated ? (
-                <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
+                <div className="space-y-4">
+                  <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl flex items-center gap-3">
                     <AlertCircle className="text-orange-500 w-5 h-5" />
                     <p className="text-sm text-muted-foreground">Você ainda não vinculou seu Discord.</p>
                   </div>
                   <Button
                     onClick={() => window.location.href = getLoginUrl()}
-                    className="w-full sm:w-auto bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold gap-2"
+                    className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold h-14 text-lg gap-3 shadow-lg shadow-[#5865F2]/20"
                   >
-                    <LogIn className="w-4 h-4" /> Entrar com o Discord
+                    <LogIn className="w-5 h-5" /> Entrar com o Discord
                   </Button>
                 </div>
               ) : (
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-500 p-2 rounded-lg text-black"><User className="w-4 h-4" /></div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Logado como</p>
-                      <p className="text-sm font-bold text-foreground">{user?.name}</p>
-                    </div>
+                <div className="bg-[#5865F2] text-white p-4 rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-[#5865F2]/20">
+                  {/* FOTO DO DISCORD ARREDONDADA */}
+                  <div className="relative">
+                    <img 
+                      src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} 
+                      className="w-10 h-10 rounded-full border-2 border-white/30 shadow-md"
+                      alt="Avatar"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#5865F2] rounded-full"></div>
                   </div>
-                  <span className="text-[9px] bg-green-500 text-black px-3 py-1 rounded-full font-black uppercase">Discord Vinculado</span>
+                  <span className="font-bold text-lg tracking-tight">{user?.name}</span>
                 </div>
               )}
             </Card>
