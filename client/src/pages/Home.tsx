@@ -280,8 +280,15 @@ export default function Home() {
         {mobileMenuOpen && (
           <div className="container grid gap-3 border-t border-border bg-card py-4 text-sm font-semibold text-foreground lg:hidden">
             <a href="#catalogo" onClick={() => setMobileMenuOpen(false)}>Catálogo</a>
-            <a href="#beneficios" onClick={() => setMobileMenuOpen(false)}>Benefícios</a>
-
+            <button 
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/beneficios");
+              }} 
+              className="text-left hover:text-primary"
+            >
+              Benefícios
+            </button>
           </div>
         )}
       </header>
