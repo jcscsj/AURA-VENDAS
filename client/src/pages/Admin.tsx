@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Ticket,
 } from "lucide-react";
 
 export default function Admin() {
@@ -688,9 +689,10 @@ export default function Admin() {
                     <div>
                       <h4 className="font-bold text-foreground text-lg">{order.playerNick}</h4>
                       <p className="text-sm text-primary font-medium">Discord: {order.discord || "Não informado"}</p>
-                      {order.discordId && (
-                        <p className="text-[10px] text-muted-foreground font-mono">ID: {order.discordId}</p>
-                      )}
+                      <div className="mt-1">
+                        <p className="text-[10px] text-muted-foreground">E-mail: <span className="text-white">{order.email || "N/A"}</span></p>
+                        <p className="text-[10px] text-muted-foreground">CPF: <span className="text-white">{order.cpf || "N/A"}</span></p>
+                      </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
@@ -902,7 +904,14 @@ export default function Admin() {
                     type="checkbox" 
                     className="w-6 h-6 accent-primary cursor-pointer"
                     checked={siteConfig?.couponBannerEnabled || false}
-                    onChange={(e) => updateConfigMut.mutate({ ...siteConfig, couponBannerEnabled: e.target.checked })}
+                    onChange={async (e) => {
+                      // FATO TÉCNICO: Usamos mutateAsync para esperar o banco salvar antes de atualizar a tela
+                      await updateConfigMut.mutateAsync({ 
+                        ...siteConfig, 
+                        couponBannerEnabled: e.target.checked 
+                      });
+                      refetchConfig(); // Força a caixinha a marcar/desmarcar na hora
+                    }}
                   />
                 </div>
 
