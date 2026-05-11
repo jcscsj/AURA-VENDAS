@@ -63,7 +63,20 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      // FATO TÉCNICO: Decodificamos o 'state' (que é a URL de onde o usuário veio)
+      // Se por algum motivo o state estiver bugado, ele volta para a Home "/" por segurança.
+      let redirectUri = "/";
+      try {
+        if (state) {
+          redirectUri = Buffer.from(state, 'base64').toString('utf-8');
+        }
+      } catch (e) {
+        console.error("[OAuth] Erro ao decodificar o state, voltando para a home.");
+      }
+
+      // Agora ele redireciona para a página exata (Ex: /checkout)
+      res.redirect(302, redirectUri);
+
     } catch (error) {
       console.error("[Discord OAuth] Erro no login:", error);
       res.status(500).json({ 
