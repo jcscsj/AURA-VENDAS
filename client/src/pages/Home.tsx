@@ -484,7 +484,7 @@ export default function Home() {
             <Button
               size="lg"
               className="mt-6 bg-primary hover:bg-orange-600 text-black font-semibold"
-              onClick={() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => navigate("/beneficios")}
             >
               Ver Catálogo
               <ChevronRight className="ml-2 h-5 w-5" />
