@@ -22,7 +22,7 @@ export default function Login() {
         <div className="text-center space-y-4">
           {/* Logo Centralizada e com Sombra */}
           <img 
-            src="/logo.png" 
+            src="/logo.webp" 
             alt="Aura City" 
             className="h-24 w-24 mx-auto mb-2 object-contain drop-shadow-[0_0_15px_rgba(255,125,0,0.3)]" 
           />
