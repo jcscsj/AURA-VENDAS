@@ -11,23 +11,23 @@ type CartLine = { id: number; name: string; price: number; image: string; quanti
 const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
 
 export default function BenefitsPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth(); // ADICIONE 'logout' aqui
   const [, navigate] = useLocation();
   
-  // Queries
-  const { data: categories =[] } = trpc.shop.categories.list.useQuery();
-  const { data: products =[] } = trpc.shop.products.list.useQuery();
-
   // States
-  const { cart, cartOpen, setCartOpen, addToCart, updateQuantity, removeItem, clearCart } = useShop();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cart, setCart] = useState<CartLine[]>([]);
   const [playerNick, setPlayerNick] = useState("");
-  const[gameId, setGameId] = useState("");
+  const [gameId, setGameId] = useState("");
   const [couponInput, setCouponInput] = useState("");
-  const[appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  
+  // ADICIONE ESTE ESTADO PARA O MENU CELULAR
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
   // FATO TÉCNICO: Preenchimento Automático
   useEffect(() => {
     if (checkoutOpen && user) {
@@ -79,16 +79,63 @@ export default function BenefitsPage() {
         <div className="container flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/")} className="text-primary hover:bg-primary/10 px-2">
-              <ChevronLeft className="h-5 w-5 mr-1" /> Voltar à Loja
+              <ChevronLeft className="h-5 w-5 mr-1" /> <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <h1 className="text-lg font-bold border-l border-border pl-4">Benefícios & VIPs</h1>
+            <h1 className="text-lg font-bold border-l border-border pl-4 hidden sm:block">Benefícios & VIPs</h1>
           </div>
 
-          <Button className="relative bg-primary hover:bg-orange-600 text-black font-semibold" onClick={() => setCartOpen(true)}>
-            <ShoppingCart className="mr-2 h-4 w-4" /> Carrinho
-            {cartQuantity > 0 && <span className="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-black px-1 text-xs font-bold text-white">{cartQuantity}</span>}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* BOTÕES DE LOGIN PARA COMPUTADOR */}
+            {!isAuthenticated ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = getLoginUrl()}
+                className="hidden md:inline-flex border-primary text-primary hover:bg-primary/10"
+              >
+                Entrar com Discord
+              </Button>
+            ) : (
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/orders")}>Pedidos</Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>Perfil</Button>
+              </div>
+            )}
+
+            <Button className="relative bg-primary hover:bg-orange-600 text-black font-semibold" onClick={() => setCartOpen(true)}>
+              <ShoppingCart className="mr-2 h-4 w-4" /> Carrinho
+              {cartQuantity > 0 && <span className="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-black px-1 text-xs font-bold text-white">{cartQuantity}</span>}
+            </Button>
+
+            {/* BOTÃO HAMBÚRGUER PARA CELULAR */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
+
+        {/* MENU MOBILE EXPANSÍVEL (Igual ao da Home) */}
+        {mobileMenuOpen && (
+          <div className="container grid gap-4 border-t border-border bg-card py-6 text-sm font-semibold lg:hidden">
+            <button onClick={() => { setMobileMenuOpen(false); navigate("/"); }} className="text-left py-2 border-b border-border/50">Início</button>
+            <div className="pt-2 space-y-3">
+              {!isAuthenticated ? (
+                <Button className="w-full bg-[#5865F2] text-white" onClick={() => window.location.href = getLoginUrl()}>Entrar com Discord</Button>
+              ) : (
+                <div className="grid gap-2">
+                  <Button variant="outline" className="justify-start" onClick={() => navigate("/orders")}>Meus Pedidos</Button>
+                  <Button variant="outline" className="justify-start" onClick={() => navigate("/profile")}>Meu Perfil</Button>
+                  <Button variant="ghost" className="justify-start text-red-500" onClick={async () => { await logout(); localStorage.clear(); window.location.href = "/"; }}>Sair</Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="container py-12">
