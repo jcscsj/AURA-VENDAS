@@ -273,12 +273,18 @@ export default function Checkout() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
+
+              {/* LÓGICA DINÂMICA: Mostra o cupom real e o valor real dele */}
               {appliedCoupon && (
                 <div className="flex justify-between text-sm text-green-500 font-bold">
-                  <span>Cupom {appliedCoupon} (-25%)</span>
+                  <span>
+                    Cupom {appliedCoupon.code} 
+                    ({appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : 'Fixo'})
+                  </span>
                   <span>-{formatCurrency(discount)}</span>
                 </div>
               )}
+
               <div className="flex justify-between text-2xl font-black text-primary pt-4 border-t border-border/50">
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>
@@ -291,7 +297,7 @@ export default function Checkout() {
                   type="checkbox" 
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-1 accent-primary h-5 w-5 rounded-md" 
+                  className="mt-1 accent-primary h-5 w-5 rounded-md cursor-pointer" 
                 />
                 <span className="text-[11px] leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
                   Eu aceito os <strong className="text-foreground">termos e condições</strong> desta compra e estou ciente da política de entrega da Aura City.
