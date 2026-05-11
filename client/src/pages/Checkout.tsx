@@ -89,7 +89,7 @@ export default function Checkout() {
           </Button>
           
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            <img src="/logo.png" alt="Aura Logo" className="h-12 w-12 object-contain" />
+            <img src="/logo-home.webp" alt="Aura Logo" className="h-12 w-12 object-contain" />
           </div>
 
           <div className="ml-auto hidden md:flex items-center gap-2 text-green-500 font-bold text-[10px] tracking-widest border border-green-500/20 px-3 py-1.5 rounded-full bg-green-500/5">
