@@ -296,7 +296,7 @@ export default function Checkout() {
             <div className="flex items-center gap-5">
               <img src="/logo.webp" className="h-14 w-14 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" />
               <div className="text-left border-l border-border/50 pl-5">
-                <p className="text-sm font-black text-foreground tracking-tighter">AURA ROLEPLAY <span className="font-medium text-muted-foreground ml-1">© 2026</span></p>
+                <p className="text-sm font-black text-foreground tracking-tighter">AURA CITY RP <span className="font-medium text-muted-foreground ml-1">© 2026</span></p>
                 {/*<p className="text-[10px] text-muted-foreground font-medium">Este site não possui afiliação com a Rockstar Games ou Take-Two Interactive.</p>*/}
               </div>
             </div>
