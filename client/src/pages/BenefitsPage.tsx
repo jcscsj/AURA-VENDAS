@@ -51,26 +51,6 @@ export default function BenefitsPage() {
   const total = Math.max(subtotal - discount, 0);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const addToCart = (product: any) => {
-    setCart((current) => {
-      const exists = current.find((item) => item.id === product.id);
-      if (exists) return current.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      return [...current, { ...product, quantity: 1 }];
-    });
-    setCartOpen(true);
-    toast.success(`${product.name} adicionado!`);
-  };
-
-  const updateQuantity = (productId: number, direction: "increase" | "decrease") => {
-    setCart((current) =>
-      current.map((item) => {
-        if (item.id !== productId) return item;
-        const nextQuantity = direction === "increase" ? item.quantity + 1 : item.quantity - 1;
-        return { ...item, quantity: nextQuantity };
-      }).filter((item) => item.quantity > 0)
-    );
-  };
-
   const createOrderMut = trpc.shop.orders.create.useMutation({
     onSuccess: () => {
       toast.success("Pedido realizado com sucesso!");
