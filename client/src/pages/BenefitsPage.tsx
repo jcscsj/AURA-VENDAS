@@ -165,24 +165,36 @@ export default function BenefitsPage() {
               </div>
             </div>
 
-            <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+            <div className="rounded-lg border border-border bg-card p-4">
               <h3 className="text-xs font-bold text-muted-foreground uppercase mb-3">Categorias</h3>
-              <button onClick={() => setActiveCategory(null)} className={`w-full rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${activeCategory === null ? "bg-primary text-black" : "hover:bg-background"}`}>Todos</button>
-              {categories
-                    .filter((category) => category.type === "catalog" || !category.type)
-                    .map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => setActiveCategory(category.id)}
-                        className={`w-full rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
-                          activeCategory === category.id
-                            ? "bg-primary text-black"
-                            : "bg-card text-foreground hover:bg-card/80 border border-border"
-                        }`}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
+              
+              {/* FATO TÉCNICO: 'flex-nowrap' e 'overflow-x-auto' criam a "esteira" de rolagem no celular */}
+              <div className="flex lg:flex-col gap-2 overflow-x-auto pb-3 lg:pb-0 no-scrollbar flex-nowrap">
+                <button 
+                  onClick={() => setActiveCategory(null)} 
+                  className={`whitespace-nowrap rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${activeCategory === null ? "bg-primary text-black" : "hover:bg-background border border-transparent"}`}
+                >
+                  Todos
+                </button>
+
+                {categories
+                  // FATO TÉCNICO: Mudamos para 'benefits' para mostrar VIPs/Serviços nesta página
+                  .filter((category) => category.type === "benefits")
+                  .map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                      // 'whitespace-nowrap' impede que o nome da categoria quebre em duas linhas no celular
+                      className={`whitespace-nowrap rounded-lg px-4 py-2 text-left text-sm font-semibold transition ${
+                        activeCategory === category.id
+                          ? "bg-primary text-black"
+                          : "bg-background/50 text-foreground hover:bg-background border border-border/40"
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+              </div>
             </div>
           </aside>
 
