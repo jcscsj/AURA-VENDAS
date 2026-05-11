@@ -294,10 +294,10 @@ export default function Checkout() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-5">
-              <img src="/logo.png" className="h-14 w-14 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" />
+              <img src="/logo.webp" className="h-14 w-14 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" />
               <div className="text-left border-l border-border/50 pl-5">
                 <p className="text-sm font-black text-foreground tracking-tighter">AURA ROLEPLAY <span className="font-medium text-muted-foreground ml-1">© 2026</span></p>
-                <p className="text-[10px] text-muted-foreground font-medium">Este site não possui afiliação com a Rockstar Games ou Take-Two Interactive.</p>
+                {/*<p className="text-[10px] text-muted-foreground font-medium">Este site não possui afiliação com a Rockstar Games ou Take-Two Interactive.</p>*/}
               </div>
             </div>
             
