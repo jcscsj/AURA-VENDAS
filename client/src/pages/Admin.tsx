@@ -22,6 +22,7 @@ export default function Admin() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "banners" | "orders" | "config" | "users" | "logs">("products");
   const [visibleEmails, setVisibleEmails] = useState<Record<number, boolean>>({});
+  const [newCoupon, setNewCoupon] = useState({ code: "", type: "percentage", value: 0 });
 
   // Proteger rota de admin
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function Admin() {
     enabled: !!user,
   });
   const { data: siteConfig, refetch: refetchConfig } = trpc.shop.admin.config.get.useQuery();
+  const { data: coupons = [], refetch: refetchCoupons } = trpc.shop.admin.coupons.list.useQuery();
 
   // Mutations
   const createCategoryMut = trpc.shop.admin.categories.create.useMutation({
@@ -174,6 +176,23 @@ export default function Admin() {
       toast.success("Banner movido para baixo!");
     },
     onError: () => toast.error("Erro ao mover banner"),
+  });
+
+  const createCouponMut = trpc.shop.admin.coupons.create.useMutation({
+    onSuccess: () => {
+      refetchCoupons();
+      toast.success("Cupom criado com sucesso!");
+      setNewCoupon({ code: "", type: "percentage", value: 0 });
+    },
+    onError: (err: any) => toast.error("Erro: " + err.message),
+  });
+
+  const deleteCouponMut = trpc.shop.admin.coupons.delete.useMutation({
+    onSuccess: () => {
+      refetchCoupons();
+      toast.success("Cupom removido!");
+    },
+    onError: (err: any) => toast.error("Erro ao remover: " + err.message),
   });
 
   const updateConfigMut = trpc.shop.admin.config.update.useMutation({
@@ -317,7 +336,7 @@ export default function Admin() {
       <div className="container py-8">
         {/* Tabs */}
         <div className="flex gap-2 border-b border-border mb-8">
-          {(["products", "categories", "banners", "orders", "config", "users", "logs"] as const).map((tab) => (
+          {(["products", "categories", "banners", "orders", "config", "users", "coupons", "logs"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -782,6 +801,88 @@ export default function Admin() {
               ) : (
                 <p className="text-slate-500 italic">Aguardando novos eventos do servidor...</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "coupons" && (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Gerenciar Cupons</h2>
+              <div className="grid md:grid-cols-4 gap-4 rounded-lg border border-border bg-card p-6 shadow-md">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Código</label>
+                  <input
+                    type="text"
+                    value={newCoupon.code}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                    className="w-full rounded border border-border bg-background px-3 py-2 text-foreground focus:border-primary outline-none"
+                    placeholder="EX: AURA10"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Tipo</label>
+                  <select 
+                    value={newCoupon.type}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value as any })}
+                    className="w-full rounded border border-border bg-background px-3 py-2 text-foreground outline-none"
+                  >
+                    <option value="percentage">Porcentagem (%)</option>
+                    <option value="fixed">Valor Fixo (R$)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Valor</label>
+                  <input
+                    type="number"
+                    value={newCoupon.value}
+                    onChange={(e) => setNewCoupon({ ...newCoupon, value: Number(e.target.value) })}
+                    className="w-full rounded border border-border bg-background px-3 py-2 text-foreground focus:border-primary outline-none"
+                    placeholder={newCoupon.type === 'percentage' ? "Ex: 25" : "Ex: 1000 (R$10)"}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    className="w-full bg-primary hover:bg-orange-600 text-black font-bold h-10"
+                    onClick={() => createCouponMut.mutate(newCoupon)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Criar Cupom
+                  </Button>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2 px-1">
+                * Valores fixos devem ser informados em centavos. Exemplo: R$ 10,00 = 1000.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-4">Cupons Ativos</h3>
+              <div className="grid gap-3">
+                {coupons.map((c: any) => (
+                  <div key={c.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4 hover:border-primary/20 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-primary/10 p-2 rounded-lg">
+                        <Ticket className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground">{c.code}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {c.type === 'percentage' ? `${c.value}% de desconto` : `R$ ${(c.value/100).toFixed(2)} de desconto`}
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-destructive hover:bg-destructive/10" 
+                      onClick={() => { if(confirm(`Apagar cupom ${c.code}?`)) deleteCouponMut.mutate({ id: c.id }) }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                {coupons.length === 0 && <p className="text-muted-foreground text-sm italic">Nenhum cupom cadastrado.</p>}
+              </div>
             </div>
           </div>
         )}
