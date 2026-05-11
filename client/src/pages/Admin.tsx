@@ -267,7 +267,7 @@ export default function Admin() {
       <header className="border-b border-border bg-card">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/manus-storage/aura-city-logo_1da7d4d4.png" alt="Aura City" className="h-10 w-10 object-contain" />
+            <img src="/logo.webp" alt="Aura City" className="h-10 w-10 object-contain" />
             <div>
               <h1 className="text-xl font-bold text-foreground">Aura City</h1>
               <p className="text-xs text-muted-foreground">Painel Admin</p>
@@ -514,13 +514,13 @@ export default function Admin() {
               <div className="space-y-4 rounded-lg border border-border bg-background p-6">
                 <div>
                   <label className="block text-sm font-semibold text-foreground">Título</label>
-                    <input
-                      type="text"
-                      value={newBanner.title ?? ""}
-                      onChange={(e: any) => setNewBanner({ ...newBanner, title: e.target.value })}
-                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                      placeholder="Título do banner"
-                    />
+                  <input
+                    type="text"
+                    value={newBanner.title ?? ""}
+                    onChange={(e: any) => setNewBanner({ ...newBanner, title: e.target.value })}
+                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
+                    placeholder="Título do banner"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground">URL da Imagem</label>
@@ -530,6 +530,16 @@ export default function Admin() {
                     onChange={(e: any) => setNewBanner({ ...newBanner, imageUrl: e.target.value })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
                     placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-foreground">Link de Destino (Opcional)</label>
+                  <input
+                    type="text"
+                    value={newBanner.link ?? ""}
+                    onChange={(e: any) => setNewBanner({ ...newBanner, link: e.target.value })}
+                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
+                    placeholder="https://sua-loja.com/produto/1"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -549,11 +559,30 @@ export default function Admin() {
             <div>
               <h3 className="text-xl font-bold mb-4">Banners Existentes</h3>
               <div className="grid gap-4">
-                {banners.map((banner: any) => (
-                  <div key={banner.id} className="rounded-lg border border-border bg-background p-4">
-                    <img src={banner.imageUrl ?? ""} alt={banner.title ?? ""} className="h-32 w-full object-cover rounded mb-3" />
-                    <h4 className="font-semibold text-foreground mb-2">{banner.title ?? ""}</h4>
+                {banners.map((banner) => (
+                  <div key={banner.id} className="rounded-lg border border-border bg-background p-4 flex flex-col md:flex-row gap-4 items-center">
+                    <img src={banner.imageUrl ?? ""} alt={banner.title ?? ""} className="h-20 w-32 object-cover rounded border border-border" />
+                    <div className="flex-1 text-center md:text-left">
+                      <h4 className="font-semibold text-foreground">{banner.title || "Sem título"}</h4>
+                      <p className="text-xs text-muted-foreground truncate max-w-xs">{banner.link || "Sem link"}</p>
+                    </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => moveBannerUpMut.mutate({ id: banner.id })}
+                        title="Mover para cima"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => moveBannerDownMut.mutate({ id: banner.id })}
+                        title="Mover para baixo"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -568,13 +597,18 @@ export default function Admin() {
                         variant="ghost"
                         size="sm"
                         className="text-destructive"
-                        onClick={() => deleteBannerMut.mutate({ id: banner.id })}
+                        onClick={() => {
+                          if (window.confirm("Deseja apagar este banner?")) {
+                            deleteBannerMut.mutate({ id: banner.id });
+                          }
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
+                {banners.length === 0 && <p className="text-muted-foreground text-center py-4">Nenhum banner cadastrado.</p>}
               </div>
             </div>
           </div>
