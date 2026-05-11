@@ -402,6 +402,55 @@ export async function moveCategoryDown(id: number) {
     return current;
   } catch (e) { return null; }
 }
+
+// === MOVER PRODUTOS ===
+export async function moveProductUp(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const prev = await db_i.select().from(products).where(lt(products.order, curr.order)).orderBy(desc(products.order)).limit(1).then((r:any) => r[0]);
+  if (prev) {
+    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+  }
+  return curr;
+}
+export async function moveProductDown(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const next = await db_i.select().from(products).where(gt(products.order, curr.order)).orderBy(asc(products.order)).limit(1).then((r:any) => r[0]);
+  if (next) {
+    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+  }
+  return curr;
+}
+
+// === MOVER BANNERS ===
+export async function moveBannerUp(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const prev = await db_i.select().from(banners).where(lt(banners.order, curr.order)).orderBy(desc(banners.order)).limit(1).then((r:any) => r[0]);
+  if (prev) {
+    await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+    await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+  }
+  return curr;
+}
+export async function moveBannerDown(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
+  if (!curr) return null;
+  const next = await db_i.select().from(banners).where(gt(banners.order, curr.order)).orderBy(asc(banners.order)).limit(1).then((r:any) => r[0]);
+  if (next) {
+    await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+    await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+  }
+  return curr;
+}
+// ===== DELETAR USUÁRIO =====
 export async function deleteUser(id: number) {
   const db = await getDb();
   if (!db) return;
