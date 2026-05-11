@@ -561,96 +561,31 @@ export default function Home() {
             </div>
 
             <div className="border-t border-border p-4 space-y-4">
-              {/* CAMPO DE CUPOM DINÂMICO */}
-              <div className="flex gap-2">
-                <input
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  placeholder="Cupom de desconto"
-                  className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
-                />
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-primary text-primary"
-                  onClick={() => {
-                    if (couponInput === "SP25") {
-                      setAppliedCoupon("SP25");
-                      toast.success("Cupom aplicado!");
-                    } else {
-                      toast.error("Cupom inválido.");
-                    }
-                  }}
-                >
-                  Aplicar
-                </Button>
-              </div>
-
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                
-                {/* O cupom só aparece se 'appliedCoupon' não for nulo */}
-                {appliedCoupon && (
-                  <div className="flex justify-between text-primary font-semibold">
-                    <span>Cupom {appliedCoupon}</span>
-                    <span>- {formatCurrency(discount)}</span>
-                  </div>
-                )}
-                
-                <div className="flex justify-between border-t border-border pt-2 font-bold text-foreground">
-                  <span>Total</span>
-                  <span>{formatCurrency(total)}</span>
+                <div className="flex justify-between items-center py-2 font-bold text-foreground">
+                  <span className="text-muted-foreground font-medium">Valor total:</span>
+                  <span className="text-xl text-primary">{formatCurrency(subtotal)}</span>
                 </div>
               </div>
 
-              {!checkoutOpen ? (
-                <Button
-                  disabled={!cart.length}
-                  className="w-full bg-primary hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
-                  onClick={() => setCheckoutOpen(true)}
-                >
-                  Ir para checkout
-                </Button>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-foreground">
-                      Nick do jogador
-                      <input
-                        value={playerNick}
-                        onChange={(e) => setPlayerNick(e.target.value)}
-                        placeholder="Ex.: João_Santos"
-                        className="mt-1 w-full rounded border border-border bg-background px-3 py-2 text-foreground"
-                      />
-                    </label>
-                    <label className="block text-sm font-semibold text-foreground">
-                      ID do Jogo (5M)
-                      <input
-                        value={gameId}
-                        onChange={(e) => setGameId(e.target.value)}
-                        placeholder="Ex.: 12345"
-                        className="mt-1 w-full rounded border border-border bg-background px-3 py-2 text-foreground"
-                      />
-                    </label>
-                  </div>
-                  <Button
-                    className="w-full bg-primary hover:bg-orange-600 text-white font-semibold"
-                    onClick={submitOrder}
-                  >
-                    Confirmar Pedido
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setCheckoutOpen(false)}
-                  >
-                    Voltar
-                  </Button>
-                </>
-              )}
+              <Button 
+                disabled={cart.length === 0}
+                className="w-full bg-primary hover:bg-orange-600 text-black font-bold py-7 text-lg shadow-lg shadow-primary/10" 
+                onClick={() => {
+                  setCartOpen(false); // Fecha o menu lateral
+                  navigate("/checkout"); // Manda para a nova página de pagamento
+                }}
+              >
+                Ir para a compra
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setCartOpen(false)}
+              >
+                Continuar comprando
+              </Button>
             </div>
           </aside>
         </div>
