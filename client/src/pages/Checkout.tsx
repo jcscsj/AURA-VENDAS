@@ -95,7 +95,7 @@ export default function Checkout() {
     if (!isAuthenticated) return toast.error("Você precisa logar no Discord antes.");
     
     // VALIDAÇÃO OBRIGATÓRIA
-    if (!playerNick.trim()) return toast.error("O Nick do personagem é obrigatório.");
+    if (!playerNick.trim()) return toast.error("Seu nome é obrigatório.");
     if (!gameId.trim()) return toast.error("O ID do jogo é obrigatório.");
     if (!email.trim() || !email.includes("@")) return toast.error("Informe um e-mail válido.");
     if (!cpf.trim() || cpf.length < 11) return toast.error("Informe um CPF válido.");
@@ -191,12 +191,12 @@ export default function Checkout() {
             <Card className="p-6 border-border bg-card/30 backdrop-blur-sm space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nick no Personagem</label>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Seu Nome</label>
                   <input 
                     value={playerNick} 
                     onChange={(e) => setPlayerNick(e.target.value)}
                     className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all" 
-                    placeholder="Ex: Maxzin_Aura"
+                    placeholder="Ex: João Silva"
                   />
                 </div>
                 <div className="space-y-2">
@@ -221,7 +221,7 @@ export default function Checkout() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CPF (Para o Pagamento)</label>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CPF</label>
                   <input 
                     value={cpf} 
                     onChange={handleCpfChange} // <--- Ativa a máscara inteligente
