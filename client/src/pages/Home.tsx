@@ -486,7 +486,7 @@ export default function Home() {
               className="mt-6 bg-primary hover:bg-orange-600 text-black font-semibold"
               onClick={() => navigate("/beneficios")}
             >
-              Ver Catálogo
+              Ver Benefícios
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
