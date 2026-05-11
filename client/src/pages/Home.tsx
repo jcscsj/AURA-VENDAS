@@ -322,9 +322,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Seção de Banners Dinâmicos (Vindos do Admin) */}
-        {banners.map((banner) => (
-                // FATO TÉCNICO: Se tiver link, vira um <a>, senão vira uma <div> normal
+        {/* SEÇÃO DE BANNERS DINÂMICOS - ABAIXO DO HERO */}
+        {banners && banners.length > 0 && (
+          <section className="container py-8 scroll-mt-20">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {banners.map((banner) => (
                 <a 
                   key={banner.id} 
                   href={banner.link || "#"} 
