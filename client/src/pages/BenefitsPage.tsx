@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useShop } from "@/contexts/ShopContext";
 import { ChevronLeft, Minus, Plus, Search, ShoppingCart, Trash2, X } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
