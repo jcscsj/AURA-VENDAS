@@ -459,26 +459,26 @@ export default function Admin() {
 
         {/* Categorias */}
         {activeTab === "categories" && (
-          <div>
+          <div className="space-y-8"> {/* ESTA DIV É O WRAPPER QUE RESOLVE O ERRO */}
+            {/* 1. Formulário de Criação/Edição */}
+            <div>
               <h2 className="text-2xl font-bold mb-4">Gerenciar Categorias</h2>
               <div className="flex flex-col md:flex-row gap-2 rounded-lg border border-border bg-card p-6 shadow-md">
-                {/* Nome da Categoria */}
                 <input
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="flex-1 rounded border border-border bg-background px-3 py-2 text-foreground focus:border-primary outline-none"
-                  placeholder="Nome da categoria (ex: Veículos VIP)"
+                  placeholder="Nome da categoria"
                 />
                 
-                {/* Seletor de Destino */}
                 <select 
                   value={newCategoryType}
                   onChange={(e) => setNewCategoryType(e.target.value as any)}
                   className="rounded border border-border bg-background px-3 py-2 text-foreground outline-none font-semibold text-sm"
                 >
                   <option value="catalog">📍 Catálogo (Home)</option>
-                  <option value="benefits">⭐ Benefícios</option>
+                  <option value="benefits">⭐ Benefícios (Pág. Secundária)</option>
                 </select>
 
                 <Button 
@@ -495,11 +495,17 @@ export default function Admin() {
                   {editingCategoryId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   {editingCategoryId ? "Salvar" : "Adicionar"}
                 </Button>
+                {editingCategoryId && (
+                  <Button variant="ghost" onClick={() => { setEditingCategoryId(null); setNewCategoryName(""); }}>
+                    Cancelar
+                  </Button>
+                )}
               </div>
             </div>
 
+            {/* 2. Listas Separadas (Onde dava o erro de "className") */}
             <div className="space-y-10">
-              {/* LISTA 1: CATÁLOGO PRINCIPAL */}
+              {/* CATÁLOGO PRINCIPAL */}
               <div className="space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2 text-primary uppercase tracking-widest">
                   <div className="w-2 h-2 bg-primary rounded-full" /> Catálogo Principal (Home)
@@ -511,17 +517,7 @@ export default function Admin() {
                       <div className="flex gap-2">
                         <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => {
-                            setEditingCategoryId(category.id);
-                            setNewCategoryName(category.name);
-                            setNewCategoryType('catalog');
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4 text-primary" />
-                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setEditingCategoryId(category.id); setNewCategoryName(category.name); setNewCategoryType('catalog'); }}><Edit2 className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
@@ -529,10 +525,10 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* LISTA 2: BENEFÍCIOS */}
+              {/* BENEFÍCIOS */}
               <div className="space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2 text-orange-400 uppercase tracking-widest">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full" /> Benefícios do Jogo (Pág. Secundária)
+                  <div className="w-2 h-2 bg-orange-400 rounded-full" /> Benefícios do Jogo
                 </h3>
                 <div className="grid gap-3">
                   {categories.filter(c => c.type === 'benefits').map((category) => (
@@ -541,29 +537,19 @@ export default function Admin() {
                       <div className="flex gap-2">
                         <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => {
-                            setEditingCategoryId(category.id);
-                            setNewCategoryName(category.name);
-                            setNewCategoryType('benefits');
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4 text-primary" />
-                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setEditingCategoryId(category.id); setNewCategoryName(category.name); setNewCategoryType('benefits'); }}><Edit2 className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
                   ))}
                   {categories.filter(c => c.type === 'benefits').length === 0 && (
-                    <p className="text-muted-foreground text-sm italic pl-4">Nenhuma categoria de benefícios criada.</p>
+                    <p className="text-muted-foreground text-sm italic pl-4">Nenhuma categoria de benefícios.</p>
                   )}
                 </div>
               </div>
             </div>
+          </div> /* FIM DA DIV PAI */
         )}
-
         {/* Banners */}
         {activeTab === "banners" && (
           <div className="space-y-8">
