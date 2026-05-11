@@ -186,6 +186,8 @@ export const siteConfig = mysqlTable("siteConfig", {
   welcomeText: text("welcomeText"), // Texto de boas-vindas
   catalogTitle: varchar("catalogTitle", { length: 255 }), // "Catálogo"
   benefitsTitle: varchar("benefitsTitle", { length: 255 }), // "Benefícios"
+  couponBannerText: text('couponBannerText'),
+  couponBannerEnabled: boolean('couponBannerEnabled').default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
