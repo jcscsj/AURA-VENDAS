@@ -26,7 +26,10 @@ import {
 
 const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
 
-const { user, isAuthenticated, loading: authLoading } = useAuth();
+export default function Checkout() {
+  const [, navigate] = useLocation(); // <--- ADICIONE ESTA LINHA TAMBÉM
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  
   // FATO TÉCNICO: Puxamos as funções de editar e remover do carrinho global
   const { cart, clearCart, updateQuantity, removeItem } = useShop();
 
