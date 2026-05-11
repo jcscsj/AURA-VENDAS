@@ -46,7 +46,7 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
-      // 5. Cria a sessão
+      // 5. Cria a sessão oficial do site
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userName,
         expiresInMs: ONE_YEAR_MS,
@@ -56,21 +56,25 @@ export function registerOAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
       // ==========================================
-      // LÓGICA DE REDIRECIONAMENTO (Nomes únicos para evitar erro)
+      // LÓGICA DE REDIRECIONAMENTO (Smart Redirect)
       // ==========================================
-      let finalTargetUrl = "/"; // Padrão é a home
+      let finalTargetUrl = "/"; // Padrão é a home caso algo falhe
       try {
-        // Decodifica o 'state' vindo do frontend (ex: /checkout)
+        // Decodifica o 'state' vindo do frontend (que contém a URL de onde você veio)
         finalTargetUrl = Buffer.from(state, 'base64').toString('utf-8');
       } catch (e) {
-        console.error("[OAuth] Erro ao ler destino, voltando para a home.");
+        console.error("[OAuth] Erro ao decodificar destino, voltando para a home.");
       }
 
-      // Redireciona para o destino real
+      // Redireciona para o destino real (ex: /checkout)
       res.redirect(302, finalTargetUrl);
 
     } catch (error) {
       console.error("[Discord OAuth] Erro no login:", error);
-      res.status(500).json({ error: "Falha ao logar" });
+      res.status(500).json({ 
+        error: "Falha ao logar com Discord", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
+}
