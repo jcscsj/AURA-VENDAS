@@ -884,6 +884,43 @@ export default function Admin() {
                 {coupons.length === 0 && <p className="text-muted-foreground text-sm italic">Nenhum cupom cadastrado.</p>}
               </div>
             </div>
+            <div className="mt-12 pt-8 border-t border-border">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="bg-primary/20 p-2 rounded-lg">
+                  <Plus className="w-5 h-5 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Configurar Anúncio no Checkout</h2>
+              </div>
+              
+              <div className="rounded-xl border border-border bg-card/50 p-6 space-y-6">
+                <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-bold">Ativar Barra de Anúncio?</p>
+                    <p className="text-xs text-muted-foreground">Isso mostrará uma faixa laranja no topo do checkout.</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="w-6 h-6 accent-primary cursor-pointer"
+                    checked={siteConfig?.couponBannerEnabled || false}
+                    onChange={(e) => updateConfigMut.mutate({ ...siteConfig, couponBannerEnabled: e.target.checked })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Texto do Anúncio</label>
+                  <input
+                    type="text"
+                    defaultValue={siteConfig?.couponBannerText || ""}
+                    onBlur={(e) => updateConfigMut.mutate({ ...siteConfig, couponBannerText: e.target.value })}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all"
+                    placeholder="EX: USE O CUPOM AURA30 E GANHE 30% DE DESCONTO!"
+                  />
+                  <p className="text-[10px] text-muted-foreground italic px-1">
+                    * O texto é salvo automaticamente quando você clica fora do campo.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
