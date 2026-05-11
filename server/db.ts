@@ -192,17 +192,6 @@ export async function deleteProduct(id: number) {
 
 // ===== BANNERS (INSERÇÃO BLINDADA) =====
 export async function getBanners() {
-  const db = await getDb(); if (!db) return[];
-  return db.select().from(banners);
-}
-
-export async function createBanner(data: any) {
-  const db = await getDb(); if (!db) return null;
-  await db.insert(banners).values({ title: data.title, imageUrl: data.imageUrl });
-  return db.select().from(banners).orderBy(desc(banners.id)).limit(1).then(r => r[0]);
-}
-
-export async function getBanners() {
   const db = await getDb(); if (!db) return [];
   return db.select().from(banners).orderBy(asc(banners.order));
 }
@@ -265,7 +254,6 @@ export async function moveBannerDown(id: number) {
   }
   return curr;
 }
-
 // ===== PEDIDOS (ORDERS) =====
 export async function getOrders() {
   const db = await getDb(); if (!db) return[];
