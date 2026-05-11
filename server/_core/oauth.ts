@@ -21,68 +21,56 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      // Decodificamos o redirectUri que o frontend enviou via 'state'
-      const redirectUri = Buffer.from(state, 'base64').toString('utf-8');
+      // 1. Endereço fixo da API para trocar o token (Obrigatório para o Discord)
+      const apiCallbackUrl = `${req.protocol}://${req.get('host')}/api/oauth/callback`;
       
-      // 1. Troca o código pelo Token do Discord
-      const accessToken = await getDiscordAccessToken(code, redirectUri);
+      // 2. Troca o código pelo Token do Discord
+      const accessToken = await getDiscordAccessToken(code, apiCallbackUrl);
       
-      // 2. Pega os dados do usuário no Discord
+      // 3. Pega os dados do usuário no Discord
       const discordUser = await getDiscordUser(accessToken);
 
-      // 3. Formata o ID e Nome para o padrão da loja
+      // 4. Formata e salva no banco
       const openId = `discord_${discordUser.id}`;
       const userName = discordUser.global_name || discordUser.username;
 
-      // FATO TÉCNICO: Montamos a URL da foto oficial do Discord
-      const avatarUrl = discordUser.avatar 
-        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/${Number(discordUser.id) % 5}.png`;
-
-      // FATO TÉCNICO: Log de segurança para você ver no Render se o ID chegou
-      console.log(`[AUTH] Tentando salvar usuário: ${userName} | ID: ${discordUser.id}`);
-
-      // 4. Salva ou atualiza no banco de dados TiDB
       await db.upsertUser({
         openId,
         name: userName,
         email: discordUser.email || null,
         loginMethod: "discord",
         discordId: discordUser.id,
-        profilePicture: avatarUrl, // ADICIONAMOS A FOTO AQUI
+        profilePicture: discordUser.avatar 
+          ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+          : null,
         lastSignedIn: new Date(),
       });
 
-      // 5. Cria a sessão oficial do site (usando o SDK do Manus para compatibilidade)
+      // 5. Cria a sessão
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userName,
         expiresInMs: ONE_YEAR_MS,
       });
 
-      // 6. Seta o Cookie e manda o jogador de volta pra loja
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // FATO TÉCNICO: Decodificamos o 'state' (que é a URL de onde o usuário veio)
-      // Se por algum motivo o state estiver bugado, ele volta para a Home "/" por segurança.
-      let redirectUri = "/";
+      // ==========================================
+      // LÓGICA DE REDIRECIONAMENTO (Nomes únicos para evitar erro)
+      // ==========================================
+      let finalTargetUrl = "/"; // Padrão é a home
       try {
-        if (state) {
-          redirectUri = Buffer.from(state, 'base64').toString('utf-8');
-        }
+        // Decodifica o 'state' vindo do frontend (ex: /checkout)
+        finalTargetUrl = Buffer.from(state, 'base64').toString('utf-8');
       } catch (e) {
-        console.error("[OAuth] Erro ao decodificar o state, voltando para a home.");
+        console.error("[OAuth] Erro ao ler destino, voltando para a home.");
       }
 
-      // Agora ele redireciona para a página exata (Ex: /checkout)
-      res.redirect(302, redirectUri);
+      // Redireciona para o destino real
+      res.redirect(302, finalTargetUrl);
 
     } catch (error) {
       console.error("[Discord OAuth] Erro no login:", error);
-      res.status(500).json({ 
-        error: "Falha ao logar com Discord", 
-        details: error instanceof Error ? error.message : String(error) 
-      });
+      res.status(500).json({ error: "Falha ao logar" });
     }
   });
-}
