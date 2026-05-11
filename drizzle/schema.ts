@@ -62,14 +62,15 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 
 // Banners
-export const banners = mysqlTable("banners", {
-  id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }),
-  imageUrl: varchar("imageUrl", { length: 512 }),
+export const banners = mysqlTable('banners', {
+  id: int('id').primaryKey().autoincrement(),
+  title: varchar('title', { length: 255 }),
+  imageUrl: text('imageUrl').notNull(),
+  // ADICIONE ESTAS DUAS LINHAS ABAIXO:
   link: text('link'),
-  order: int("order").default(0).notNull(),
-  createdAt: timestamp("createdAt"),
-  updatedAt: timestamp("updatedAt"),
+  order: int('order').notNull().default(0),
+  createdAt: timestamp('createdAt').defaultNow(),
+  updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow(),
 });
 
 export type Banner = typeof banners.$inferSelect;
