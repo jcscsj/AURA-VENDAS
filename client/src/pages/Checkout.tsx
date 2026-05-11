@@ -29,6 +29,7 @@ export default function Checkout() {
     { code: couponInput },
     { enabled: false }
   );
+  const { data: siteConfig } = trpc.shop.admin.config.get.useQuery();
 
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
@@ -120,6 +121,16 @@ export default function Checkout() {
           </div>
         </div>
       </nav>
+
+      {siteConfig?.couponBannerEnabled && siteConfig?.couponBannerText && (
+        <div className="bg-primary py-3 shadow-lg shadow-primary/20 border-y border-white/10 overflow-hidden relative group">
+          <div className="container mx-auto px-4">
+            <p className="text-black font-black text-center text-sm md:text-base tracking-widest uppercase animate-pulse">
+              {siteConfig.couponBannerText}
+            </p>
+          </div>
+        </div>
+      )}
 
       <main className="container mx-auto py-12 px-4 grid lg:grid-cols-[1fr_420px] gap-10 flex-grow">
         <div className="space-y-8">
