@@ -25,12 +25,16 @@ export default function Checkout() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { cart, clearCart } = useShop();
+  const checkCoupon = trpc.shop.admin.coupons.check.useQuery(
+    { code: couponInput },
+    { enabled: false }
+  );
 
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
 
@@ -43,7 +47,15 @@ export default function Checkout() {
   }, [user]);
 
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
-  const discount = appliedCoupon === "SP25" ? Math.round(subtotal * 0.25) : 0;
+  const discount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    // Se for porcentagem (ex: 25%), calcula sobre o subtotal
+    if (appliedCoupon.type === 'percentage') {
+      return Math.round(subtotal * (appliedCoupon.value / 100));
+    }
+    // Se for valor fixo, usa o valor direto (que já está em centavos)
+    return appliedCoupon.value;
+  }, [appliedCoupon, subtotal]);
   const total = Math.max(subtotal - discount, 0);
 
   const createOrderMut = trpc.shop.orders.create.useMutation({
@@ -238,9 +250,18 @@ export default function Checkout() {
               <Button 
                 variant="outline" 
                 className="border-primary text-primary rounded-xl px-4 hover:bg-primary hover:text-black transition-all"
-                onClick={() => {
-                  if (couponInput === "SP25") { setAppliedCoupon("SP25"); toast.success("Desconto aplicado!"); }
-                  else toast.error("Cupom inválido.");
+                onClick={async () => {
+                  if (!couponInput.trim()) return;
+                  
+                  const { data: coupon } = await checkCoupon.refetch();
+                  
+                  if (coupon && coupon.isActive) {
+                    setAppliedCoupon(coupon);
+                    toast.success(`Cupom ${coupon.code} aplicado com sucesso!`);
+                  } else {
+                    setAppliedCoupon(null);
+                    toast.error("Cupom inválido ou expirado.");
+                  }
                 }}
               >
                 <Ticket className="w-4 h-4" />
