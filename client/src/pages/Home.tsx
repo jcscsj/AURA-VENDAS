@@ -82,15 +82,24 @@ export default function Home() {
   // Filtrar produtos
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    
+    // 1. Pegamos IDs das categorias de 'catalog' ou sem tipo (antigas)
+    const catalogCategoryIds = categories
+      .filter(c => c.type === 'catalog' || !c.type)
+      .map(c => c.id);
+
     return products.filter((product) => {
+      // 2. O produto SÓ aparece se a categoria dele for do catálogo principal
+      const belongsToCatalog = catalogCategoryIds.includes(product.categoryId);
+      
       const matchesCategory = activeCategory === null || product.categoryId === activeCategory;
-      const matchesQuery =
-        !normalizedQuery ||
-        (product.name?.toLowerCase().includes(normalizedQuery) ?? false) ||
+      const matchesQuery = !normalizedQuery || 
+        (product.name?.toLowerCase().includes(normalizedQuery) ?? false) || 
         (product.description?.toLowerCase().includes(normalizedQuery) ?? false);
-      return matchesCategory && matchesQuery;
+      
+      return belongsToCatalog && matchesCategory && matchesQuery;
     });
-  }, [activeCategory, query, products]);
+  }, [activeCategory, query, products, categories]);
 
   // Cálculos do carrinho
   const subtotal = useMemo(
