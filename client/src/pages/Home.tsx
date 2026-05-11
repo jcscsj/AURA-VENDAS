@@ -58,9 +58,7 @@ export default function Home() {
   // Local state
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
-  const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [cart, setCart] = useState<CartLine[]>([]);
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
   const [discord, setDiscord] = useState("");
