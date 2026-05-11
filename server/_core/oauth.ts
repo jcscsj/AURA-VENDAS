@@ -34,16 +34,22 @@ export function registerOAuthRoutes(app: Express) {
       const openId = `discord_${discordUser.id}`;
       const userName = discordUser.global_name || discordUser.username;
 
+      // FATO TÉCNICO: Montamos a URL da foto oficial do Discord
+      const avatarUrl = discordUser.avatar 
+        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+        : `https://cdn.discordapp.com/embed/avatars/${Number(discordUser.id) % 5}.png`;
+
       // FATO TÉCNICO: Log de segurança para você ver no Render se o ID chegou
       console.log(`[AUTH] Tentando salvar usuário: ${userName} | ID: ${discordUser.id}`);
 
       // 4. Salva ou atualiza no banco de dados TiDB
       await db.upsertUser({
-        openId: openId,
+        openId,
         name: userName,
         email: discordUser.email || null,
         loginMethod: "discord",
         discordId: discordUser.id,
+        profilePicture: avatarUrl, // ADICIONAMOS A FOTO AQUI
         lastSignedIn: new Date(),
       });
 
