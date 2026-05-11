@@ -247,17 +247,50 @@ export default function Home() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="container grid gap-3 border-t border-border bg-card py-4 text-sm font-semibold text-foreground lg:hidden">
-            <a href="#catalogo" onClick={() => setMobileMenuOpen(false)}>Catálogo</a>
+          <div className="container grid gap-4 border-t border-border bg-card py-6 text-sm font-semibold text-foreground lg:hidden">
+            <a href="#catalogo" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-2 border-b border-border/50">
+              Catálogo
+            </a>
             <button 
-              onClick={() => {
-                setMobileMenuOpen(false);
-                navigate("/beneficios");
-              }} 
-              className="text-left hover:text-primary"
+              onClick={() => { setMobileMenuOpen(false); navigate("/beneficios"); }} 
+              className="text-left hover:text-primary py-2 border-b border-border/50"
             >
               Benefícios
             </button>
+
+            {/* SEÇÃO DE CONTA NO MOBILE */}
+            <div className="pt-2 space-y-3">
+              {!isAuthenticated ? (
+                <Button
+                  className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold"
+                  onClick={() => { setMobileMenuOpen(false); window.location.href = getLoginUrl(); }}
+                >
+                  Entrar com Discord
+                </Button>
+              ) : (
+                <div className="grid gap-2">
+                  <p className="text-xs text-muted-foreground uppercase px-1">Minha Conta</p>
+                  <Button variant="outline" className="justify-start border-border" onClick={() => { setMobileMenuOpen(false); navigate("/orders"); }}>
+                    Meus Pedidos
+                  </Button>
+                  <Button variant="outline" className="justify-start border-border" onClick={() => { setMobileMenuOpen(false); navigate("/profile"); }}>
+                    Meu Perfil
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start text-red-500 hover:bg-red-500/10" 
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await logout();
+                      localStorage.clear();
+                      window.location.href = "/";
+                    }}
+                  >
+                    Sair da Conta
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </header>
