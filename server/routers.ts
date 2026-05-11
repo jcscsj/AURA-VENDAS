@@ -448,7 +448,11 @@ export const appRouter = router({
           return db.getCategories();
         }),
         create: publicProcedure
-          .input(z.object({ name: z.string().min(1) }))
+          .input(z.object({ 
+            name: z.string().min(1),
+            // FATO TÉCNICO: Avisamos ao segurança para aceitar apenas 'catalog' ou 'benefits'
+            type: z.enum(['catalog', 'benefits']).default('catalog') 
+          }))
           .mutation(async ({ input, ctx }) => {
             if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -460,7 +464,8 @@ export const appRouter = router({
                 message: "Já existe uma categoria com este nome." 
               });
             }
-            // 2. Criar a categoria
+
+            // 2. Criar a categoria (Agora o 'input' contém o Nome e o Tipo)
             return db.createCategory(input);
           }),
         update: publicProcedure
