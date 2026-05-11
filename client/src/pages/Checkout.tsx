@@ -31,11 +31,14 @@ export default function Checkout() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
 
   useEffect(() => {
     if (user) {
       if (user.characterName) setPlayerNick(user.characterName);
       if (user.gameId) setGameId(user.gameId);
+      if (user.email) setEmail(user.email);
     }
   }, [user]);
 
@@ -54,12 +57,19 @@ export default function Checkout() {
 
   const handleProcessPayment = () => {
     if (!isAuthenticated) return toast.error("Você precisa logar no Discord antes.");
-    if (!playerNick || !gameId) return toast.error("Preencha seu Nick e ID do jogo.");
-    if (!termsAccepted) return toast.error("Aceite os termos para prosseguir.");
+    
+    // VALIDAÇÃO OBRIGATÓRIA
+    if (!playerNick.trim()) return toast.error("O Nick do personagem é obrigatório.");
+    if (!gameId.trim()) return toast.error("O ID do jogo é obrigatório.");
+    if (!email.trim() || !email.includes("@")) return toast.error("Informe um e-mail válido.");
+    if (!cpf.trim() || cpf.length < 11) return toast.error("Informe um CPF válido.");
+    if (!termsAccepted) return toast.error("Você precisa aceitar os termos.");
     
     createOrderMut.mutate({
       playerNick,
       gameId,
+      email, // Novo campo
+      cpf,   // Novo campo
       discord: user?.name,
       discordId: user?.discordId,
       items: cart.map(i => ({ productId: i.id, quantity: i.quantity, price: i.price, name: i.name })),
@@ -68,7 +78,7 @@ export default function Checkout() {
       total,
     });
   };
-
+  
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
@@ -137,12 +147,33 @@ export default function Checkout() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">ID no Jogo (5M)</label>
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">ID no Jogo</label>
                   <input 
                     value={gameId} 
                     onChange={(e) => setGameId(e.target.value)}
                     className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all" 
                     placeholder="Ex: 1234"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 pt-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">E-mail para Contato</label>
+                  <input 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all" 
+                    placeholder="seu@email.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CPF (Para o Pagamento)</label>
+                  <input 
+                    value={cpf} 
+                    onChange={(e) => setCpf(e.target.value)}
+                    className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all" 
+                    placeholder="000.000.000-00"
                   />
                 </div>
               </div>
