@@ -402,10 +402,6 @@ export async function moveCategoryDown(id: number) {
     return current;
   } catch (e) { return null; }
 }
-export async function moveProductUp(id: number) { return null; }
-export async function moveProductDown(id: number) { return null; }
-export async function moveBannerUp(id: number) { return null; }
-export async function moveBannerDown(id: number) { return null; }
 export async function deleteUser(id: number) {
   const db = await getDb();
   if (!db) return;
