@@ -239,16 +239,20 @@ export async function createOrder(data: any) {
   const db_i = await getDb(); if (!db_i) return null;
   try {
     const itemsJson = JSON.stringify(data.items);
-    // FATO TÉCNICO: Forçamos a gravação nas colunas exatas
+    // FATO TÉCNICO: Usamos as crases (`) para o TiDB não confundir os nomes das colunas
     await db_i.execute(sql`
       INSERT INTO \`orders\` 
       (\`playerNick\`, \`gameId\`, \`email\`, \`cpf\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
       VALUES 
-      (${data.playerNick}, ${data.gameId}, ${data.email}, ${data.cpf}, ${data.discord}, ${data.discordId}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
+      (${data.playerNick}, ${data.gameId}, ${data.email || null}, ${data.cpf || null}, ${data.discord}, ${data.discordId}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
     `);
+    
     const res = await db_i.select().from(orders).orderBy(desc(orders.id)).limit(1);
     return res[0] || null;
-  } catch (e) { return null; }
+  } catch (error) {
+    console.error("[DB Error] Erro ao criar pedido:", error);
+    return null;
+  }
 }
 
 export async function deleteOrder(id: number) {
