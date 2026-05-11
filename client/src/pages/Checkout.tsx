@@ -29,7 +29,7 @@ export default function Checkout() {
     { code: couponInput },
     { enabled: false }
   );
-  const { data: siteConfig } = trpc.shop.admin.config.get.useQuery();
+  const { data: siteConfig = { couponBannerEnabled: false, couponBannerText: "" } } = trpc.shop.admin.config.get.useQuery();
 
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
