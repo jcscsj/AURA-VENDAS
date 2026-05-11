@@ -207,6 +207,7 @@ export default function Admin() {
   const [newBanner, setNewBanner] = useState<any>({});
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
   const [configForm, setConfigForm] = useState<any>({});
+  const [newCategoryType, setNewCategoryType] = useState<"catalog" | "benefits">("catalog");
 
   // Redirect if not admin
   useEffect(() => {
@@ -458,36 +459,42 @@ export default function Admin() {
 
         {/* Categorias */}
         {activeTab === "categories" && (
-          <div className="space-y-8">
-            <div>
+          <div>
               <h2 className="text-2xl font-bold mb-4">Gerenciar Categorias</h2>
-              <div className="flex gap-2 rounded-lg border border-border bg-background p-4">
+              <div className="flex flex-col md:flex-row gap-2 rounded-lg border border-border bg-card p-6 shadow-md">
+                {/* Nome da Categoria */}
                 <input
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="flex-1 rounded border border-border bg-card px-3 py-2 text-foreground"
-                  placeholder="Nome da categoria"
+                  className="flex-1 rounded border border-border bg-background px-3 py-2 text-foreground focus:border-primary outline-none"
+                  placeholder="Nome da categoria (ex: Veículos VIP)"
                 />
+                
+                {/* Seletor de Destino */}
+                <select 
+                  value={newCategoryType}
+                  onChange={(e) => setNewCategoryType(e.target.value as any)}
+                  className="rounded border border-border bg-background px-3 py-2 text-foreground outline-none font-semibold text-sm"
+                >
+                  <option value="catalog">📍 Catálogo (Home)</option>
+                  <option value="benefits">⭐ Benefícios</option>
+                </select>
+
                 <Button 
-                  className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" 
+                  className="gap-2 bg-primary hover:bg-orange-600 text-black font-bold px-6" 
                   onClick={() => {
                     if (!newCategoryName.trim()) return;
                     if (editingCategoryId) {
-                      updateCategoryMut.mutate({ id: editingCategoryId, name: newCategoryName });
+                      updateCategoryMut.mutate({ id: editingCategoryId, name: newCategoryName, type: newCategoryType });
                     } else {
-                      createCategoryMut.mutate({ name: newCategoryName });
+                      createCategoryMut.mutate({ name: newCategoryName, type: newCategoryType });
                     }
                   }}
                 >
                   {editingCategoryId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   {editingCategoryId ? "Salvar" : "Adicionar"}
                 </Button>
-                {editingCategoryId && (
-                  <Button variant="ghost" onClick={() => { setEditingCategoryId(null); setNewCategoryName(""); }}>
-                    Cancelar
-                  </Button>
-                )}
               </div>
             </div>
 
