@@ -236,25 +236,19 @@ export async function getOrders() {
 }
 
 export async function createOrder(data: any) {
-  const db_instance = await getDb();
-  if (!db_instance) return null;
+  const db_i = await getDb(); if (!db_i) return null;
   try {
     const itemsJson = JSON.stringify(data.items);
-    // FATO TÉCNICO: Gravamos o discord e o discordId exatamente como chegam
-    await db_instance.execute(sql`
+    // FATO TÉCNICO: Forçamos a gravação nas colunas exatas
+    await db_i.execute(sql`
       INSERT INTO \`orders\` 
-      (\`playerNick\`, \`gameId\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
+      (\`playerNick\`, \`gameId\`, \`email\`, \`cpf\`, \`discord\`, \`discordId\`, \`items\`, \`subtotal\`, \`discount\`, \`total\`, \`status\`, \`createdAt\`) 
       VALUES 
-      (${data.playerNick}, ${data.gameId}, ${data.discord}, ${data.discordId}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
+      (${data.playerNick}, ${data.gameId}, ${data.email}, ${data.cpf}, ${data.discord}, ${data.discordId}, ${itemsJson}, ${data.subtotal}, ${data.discount}, ${data.total}, 'pending', NOW())
     `);
-    
-    const res = await db_instance.select().from(orders).orderBy(desc(orders.id)).limit(1);
+    const res = await db_i.select().from(orders).orderBy(desc(orders.id)).limit(1);
     return res[0] || null;
-  } catch (error) {
-    // Escreve o erro direto no console do seu site para você ler!
-    await logSystem(`ERRO NO BANCO: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, 'error');
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 export async function deleteOrder(id: number) {
@@ -318,24 +312,23 @@ export async function getSiteConfig() {
 }
 
 export async function updateSiteConfig(data: any) {
-  const db = await getDb(); 
-  if (!db) return null;
+  const db_i = await getDb(); if (!db_i) return null;
   try {
-    // FATO TÉCNICO: Usamos SQL puro para garantir que ele SEMPRE atualize a linha 1
-    await db.execute(sql`
-      INSERT INTO \`siteConfig\` (id, heroTitle, heroSubtitle, heroDescription) 
-      VALUES (1, ${data.heroTitle || ''}, ${data.heroSubtitle || ''}, ${data.heroDescription || ''}) 
+    // Convertemos o "true/false" do JavaScript para "1/0" do banco de dados
+    const bannerStatus = data.couponBannerEnabled ? 1 : 0;
+    
+    await db_i.execute(sql`
+      INSERT INTO \`siteConfig\` (id, heroTitle, heroDescription, couponBannerText, couponBannerEnabled) 
+      VALUES (1, ${data.heroTitle || ''}, ${data.heroDescription || ''}, ${data.couponBannerText || ''}, ${bannerStatus}) 
       ON DUPLICATE KEY UPDATE 
       heroTitle = VALUES(heroTitle), 
-      heroSubtitle = VALUES(heroSubtitle), 
       heroDescription = VALUES(heroDescription), 
+      couponBannerText = VALUES(couponBannerText), 
+      couponBannerEnabled = VALUES(couponBannerEnabled),
       updatedAt = NOW()
     `);
     return getSiteConfig();
-  } catch (error) {
-    console.error("Erro ao salvar config:", error);
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 export async function moveCategoryUp(id: number) {
