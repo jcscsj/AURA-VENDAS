@@ -345,17 +345,17 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SEÇÃO DE BANNERS DINÂMICOS - ABAIXO DO HERO */}
+        {/* Seção de Banners Dinâmicos - Modo Carrossel no Mobile */}
         {banners && banners.length > 0 && (
           <section className="container py-8 scroll-mt-20">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="flex lg:grid lg:grid-cols-3 gap-6 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 no-scrollbar flex-nowrap lg:flex-wrap">
               {banners.map((banner) => (
                 <a 
                   key={banner.id} 
                   href={banner.link || "#"} 
                   target={banner.link ? "_blank" : "_self"}
                   rel="noopener noreferrer"
-                  className="group relative h-56 overflow-hidden rounded-2xl border border-orange-500/20 bg-card transition-all hover:border-primary block cursor-pointer"
+                  className="group relative h-56 w-[85vw] md:w-[45vw] lg:w-full flex-shrink-0 overflow-hidden rounded-2xl border border-orange-500/20 bg-card transition-all hover:border-primary block cursor-pointer"
                 >
                   <img
                     src={banner.imageUrl}
