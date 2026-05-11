@@ -107,7 +107,7 @@ export default function Home() {
       toast.success("Pedido realizado com sucesso! Você receberá uma mensagem no Discord em breve.");
       setCheckoutOpen(false);
       setCartOpen(false);
-      setCart([]);
+      clearCart();
       setPlayerNick("");
       setGameId("");
       setDiscord("");
