@@ -66,9 +66,8 @@ export const banners = mysqlTable('banners', {
   id: int('id').primaryKey().autoincrement(),
   title: varchar('title', { length: 255 }),
   imageUrl: text('imageUrl').notNull(),
-  // ADICIONE ESTAS DUAS LINHAS ABAIXO:
-  link: text('link'),
-  order: int('order').notNull().default(0),
+  link: text('link'), // Adiciona o campo de link no código
+  order: int('order').notNull().default(0), // Adiciona o campo de ordem no código
   createdAt: timestamp('createdAt').defaultNow(),
   updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow(),
 });
