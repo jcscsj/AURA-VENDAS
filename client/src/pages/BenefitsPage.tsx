@@ -110,7 +110,7 @@ export default function BenefitsPage() {
                 onClick={() => window.location.href = getLoginUrl()}
                 className="hidden md:inline-flex border-primary text-primary hover:bg-primary/10"
               >
-                Entrar com Discord
+                Login
               </Button>
             ) : (
               <div className="hidden md:flex items-center gap-2">
