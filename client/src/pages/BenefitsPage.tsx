@@ -40,17 +40,27 @@ export default function BenefitsPage() {
     }
   }, [checkoutOpen, user, playerNick, gameId]);
 
-  // Filtro de Produtos
+  // FATO TÉCNICO: Filtramos os produtos pelo tipo da categoria antes de mostrar na tela
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    
+    // 1. Pegamos apenas os IDs das categorias que são do tipo 'benefits'
+    const benefitCategoryIds = categories
+      .filter(c => c.type === 'benefits')
+      .map(c => c.id);
+
     return products.filter((product) => {
+      // 2. O produto SÓ aparece se a categoria dele for uma categoria de benefícios
+      const belongsToBenefits = benefitCategoryIds.includes(product.categoryId);
+      
       const matchesCategory = activeCategory === null || product.categoryId === activeCategory;
       const matchesQuery = !normalizedQuery || 
         (product.name?.toLowerCase().includes(normalizedQuery) ?? false) || 
         (product.description?.toLowerCase().includes(normalizedQuery) ?? false);
-      return matchesCategory && matchesQuery;
+      
+      return belongsToBenefits && matchesCategory && matchesQuery;
     });
-  }, [activeCategory, query, products]);
+  }, [activeCategory, query, products, categories]);
 
   // Cálculos do Carrinho
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
