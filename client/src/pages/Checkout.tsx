@@ -21,23 +21,34 @@ import {
 
 const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
 
-export default function Checkout() {
-  const [, navigate] = useLocation();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { cart, clearCart } = useShop();
+const { user, isAuthenticated, loading: authLoading } = useAuth();
+  // FATO TÉCNICO: Puxamos as funções de editar e remover do carrinho global
+  const { cart, clearCart, updateQuantity, removeItem } = useShop();
 
-  // 1. PRIMEIRO: CRIAMOS AS "CAIXAS" (ESTADOS)
   const [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [couponInput, setCouponInput] = useState(""); // <--- A CAIXA É CRIADA AQUI
+  const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
 
+  // FUNÇÃO MESTRA: Formata CPF em tempo real (000.000.000-00)
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ""); // Remove letras
+    if (value.length > 11) value = value.slice(0, 11); // Limita tamanho
+    
+    // Aplica a máscara visual
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    
+    setCpf(value);
+  }; // <--- ESSA CHAVE É A QUE FALTAVA NO SEU CÓDIGO
+
   // 2. DEPOIS: USAMOS AS CAIXAS NAS CONSULTAS (QUERIES)
   const checkCoupon = trpc.shop.admin.coupons.check.useQuery(
-    { code: couponInput }, // <--- AGORA O CÓDIGO SABE O QUE É ISSO
+    { code: couponInput },
     { enabled: false }
   );
 
@@ -198,8 +209,8 @@ export default function Checkout() {
                   <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CPF (Para o Pagamento)</label>
                   <input 
                     value={cpf} 
-                    onChange={(e) => setCpf(e.target.value)}
-                    className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all" 
+                    onChange={handleCpfChange} // <--- Ativa a máscara inteligente
+                    className="w-full bg-background/50 border border-border rounded-xl p-4 text-sm focus:border-primary outline-none transition-all font-mono" 
                     placeholder="000.000.000-00"
                   />
                 </div>
@@ -256,9 +267,52 @@ export default function Checkout() {
             
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {cart.map((item) => (
-                <div key={item.id} className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground font-medium">{item.quantity}x {item.name}</span>
-                  <span className="font-bold text-foreground">{formatCurrency(item.price * item.quantity)}</span>
+                <div key={item.id} className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0">
+                  {/* 1:1 MINIATURA ARREDONDADA */}
+                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border flex-shrink-0 aspect-square bg-background">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* NOME E PREÇO UNITÁRIO */}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-xs text-foreground truncate">{item.name}</h4>
+                    <p className="text-[10px] text-muted-foreground">{formatCurrency(item.price)}</p>
+                  </div>
+
+                  {/* CONTROLES DE QUANTIDADE E REMOÇÃO */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center bg-background border border-border rounded-md p-0.5">
+                      <button 
+                        onClick={() => updateQuantity(item.id, "decrease")}
+                        className="w-5 h-5 flex items-center justify-center hover:text-primary transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-5 text-center text-xs font-bold">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, "increase")}
+                        className="w-5 h-5 flex items-center justify-center hover:text-primary transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => removeItem(item.id)}
+                      className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+
+                  {/* VALOR TOTAL DO ITEM À DIREITA */}
+                  <div className="text-right min-w-[70px]">
+                    <p className="font-bold text-sm text-primary">
+                      {formatCurrency(item.price * item.quantity)}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
