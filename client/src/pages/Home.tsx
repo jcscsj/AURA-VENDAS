@@ -355,18 +355,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Benefícios */}
-        <section id="beneficios" className="container py-16 scroll-mt-20">
-          <div className="grid gap-6 md:grid-cols-3">
-            {SITE_TEXTS.benefits.map((item) => (
-              <div key={item.title} className="rounded-lg border border-border bg-card p-6">
-                <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-muted-foreground">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Catálogo */}
         <section id="catalogo" className="bg-background py-16 scroll-mt-20">
           <div className="container">
