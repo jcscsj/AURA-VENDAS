@@ -268,51 +268,22 @@ const { user, isAuthenticated, loading: authLoading } = useAuth();
             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 py-3 border-b border-border/50 last:border-0">
-                  {/* 1:1 MINIATURA ARREDONDADA */}
-                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border flex-shrink-0 aspect-square bg-background">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden border border-border flex-shrink-0 aspect-square">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   </div>
-
-                  {/* NOME E PREÇO UNITÁRIO */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-xs text-foreground truncate">{item.name}</h4>
+                    <h4 className="font-bold text-xs truncate">{item.name}</h4>
                     <p className="text-[10px] text-muted-foreground">{formatCurrency(item.price)}</p>
                   </div>
-
-                  {/* CONTROLES DE QUANTIDADE E REMOÇÃO */}
                   <div className="flex items-center gap-2">
                     <div className="flex items-center bg-background border border-border rounded-md p-0.5">
-                      <button 
-                        onClick={() => updateQuantity(item.id, "decrease")}
-                        className="w-5 h-5 flex items-center justify-center hover:text-primary transition-colors"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
+                      <button onClick={() => updateQuantity(item.id, "decrease")} className="w-5 h-5 hover:text-primary"><Minus className="h-3 w-3 mx-auto" /></button>
                       <span className="w-5 text-center text-xs font-bold">{item.quantity}</span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, "increase")}
-                        className="w-5 h-5 flex items-center justify-center hover:text-primary transition-colors"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                      <button onClick={() => updateQuantity(item.id, "increase")} className="w-5 h-5 hover:text-primary"><Plus className="h-3 w-3 mx-auto" /></button>
                     </div>
-
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => removeItem(item.id)}
-                      className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
-
-                  {/* VALOR TOTAL DO ITEM À DIREITA */}
-                  <div className="text-right min-w-[70px]">
-                    <p className="font-bold text-sm text-primary">
-                      {formatCurrency(item.price * item.quantity)}
-                    </p>
-                  </div>
+                  <div className="text-right min-w-[70px]"><p className="font-bold text-sm text-primary">{formatCurrency(item.price * item.quantity)}</p></div>
                 </div>
               ))}
             </div>
