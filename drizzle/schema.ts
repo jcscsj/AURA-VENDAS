@@ -82,15 +82,25 @@ export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
   playerNick: varchar("playerNick", { length: 255 }),
   gameId: varchar("gameId", { length: 50 }),
-  discordId: varchar("discordId", { length: 64 }),
+  
+  // ADICIONAMOS ESTAS DUAS CAIXAS PARA OS DADOS FINANCEIROS:
+  email: varchar("email", { length: 255 }),
+  cpf: varchar("cpf", { length: 20 }),
+  
+  discordId: varchar("discordId", { length: 255 }), // Aumentamos para 255 por segurança
   discord: varchar("discord", { length: 255 }),
-  items: json("items").$type<{ productId: number; quantity: number; price: number }[]>(),
+  
+  // Mantemos o formato de itens da IA
+  items: json("items").$type<{ productId: number; quantity: number; price: number; name?: string }[]>(),
+  
   subtotal: int("subtotal"),
   discount: int("discount"),
   total: int("total"),
-  status: varchar("status", { length: 50 }),
-  createdAt: timestamp("createdAt"),
-  updatedAt: timestamp("updatedAt"),
+  status: varchar("status", { length: 50 }).default('pending'),
+
+  // FATO TÉCNICO: .defaultNow() resolve o erro do "N/A" na data
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
 });
 
 export type Order = typeof orders.$inferSelect;
