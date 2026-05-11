@@ -33,9 +33,10 @@ export type InsertUser = typeof users.$inferInsert;
 export const categories = mysqlTable("categories", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }),
-  order: int("order").default(0).notNull(),
-  createdAt: timestamp("createdAt"),
-  updatedAt: timestamp("updatedAt"),
+  type: varchar('type', { length: 20 }).notNull().default('catalog'),
+  order: int('order').notNull().default(0),
+  createdAt: timestamp('createdAt').defaultNow(),
+  updatedAt: timestamp('updatedAt').defaultNow().onUpdateNow(),
 });
 
 export type Category = typeof categories.$inferSelect;
