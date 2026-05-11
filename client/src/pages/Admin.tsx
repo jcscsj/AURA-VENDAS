@@ -903,17 +903,15 @@ export default function Admin() {
                   <input 
                     type="checkbox" 
                     className="w-6 h-6 accent-primary cursor-pointer"
-                    // FATO TÉCNICO: O 'checked' deve olhar direto para os dados que vêm do banco
+                    // FATO TÉCNICO: !! transforma o valor em "Sim ou Não" puro
                     checked={!!siteConfig?.couponBannerEnabled}
                     onChange={async (e) => {
-                      const isChecked = e.target.checked;
-                      // Salva no banco de dados imediatamente
+                      const novoStatus = e.target.checked;
                       await updateConfigMut.mutateAsync({ 
                         ...siteConfig, 
-                        couponBannerEnabled: isChecked 
+                        couponBannerEnabled: novoStatus 
                       });
-                      // Força o site a ler o banco de novo para a caixinha marcar
-                      refetchConfig();
+                      refetchConfig(); // Atualiza o visual na hora
                     }}
                   />
                 </div>
