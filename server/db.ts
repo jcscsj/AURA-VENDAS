@@ -231,8 +231,16 @@ export async function updateBanner(id: number, data: any) {
 }
 // ===== PEDIDOS (ORDERS) =====
 export async function getOrders() {
-  const db = await getDb(); if (!db) return[];
-  return db.select().from(orders);
+  const db_i = await getDb(); 
+  if (!db_i) return [];
+  try {
+    // FATO TÉCNICO: SQL puro garante que pegamos e-mail e cpf mesmo que o Drizzle bugue
+    const [rows] = await db_i.execute(sql`SELECT * FROM \`orders\` ORDER BY id DESC`);
+    return rows as any[];
+  } catch (error) {
+    console.error("Erro ao buscar pedidos:", error);
+    return [];
+  }
 }
 
 export async function createOrder(data: any) {
