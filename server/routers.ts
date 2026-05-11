@@ -370,9 +370,12 @@ export const appRouter = router({
       const userRecord = await db.getUserByOpenId(ctx.user.openId);
       
       const orderData = {
-        ...input,
+        ...input, // FATO TÉCNICO: Isso pega o nick, id jogo, email e cpf do formulário
         discordId: userRecord?.discordId || null,
         discord: userRecord?.name || "Não informado",
+        // Garantimos que se o email não vier no input, tentamos pegar o do cadastro
+        email: input.email || userRecord?.email || null, 
+        cpf: input.cpf || null,
         status: "pending"
       };
 
