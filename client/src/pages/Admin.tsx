@@ -498,35 +498,70 @@ export default function Admin() {
               </div>
             </div>
 
-            <div>
-              <h3 className="text-xl font-bold mb-4">Categorias Existentes</h3>
-              <div className="grid gap-3">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
-                    <h4 className="font-semibold text-foreground">{category.name}</h4>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
-                      
-                      {/* BOTÃO DE EDITAR (NOVO) */}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => {
-                          setEditingCategoryId(category.id);
-                          setNewCategoryName(category.name);
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4 text-primary" />
-                      </Button>
-
-                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar categoria?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
+            <div className="space-y-10">
+              {/* LISTA 1: CATÁLOGO PRINCIPAL */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold flex items-center gap-2 text-primary uppercase tracking-widest">
+                  <div className="w-2 h-2 bg-primary rounded-full" /> Catálogo Principal (Home)
+                </h3>
+                <div className="grid gap-3">
+                  {categories.filter(c => c.type === 'catalog' || !c.type).map((category) => (
+                    <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4 hover:border-primary/20 transition-all">
+                      <h4 className="font-semibold text-foreground">{category.name}</h4>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setEditingCategoryId(category.id);
+                            setNewCategoryName(category.name);
+                            setNewCategoryType('catalog');
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* LISTA 2: BENEFÍCIOS */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold flex items-center gap-2 text-orange-400 uppercase tracking-widest">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full" /> Benefícios do Jogo (Pág. Secundária)
+                </h3>
+                <div className="grid gap-3">
+                  {categories.filter(c => c.type === 'benefits').map((category) => (
+                    <div key={category.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4 hover:border-orange-400/20 transition-all">
+                      <h4 className="font-semibold text-foreground">{category.name}</h4>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => moveCategoryUpMut.mutate({ id: category.id })}><ChevronUp className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => moveCategoryDownMut.mutate({ id: category.id })}><ChevronDown className="h-4 w-4" /></Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setEditingCategoryId(category.id);
+                            setNewCategoryName(category.name);
+                            setNewCategoryType('benefits');
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { if(confirm("Apagar?")) deleteCategoryMut.mutate({ id: category.id }) }}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                  {categories.filter(c => c.type === 'benefits').length === 0 && (
+                    <p className="text-muted-foreground text-sm italic pl-4">Nenhuma categoria de benefícios criada.</p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
         )}
 
         {/* Banners */}
