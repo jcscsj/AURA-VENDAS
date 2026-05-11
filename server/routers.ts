@@ -355,36 +355,42 @@ export const appRouter = router({
       }),
     }),
     orders: router({
-      create: publicProcedure.input(z.any()).mutation(async ({ input, ctx }) => {
-      // FATO TÉCNICO: Se existir uma sessão de admin (e-mail), barramos a compra na hora
-      if (ctx.adminSession) {
-        throw new TRPCError({ 
-          code: "FORBIDDEN", 
-          message: "Administradores não podem fazer pedidos. Logue com uma conta de jogador (Discord)." 
-        });
-      }
+      create: publicProcedure
+        .input(
+          z.object({
+            playerNick: z.string(),
+            gameId: z.string(),
+            email: z.string().optional().nullable(), 
+            cpf: z.string().optional().nullable(),
+            discord: z.string().optional().nullable(),
+            discordId: z.string().optional().nullable(),
+            items: z.array(z.any()),
+            subtotal: z.number(),
+            discount: z.number(),
+            total: z.number(),
+          })
+        )
+        .mutation(async ({ input, ctx }) => {
+          // Busca o usuário no banco para garantir que temos os dados reais do Discord
+          const userRecord = await db.getUserByOpenId(ctx.user?.openId || "");
+          
+          const orderData = {
+            ...input,
+            // Sincroniza o ID do Discord do banco com o pedido
+            discordId: userRecord?.discordId || ctx.user?.discordId || null,
+            discord: userRecord?.name || ctx.user?.name || "Não informado",
+            // Prioriza o e-mail que o cara digitou no checkout
+            email: input.email || userRecord?.email || null,
+            cpf: input.cpf || null,
+            status: "pending",
+          };
 
-      if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-
-      // Busca o registro que acabamos de blindar
-      const userRecord = await db.getUserByOpenId(ctx.user.openId);
-      
-      const orderData = {
-        ...input, // FATO TÉCNICO: Isso pega o nick, id jogo, email e cpf do formulário
-        discordId: userRecord?.discordId || null,
-        discord: userRecord?.name || "Não informado",
-        // Garantimos que se o email não vier no input, tentamos pegar o do cadastro
-        email: input.email || userRecord?.email || null, 
-        cpf: input.cpf || null,
-        status: "pending"
-      };
-
-      const order = await db.createOrder(orderData);
-      if (order) {
-        await notifyDiscordOrder(order, input.items);
-      }
-      return order;
-    }),
+          const order = await db.createOrder(orderData);
+          if (order) {
+            await notifyDiscordOrder(order, input.items);
+          }
+          return order;
+        }),
       list: publicProcedure.query(async () => {
         return db.getOrders();
       }),
