@@ -56,6 +56,7 @@ export default function Home() {
   const { data: siteConfig } = trpc.shop.admin.config.get.useQuery();
 
   // Local state
+  const { cart, cartOpen, setCartOpen, addToCart, updateQuantity, removeItem, clearCart } = useShop();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
