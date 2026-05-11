@@ -16,7 +16,12 @@ import {
   Ticket, 
   LogIn, 
   AlertCircle,
-  Heart
+  Heart,
+  Minus,
+  Plus,
+  Trash2,
+  X,
+  Save
 } from "lucide-react";
 
 const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
@@ -44,7 +49,7 @@ const { user, isAuthenticated, loading: authLoading } = useAuth();
     value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     
     setCpf(value);
-  }; // <--- ESSA CHAVE É A QUE FALTAVA NO SEU CÓDIGO
+  }; // <--- VERIFIQUE SE ESTA CHAVE E PONTO E VÍRGULA ESTÃO AQUI
 
   // 2. DEPOIS: USAMOS AS CAIXAS NAS CONSULTAS (QUERIES)
   const checkCoupon = trpc.shop.admin.coupons.check.useQuery(
