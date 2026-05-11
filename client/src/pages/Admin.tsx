@@ -689,9 +689,9 @@ export default function Admin() {
                     <div>
                       <h4 className="font-bold text-foreground text-lg">{order.playerNick}</h4>
                       <p className="text-sm text-primary font-medium">Discord: {order.discord || "Não informado"}</p>
-                      <div className="mt-1">
-                        <p className="text-[10px] text-muted-foreground">E-mail: <span className="text-white">{order.email || "N/A"}</span></p>
-                        <p className="text-[10px] text-muted-foreground">CPF: <span className="text-white">{order.cpf || "N/A"}</span></p>
+                      <div className="mt-2 space-y-0.5 border-l-2 border-primary/30 pl-3">
+                        <p className="text-[11px] text-muted-foreground italic">E-mail: <span className="text-slate-200 not-italic">{order.email || "N/A"}</span></p>
+                        <p className="text-[11px] text-muted-foreground italic">CPF: <span className="text-slate-200 not-italic">{order.cpf || "N/A"}</span></p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
