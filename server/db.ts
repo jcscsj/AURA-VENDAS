@@ -428,6 +428,35 @@ export async function deleteUser(id: number) {
   await db.delete(users).where(eq(users.id, id));
 }
 
+// ===== CUPONS =====
+export async function getCoupons() {
+  const db_i = await getDb(); if (!db_i) return [];
+  return db_i.select().from(coupons).orderBy(desc(coupons.id));
+}
+
+export async function createCoupon(data: any) {
+  const db_i = await getDb(); if (!db_i) return null;
+  try {
+    await db_i.execute(sql`
+      INSERT INTO \`coupons\` (\`code\`, \`type\`, \`value\`, \`isActive\`) 
+      VALUES (${data.code.toUpperCase()}, ${data.type}, ${data.value}, true)
+    `);
+    const res = await db_i.select().from(coupons).orderBy(desc(coupons.id)).limit(1);
+    return res[0] || null;
+  } catch (e) { return null; }
+}
+
+export async function deleteCoupon(id: number) {
+  const db_i = await getDb(); if (!db_i) return;
+  await db_i.delete(coupons).where(eq(coupons.id, id));
+}
+
+export async function getCouponByCode(code: string) {
+  const db_i = await getDb(); if (!db_i) return null;
+  const res = await db_i.select().from(coupons).where(eq(coupons.code, code.toUpperCase())).limit(1);
+  return res[0] || null;
+}
+
 // ===== LOGS CONSOLE =====
 export async function logSystem(message: string, type: string = 'info') {
   const db = await getDb();
