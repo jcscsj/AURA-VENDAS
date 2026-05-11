@@ -66,6 +66,7 @@ export const banners = mysqlTable("banners", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }),
   imageUrl: varchar("imageUrl", { length: 512 }),
+  link: text('link'),
   order: int("order").default(0).notNull(),
   createdAt: timestamp("createdAt"),
   updatedAt: timestamp("updatedAt"),
