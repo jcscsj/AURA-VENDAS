@@ -195,7 +195,12 @@ export default function Home() {
 
           <nav className="hidden items-center gap-8 text-sm font-semibold text-foreground lg:flex">
             <a href="#catalogo" className="hover:text-primary">Catálogo</a>
-            <a href="#beneficios" className="hover:text-primary">Benefícios</a>
+            <button 
+              onClick={() => navigate("/beneficios")} 
+              className="hover:text-primary transition-colors"
+            >
+              Benefícios
+            </button>
           </nav>
 
           <div className="flex items-center gap-2">
