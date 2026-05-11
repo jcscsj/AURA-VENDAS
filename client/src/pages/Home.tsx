@@ -401,7 +401,7 @@ export default function Home() {
                     Todos
                   </button>
                   {categories
-                    .filter((category) => category.type === "benefits")
+                    .filter((category) => category.type === "catalog")
                     .map((category) => (
                       <button
                         key={category.id}
