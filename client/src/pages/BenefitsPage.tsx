@@ -98,7 +98,7 @@ export default function BenefitsPage() {
             <Button variant="ghost" onClick={() => navigate("/")} className="text-primary hover:bg-primary/10 px-2">
               <ChevronLeft className="h-5 w-5 mr-1" /> <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+            <img src="/logo-home.webp" alt="Logo" className="h-8 w-8 object-contain" />
             <h1 className="text-lg font-bold border-l border-border pl-4 hidden sm:block">Aura City</h1>
           </div>
 
