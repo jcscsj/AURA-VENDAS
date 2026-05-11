@@ -215,49 +215,6 @@ export async function updateBanner(id: number, data: any) {
     return db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
   } catch (e) { return null; }
 }
-
-export async function moveBannerUp(id: number) {
-  const db_i = await getDb(); if (!db_i) return null;
-  try {
-    // 1. Pega o banner atual
-    const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
-    if (!curr) return null;
-
-    // 2. Procura o banner que está IMEDIATAMENTE ACIMA (ordem menor)
-    const prev = await db_i.select().from(banners)
-      .where(lt(banners.order, curr.order))
-      .orderBy(desc(banners.order))
-      .limit(1).then((r:any) => r[0]);
-
-    if (prev) {
-      // 3. Troca os valores usando SQL Direto (blindado contra erros do TiDB)
-      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
-      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
-    }
-    return curr;
-  } catch (e) { return null; }
-}
-
-// MOVER BANNER PARA BAIXO
-export async function moveBannerDown(id: number) {
-  const db_i = await getDb(); if (!db_i) return null;
-  try {
-    const curr = await db_i.select().from(banners).where(eq(banners.id, id)).then((r:any) => r[0]);
-    if (!curr) return null;
-
-    // Procura o banner que está IMEDIATAMENTE ABAIXO (ordem maior)
-    const next = await db_i.select().from(banners)
-      .where(gt(banners.order, curr.order))
-      .orderBy(asc(banners.order))
-      .limit(1).then((r:any) => r[0]);
-
-    if (next) {
-      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
-      await db_i.execute(sql`UPDATE \`banners\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
-    }
-    return curr;
-  } catch (e) { return null; }
-}
 // ===== PEDIDOS (ORDERS) =====
 export async function getOrders() {
   const db = await getDb(); if (!db) return[];
