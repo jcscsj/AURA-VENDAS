@@ -253,14 +253,24 @@ export default function Home() {
         </div>
         {mobileMenuOpen && (
           <div className="container grid gap-4 border-t border-border bg-card py-6 text-sm font-semibold text-foreground lg:hidden">
-            <a href="#catalogo" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-2 border-b border-border/50">
+            <button 
+              onClick={() => { setMobileMenuOpen(false); navigate("/"); }} 
+              className="text-left hover:text-primary py-2 border-b border-border/50"
+            >
               Catálogo
-            </a>
+            </button>
             <button 
               onClick={() => { setMobileMenuOpen(false); navigate("/beneficios"); }} 
               className="text-left hover:text-primary py-2 border-b border-border/50"
             >
               Benefícios
+            </button>
+            {/* NOVO BOTÃO DE TERMOS NO MOBILE */}
+            <button 
+              onClick={() => { setMobileMenuOpen(false); navigate("/termos"); }} 
+              className="text-left hover:text-primary py-2 border-b border-border/50"
+            >
+              Termos
             </button>
 
             {/* SEÇÃO DE CONTA NO MOBILE */}
