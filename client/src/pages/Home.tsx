@@ -435,7 +435,15 @@ export default function Home() {
                     className="overflow-hidden rounded-lg border border-border bg-card shadow-sm hover:shadow-md transition flex flex-col"
                   >
                     <div className="relative w-full aspect-[1590/2158] overflow-hidden bg-gray-200 flex-shrink-0">
-                      <img src={product.image ?? ""} alt={product.name ?? ""} className="h-full w-full object-cover" />
+                      <img 
+                        src={product.image?.startsWith('http') ? product.image : `/manus-storage/${product.image}`} 
+                        alt={product.name ?? ""} 
+                        className="h-full w-full object-cover" 
+                        onError={(e) => {
+                          // FATO TÉCNICO: Se a imagem falhar (link expirado do Discord), mostra um placeholder cinza
+                          (e.target as HTMLImageElement).src = "https://placehold.co/600x400/1a1b1e/white?text=Aura+City";
+                        }}
+                      />
                       <div className="absolute left-3 top-3 rounded bg-primary px-3 py-1 text-xs font-bold text-black">
                         {product.tag ?? "Novo"}
                       </div>
