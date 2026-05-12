@@ -165,7 +165,7 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card">
         <div className="container flex h-16 items-center justify-between gap-4">
-          <a href="#" className="flex items-center gap-2" aria-label="Aura City">
+          <a href="" className="flex items-center gap-2" aria-label="Aura City">
             <img src="/logo-home.webp" alt="Aura City" className="h-10 w-10 object-contain" />
             <div>
               <p className="text-lg font-bold text-foreground">Aura City</p>
