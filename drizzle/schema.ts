@@ -52,7 +52,9 @@ export const products = mysqlTable("products", {
   price: int("price"), // em centavos
   oldPrice: int("oldPrice"),
   image: varchar("image", { length: 512 }),
-  tag: varchar("tag", { length: 100 }),
+  tag: varchar('tag', { length: 50 }).default('Novo'),
+  // ADICIONE ESTA LINHA:
+  showTag: boolean('showTag').default(true),
   rarity: varchar("rarity", { length: 50 }),
   benefits: json("benefits").$type<string[]>(),
   order: int("order").default(0).notNull(),
