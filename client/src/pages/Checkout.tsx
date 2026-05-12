@@ -363,7 +363,16 @@ export default function Checkout() {
                   className="mt-1 accent-primary h-5 w-5 rounded-md cursor-pointer" 
                 />
                 <span className="text-[11px] leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
-                  Eu aceito os <strong className="text-foreground">termos e condições</strong> desta compra e estou ciente da política de entrega da Aura City.
+                  Eu aceito os 
+                  <a 
+                    href="/termos" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline mx-1 font-bold"
+                  >
+                    termos e condições
+                  </a> 
+                  desta compra e estou ciente da política de entrega da Aura City.
                 </span>
               </label>
 
