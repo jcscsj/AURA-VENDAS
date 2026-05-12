@@ -450,8 +450,13 @@ export default function Home() {
                           (e.target as HTMLImageElement).src = "/logo-home.webp";
                         }}
                       />
-                      <div className="absolute left-3 top-3 rounded bg-primary px-3 py-1 text-xs font-bold text-black">
-                        {product.tag ?? "Novo"}
+                      <div className="absolute left-3 top-3 flex gap-1">
+                        {/* FATO TÉCNICO: Só desenha na tela se 'showTag' for diferente de falso */}
+                        {(product.showTag !== false) && (
+                          <div className="rounded bg-primary px-3 py-1 text-xs font-bold text-black uppercase shadow-lg">
+                            {product.tag || "Novo"}
+                          </div>
+                        )}
                       </div>
                     </div>
 
