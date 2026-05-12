@@ -394,6 +394,17 @@ export default function Admin() {
                   />
                 </div>
                 <div>
+                    <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Antigo / Riscado (Opcional)</label>
+                    <input
+                      type="number"
+                      value={newProduct.oldPrice || ""}
+                      onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : null })}
+                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary outline-none transition-all"
+                      placeholder="Ex: 4990 (R$ 49,90)"
+                    />
+                  </div>
+                </div>
+                <div>
                   <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto (Opcional)</label>
                   <textarea
                     value={newProduct.description || ""}
