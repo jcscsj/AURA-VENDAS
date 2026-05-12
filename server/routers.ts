@@ -551,7 +551,9 @@ export const appRouter = router({
             price: z.number(),
             oldPrice: z.number().optional(),
             image: z.string().optional(),
-            // MUDANÇA AQUI: Aceita qualquer coisa (z.any) para não travar o salvamento
+            tag: z.string().optional(),
+            // FATO TÉCNICO: Sem essa linha abaixo, o servidor deleta a informação da Tag antes de salvar
+            showTag: z.boolean().optional(), 
             benefits: z.any().optional(), 
           }))
           .mutation(async ({ input, ctx }) => {
