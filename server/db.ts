@@ -470,3 +470,52 @@ export async function logSystem(message: string, type: string = 'info') {
     await db.execute(sql`INSERT INTO \`system_logs\` (\`message\`, \`type\`) VALUES (${message}, ${type})`);
   }
 }
+
+// ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
+export async function createCaktoPayment(order: any) {
+  try {
+    // 1. Pedir permissão para a Cakto (Token)
+    const authReq = await fetch("https://api.cakto.com.br/v1/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: process.env.CAKTO_CLIENT_ID,
+        client_secret: process.env.CAKTO_CLIENT_SECRET,
+        grant_type: "client_credentials"
+      })
+    });
+    const { access_token } = await authReq.json();
+
+    // 2. Criar a cobrança de PIX
+    const paymentReq = await fetch("https://api.cakto.com.br/v1/payments", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${access_token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        external_id: order.id.toString(), // Liga o pagamento ao ID do banco TiDB
+        amount: order.total / 100, // Converte centavos para Reais (ex: 2990 -> 29.90)
+        description: `Aura City - Pedido #${order.id}`,
+        payment_method: "pix",
+        customer: {
+          name: order.playerNick,
+          email: order.email,
+          document: order.cpf?.replace(/\D/g, "")
+        },
+        // O link que a Cakto vai avisar quando o pagamento for aprovado
+        webhook_url: `https://aura-shop-huf9.onrender.com/api/webhook/cakto`
+      })
+    });
+
+    const data = await paymentReq.json();
+    return {
+      pix_code: data.pix_code, // O código "Copia e Cola"
+      pix_qr_code: data.pix_qr_code, // A imagem do QR Code
+      payment_url: data.checkout_url // Caso queira mandar para a página da Cakto
+    };
+  } catch (error) {
+    console.error("[Cakto API] Erro ao gerar Pix:", error);
+    return null;
+  }
+}
