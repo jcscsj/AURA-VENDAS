@@ -213,7 +213,18 @@ export default function BenefitsPage() {
               <article key={product.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-sm hover:shadow-md transition flex flex-col hover:border-primary/50">
                 {product.image && (
                   <div className="relative w-full h-48 overflow-hidden bg-background">
-                    <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                    <img 
+                        src={product.image} 
+                        alt={product.name ?? ""} 
+                        className="h-full w-full object-cover" 
+                        onError={(e) => {
+                          // 1. Trava de segurança para não dar loop infinito
+                          e.currentTarget.onerror = null; 
+                          // 2. FATO TÉCNICO: Se a foto original der erro/expirar, assume a logo padrão
+                          // (Mude "/logo.png" para o nome exato do arquivo que você tem na pasta public)
+                          (e.target as HTMLImageElement).src = "/logo-home.webp";
+                        }}
+                      />
                     {/* FATO TÉCNICO: Só desenha a tag se ela estiver ativa no Admin */}
                     {(product.showTag !== false) && (
                       <div className="absolute left-3 top-3 rounded bg-primary px-3 py-1 text-[10px] font-bold text-black uppercase shadow-lg">
