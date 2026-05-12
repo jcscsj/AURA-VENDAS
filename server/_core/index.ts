@@ -41,7 +41,7 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // Parse cookies for local authentication
   app.use(cookieParser());
-  registerStorageProxy(app);
+  // registerStorageProxy(app);
   registerOAuthRoutes(app);
   // tRPC API
   app.use(
