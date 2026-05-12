@@ -106,8 +106,7 @@ export default function Home() {
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cart],
   );
-  // O desconto agora só existe se o cupom "SP25" for validado
-  const discount = appliedCoupon === "SP25" ? Math.round(subtotal * 0.25) : 0;
+  
   const total = Math.max(subtotal - discount, 0);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -442,11 +441,14 @@ export default function Home() {
                   >
                     <div className="relative w-full aspect-[1590/2158] overflow-hidden bg-gray-200 flex-shrink-0">
                       <img 
-                        src={product.image?.startsWith('http') ? product.image : `/${product.image}`} 
+                        src={product.image} 
                         alt={product.name ?? ""} 
                         className="h-full w-full object-cover" 
                         onError={(e) => {
-                          // FATO TÉCNICO: Se o link do Discord expirar, mostra o logo da loja ou um fundo padrão
+                          // 1. Trava de segurança para não dar loop infinito
+                          e.currentTarget.onerror = null; 
+                          // 2. FATO TÉCNICO: Se a foto original der erro/expirar, assume a logo padrão
+                          // (Mude "/logo.png" para o nome exato do arquivo que você tem na pasta public)
                           (e.target as HTMLImageElement).src = "/logo-home.webp";
                         }}
                       />
