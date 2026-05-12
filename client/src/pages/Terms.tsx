@@ -53,7 +53,16 @@ export default function TermsPage() {
 
         <div className="p-6 bg-card border border-border rounded-2xl text-center">
           <p className="text-sm text-muted-foreground">
-            Dúvidas? Entre em contato com nossa equipe através do nosso Discord oficial.
+            Dúvidas? Entre em contato com nossa equipe através do nosso{" "}
+            <a 
+              href="https://discord.gg/auracity" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary font-bold hover:underline transition-all"
+            >
+              Discord
+            </a>{" "}
+            oficial.
           </p>
         </div>
       </main>
