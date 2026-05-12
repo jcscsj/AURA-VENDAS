@@ -86,17 +86,19 @@ export default function Checkout() {
 
   const createOrderMut = trpc.shop.orders.create.useMutation({
     onSuccess: (data: any) => {
-      if (data.pix) {
+      // FATO TÉCNICO: Se a Cakto devolveu o Pix, abrimos o Modal e NÃO redirecionamos
+      if (data.pix && data.pix.pix_qr_code) {
         setPixData(data.pix);
-        setShowPixModal(true); // Abre a telinha do Pix
-        toast.success("Pix gerado! Pague para concluir.");
+        setShowPixModal(true);
+        toast.success("Pix gerado! Escaneie para pagar.");
       } else {
-        toast.success("Pedido realizado!");
+        // Caso falhe a API da Cakto, ele vai para os pedidos como fallback
+        toast.success("Pedido realizado! Verifique seu Discord.");
         navigate("/orders");
       }
       clearCart();
     },
-    onError: (err) => toast.error("Erro: " + err.message),
+    onError: (err) => toast.error("Erro ao gerar pagamento: " + err.message),
   });
 
   const handleProcessPayment = () => {
