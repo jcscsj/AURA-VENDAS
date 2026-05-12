@@ -106,7 +106,9 @@ export default function Home() {
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cart],
   );
-  
+
+    // O desconto agora só existe se o cupom "SP25" for validado
+  const discount = appliedCoupon === "SP25" ? Math.round(subtotal * 0.25) : 0;
   const total = Math.max(subtotal - discount, 0);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
