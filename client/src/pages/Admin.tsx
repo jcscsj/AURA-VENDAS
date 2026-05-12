@@ -354,116 +354,128 @@ export default function Admin() {
 
         {/* Produtos */}
         {activeTab === "products" && (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Gerenciar Produtos</h2>
-              <div className="space-y-4 rounded-lg border border-border bg-background p-6">
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Nome</label>
-                  <input
-                    type="text"
-                    value={newProduct.name || ""}
-                    onChange={(e: any) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="Nome do produto"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Categoria</label>
-                  <select
-                    value={newProduct.categoryId || ""}
-                    onChange={(e: any) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {categories.map((cat: any) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground">Preço (em centavos)</label>
+          <div className="space-y-10">
+            <section>
+              <h2 className="text-2xl font-black text-foreground mb-6 uppercase tracking-tighter">Gerenciar Produtos</h2>
+              
+              <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl space-y-6">
+                {/* LINHA 1: NOME E CATEGORIA */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">Nome do Produto</label>
                     <input
-                      type="number"
-                      value={newProduct.price || 0}
-                      onChange={(e: any) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                      placeholder="0"
+                      type="text"
+                      value={newProduct.name || ""}
+                      onChange={(e: any) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all"
+                      placeholder="Ex: VIP Ouro"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Riscado (Opcional)</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">Categoria</label>
+                    <select
+                      value={newProduct.categoryId || ""}
+                      onChange={(e: any) => setNewProduct({ ...newProduct, categoryId: Number(e.target.value) })}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all appearance-none"
+                    >
+                      <option value="">Selecione uma categoria</option>
+                      {categories.map((cat: any) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* LINHA 2: PREÇOS */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">Preço Atual (Centavos)</label>
+                    <input
+                      type="number"
+                      // FATO TÉCNICO: Removemos o -1 e deixamos limpo
+                      value={newProduct.price === -1 ? "" : newProduct.price}
+                      onChange={(e: any) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all font-mono"
+                      placeholder="Ex: 2990 para R$ 29,90"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">Preço Riscado (Opcional)</label>
                     <input
                       type="number"
                       value={newProduct.oldPrice || ""}
-                      onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : null })}
-                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
+                      onChange={(e: any) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : null })}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all font-mono"
                       placeholder="Ex: 4990"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto</label>
+                {/* LINHA 3: DESCRIÇÃO */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">Descrição detalhada</label>
                   <textarea
                     value={newProduct.description || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary outline-none"
-                    placeholder="O que este pacote inclui?"
-                    rows={3}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all min-h-[100px]"
+                    placeholder="O que o jogador recebe ao comprar este item?"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">URL da Imagem</label>
+                {/* LINHA 4: IMAGEM */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-muted-foreground ml-1 tracking-widest">URL da Imagem</label>
                   <input
                     type="text"
                     value={newProduct.image || ""}
                     onChange={(e: any) => setNewProduct({ ...newProduct, image: e.target.value })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="https://..."
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all"
+                    placeholder="https://imgur.com/link-da-foto.png"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-card/50 rounded-xl border border-border">
-                  <div className="space-y-0.5">
-                    <label className="text-sm font-bold text-foreground">Mostrar Tag "Novo"?</label>
-                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo laranja na foto</p>
+                {/* LINHA 5: TAG E BOTÕES */}
+                <div className="flex flex-col md:flex-row gap-6 items-center justify-between pt-4">
+                  <div className="flex items-center gap-3 bg-background/50 px-4 py-3 rounded-2xl border border-border w-full md:w-auto">
+                    <input 
+                      type="checkbox" 
+                      className="w-5 h-5 accent-primary cursor-pointer"
+                      checked={newProduct.showTag !== false}
+                      onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
+                    />
+                    <label className="text-xs font-bold text-foreground uppercase tracking-tighter">Mostrar Tag "NOVO"</label>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    className="w-5 h-5 accent-primary cursor-pointer"
-                    checked={newProduct.showTag !== false}
-                    onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
-                  />
-                </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-bold" onClick={handleSaveProduct}>
-                    <Save className="h-4 w-4" />
-                    {editingProductId ? "Atualizar Produto" : "Criar Produto"}
-                  </Button>
-                  {editingProductId && (
-                    <Button variant="outline" onClick={() => { setEditingProductId(null); setNewProduct({}); }}>
-                      Cancelar
+                  <div className="flex gap-3 w-full md:w-auto">
+                    {editingProductId && (
+                      <Button variant="outline" className="flex-1 md:flex-none rounded-xl px-8" onClick={() => { setEditingProductId(null); setNewProduct({}); }}>
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button 
+                      className="flex-1 md:flex-none bg-primary hover:bg-orange-600 text-black font-black px-10 py-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95" 
+                      onClick={handleSaveProduct}
+                    >
+                      <Save className="h-5 w-5 mr-2" />
+                      {editingProductId ? "ATUALIZAR PRODUTO" : "CRIAR PRODUTO"}
                     </Button>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div>
-              <h3 className="text-xl font-bold mb-4 border-t border-border pt-8">Produtos Existentes</h3>
-              <div className="grid gap-3">
+            {/* LISTAGEM DE PRODUTOS EXISTENTES */}
+            <section className="pt-10 border-t border-border">
+              <h3 className="text-xl font-bold mb-6 text-muted-foreground uppercase tracking-widest">Produtos em Linha</h3>
+              <div className="grid gap-4">
                 {products.map((product: any) => (
-                  <div key={product.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-foreground">{product.name}</h4>
-                      <p className="text-sm text-primary font-mono">R$ {(product.price ? product.price / 100 : 0).toFixed(2)}</p>
+                  <div key={product.id} className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <img src={product.image} className="w-12 h-12 rounded-lg object-cover bg-background" />
+                      <div>
+                        <h4 className="font-bold text-foreground">{product.name}</h4>
+                        <p className="text-xs text-primary font-mono">{formatCurrency(product.price)}</p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm" onClick={() => moveProductUpMut.mutate({ id: product.id })}><ChevronUp className="h-4 w-4" /></Button>
@@ -474,16 +486,17 @@ export default function Admin() {
                         onClick={() => {
                           setEditingProductId(product.id);
                           setNewProduct(product);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Edit2 className="h-4 w-4 text-primary" />
                       </Button>
                       <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteProductMut.mutate({ id: product.id })}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </section> section
           </div>
         )}
 
