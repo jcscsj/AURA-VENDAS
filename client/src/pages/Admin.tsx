@@ -413,15 +413,15 @@ export default function Admin() {
                     placeholder="https://..."
                   />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border">
+                <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border mt-2">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-bold">Mostrar Tag "Novo"?</label>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-tight">Exibe o selo laranja na foto</p>
+                    <label className="text-sm font-bold text-foreground">Mostrar Tag de Destaque?</label>
+                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo "NOVO" ou personalizado na foto</p>
                   </div>
                   <input 
                     type="checkbox" 
-                    className="w-5 h-5 accent-primary cursor-pointer"
-                    checked={newProduct.showTag !== false} // Padrão é true
+                    className="w-6 h-6 accent-primary cursor-pointer"
+                    checked={newProduct.showTag !== false} // Por padrão vem marcado
                     onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
                   />
                 </div>
