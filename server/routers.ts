@@ -40,6 +40,29 @@ async function notifyDiscordOrder(order: any, items: any[]) {
     });
   } catch (e) { console.error("[Discord Error]:", e); }
 }
+
+// Notificação de PAGAMENTO CONFIRMADO
+async function notifyDiscordSuccess(order: any) {
+  if (!ENV.discordWebhookUrl) return;
+  try {
+    const embed = {
+      title: "✅ PAGAMENTO CONFIRMADO!",
+      color: 65280, // Verde
+      fields: [
+        { name: "Jogador", value: `<@${order.discordId}> ${order.playerNick}`, inline: true },
+        { name: "Valor Pago", value: `R$ ${(order.total / 100).toFixed(2)}`, inline: true },
+        { name: "Status", value: "🚀 Aprovado / Entregar", inline: false },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: "Aura City - Sistema de Vendas" },
+    };
+    await fetch(ENV.discordWebhookUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ embeds: [embed] }) });
+  } catch (e) { console.error(e); }
+}
+
+// Exportamos para o index.js usar no webhook da Cakto
+export { notifyDiscordSuccess };
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -386,8 +409,19 @@ export const appRouter = router({
           };
 
           const order = await db.createOrder(orderData);
+
           if (order) {
+            // 1. Avisa o seu Discord que um pedido foi gerado (Pendente)
             await notifyDiscordOrder(order, input.items);
+
+            // 2. FATO TÉCNICO: Solicita o pagamento real para a API da Cakto
+            const caktoData = await db.createCaktoPayment(order);
+
+            // 3. Devolvemos o pedido + os dados do Pix para o Checkout mostrar na tela
+            return {
+              ...order,
+              pix: caktoData // Contém o link da imagem e o código "copia e cola"
+            };
           }
           return order;
         }),
