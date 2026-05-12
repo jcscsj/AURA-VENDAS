@@ -54,21 +54,29 @@ async function startServer() {
 
   // ROTA DO WEBHOOK DA CAKTO (PÚBLICA)
   app.post("/api/webhook/cakto", express.json(), async (req, res) => {
+    // 1. SEGURANÇA: Verificamos se a Cakto enviou a senha correta
+    const signature = req.headers['x-cakto-signature'];
+    if (signature !== process.env.CAKTO_WEBHOOK_SECRET) {
+      console.warn("[Webhook] Tentativa de acesso negada: Assinatura inválida.");
+      return res.status(401).send("Unauthorized");
+    }
+
     const { event, data } = req.body;
     
-    // FATO TÉCNICO: Só processamos se o evento for de pagamento aprovado
-    if (event === "payment.approved") {
+    // Processamos apenas se o pagamento foi aprovado
+    if (event === "payment.approved" || event === "purchase.approved") {
       const orderId = data.external_id;
       
       console.log(`[Cakto Webhook] Pagamento Aprovado para Pedido #${orderId}`);
       
-      // 1. Atualiza o banco de dados TiDB para 'completed'
+      // 1. Atualiza o banco de dados TiDB para 'completed' (Aprovado)
       const updatedOrder = await db.updateOrderStatus(Number(orderId), "completed");
       
       if (updatedOrder) {
-        // 2. Dispara a notificação de SUCESSO no Discord
-        // Vamos criar essa função 'notifyDiscordSuccess' no próximo passo
-        // notifyDiscordSuccess(updatedOrder); 
+        // 2. Dispara a notificação VERDE de SUCESSO no Discord
+        // FATO TÉCNICO: Importamos a função que criamos no routers.ts
+        const { notifyDiscordSuccess } = await import("../routers");
+        await notifyDiscordSuccess(updatedOrder); 
       }
     }
     
