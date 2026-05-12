@@ -474,13 +474,16 @@ export async function logSystem(message: string, type: string = 'info') {
 // ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
 export async function createCaktoPayment(order: any) {
   try {
-    console.log(`[Cakto] Tentando autenticação para Pedido #${order.id}`);
+    console.log(`[Cakto] Iniciando fluxo para Pedido #${order.id}`);
 
-    // 1. Pedir permissão para a Cakto
-    // FATO TÉCNICO: Voltamos para o formato JSON e URL v1, que é o padrão mais estável da Cakto
-    const authReq = await fetch("https://api.cakto.com.br/v1/oauth/token", {
+    // 1. OBTENÇÃO DO TOKEN (Conforme Seção OAuth2 da Docs)
+    const authReq = await fetch("https://api.cakto.com.br/oauth/token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "AuraCityShop/1.0 (Render.com)"
+      },
       body: JSON.stringify({
         client_id: process.env.CAKTO_CLIENT_ID,
         client_secret: process.env.CAKTO_CLIENT_SECRET,
@@ -489,40 +492,50 @@ export async function createCaktoPayment(order: any) {
     });
 
     if (!authReq.ok) {
-      // ESTE É O PULO DO GATO: Vamos ler o que a Cakto respondeu de verdade
-      const errorBody = await authReq.text();
-      console.error("[Cakto API Respondeu]:", errorBody);
+      const errorText = await authReq.text();
+      console.error("[Cakto Auth Error]:", errorText);
       return null;
     }
 
     const { access_token } = await authReq.json();
 
-    // 2. Criar a cobrança de PIX
+    // 2. CRIAÇÃO DO PAGAMENTO (Conforme Seção Payments da Docs)
     const paymentReq = await fetch("https://api.cakto.com.br/v1/payments", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${access_token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "AuraCityShop/1.0"
       },
       body: JSON.stringify({
-        external_id: order.id.toString(),
-        amount: order.total / 100,
-        description: `Pedido #${order.id} - Aura City`,
+        external_id: order.id.toString(), // ID do seu banco TiDB
+        amount: Number(order.total / 100).toFixed(2), // FATO: Cakto exige decimal (ex: 10.00)
+        description: `Aura City - Pedido #${order.id}`,
         payment_method: "pix",
         customer: {
           name: order.playerNick,
           email: order.email || "contato@auracity.com",
           document: order.cpf?.replace(/\D/g, "")
         },
+        // A URL que você configurou no painel da Cakto
         webhook_url: `https://aura-shop-huf9.onrender.com/api/webhook/cakto`
       })
     });
 
     const data = await paymentReq.json();
+
+    if (!paymentReq.ok) {
+      console.error("[Cakto Payment Error]:", JSON.stringify(data));
+      return null;
+    }
+
+    // Retornamos os dados exatos para o visual do site
     return {
       pix_code: data.pix_code,
       pix_qr_code: data.pix_qr_code
     };
+
   } catch (error) {
     console.error("[Cakto Fatal Error]:", error);
     return null;
