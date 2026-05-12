@@ -51,6 +51,30 @@ async function startServer() {
       createContext,
     })
   );
+
+  // ROTA DO WEBHOOK DA CAKTO (PÚBLICA)
+  app.post("/api/webhook/cakto", express.json(), async (req, res) => {
+    const { event, data } = req.body;
+    
+    // FATO TÉCNICO: Só processamos se o evento for de pagamento aprovado
+    if (event === "payment.approved") {
+      const orderId = data.external_id;
+      
+      console.log(`[Cakto Webhook] Pagamento Aprovado para Pedido #${orderId}`);
+      
+      // 1. Atualiza o banco de dados TiDB para 'completed'
+      const updatedOrder = await db.updateOrderStatus(Number(orderId), "completed");
+      
+      if (updatedOrder) {
+        // 2. Dispara a notificação de SUCESSO no Discord
+        // Vamos criar essa função 'notifyDiscordSuccess' no próximo passo
+        // notifyDiscordSuccess(updatedOrder); 
+      }
+    }
+    
+    res.status(200).send("OK");
+  });
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
