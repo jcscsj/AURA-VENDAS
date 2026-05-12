@@ -40,6 +40,8 @@ export default function Checkout() {
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
+  const [pixData, setPixData] = useState<{ pix_code: string; pix_qr_code: string } | null>(null);
+  const [showPixModal, setShowPixModal] = useState(false);
 
   // FUNÇÃO MESTRA: Formata CPF em tempo real (000.000.000-00)
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,10 +85,16 @@ export default function Checkout() {
   const total = Math.max(subtotal - discount, 0);
 
   const createOrderMut = trpc.shop.orders.create.useMutation({
-    onSuccess: () => {
-      toast.success("Pedido gerado com sucesso!");
+    onSuccess: (data: any) => {
+      if (data.pix) {
+        setPixData(data.pix);
+        setShowPixModal(true); // Abre a telinha do Pix
+        toast.success("Pix gerado! Pague para concluir.");
+      } else {
+        toast.success("Pedido realizado!");
+        navigate("/orders");
+      }
       clearCart();
-      navigate("/orders");
     },
     onError: (err) => toast.error("Erro: " + err.message),
   });
@@ -406,6 +414,45 @@ export default function Checkout() {
           </div>
         </div>
       </footer>
+      {/* --- COLE O MODAL DO PIX AQUI --- */}
+      {showPixModal && pixData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <Card className="w-full max-w-md bg-card border-primary p-8 text-center space-y-6 shadow-[0_0_50px_-12px_rgba(255,125,0,0.5)]">
+            <h2 className="text-2xl font-black text-primary uppercase">Quase lá!</h2>
+            <p className="text-sm text-muted-foreground">Escaneie o QR Code abaixo ou copie o código para pagar via Pix na Cakto.</p>
+            
+            <div className="bg-white p-4 rounded-2xl inline-block mx-auto shadow-inner">
+              <img src={pixData.pix_qr_code} alt="QR Code Pix" className="w-48 h-48" />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase text-left ml-1">Código Copia e Cola</p>
+              <div className="flex gap-2">
+                <input 
+                  readOnly 
+                  value={pixData.pix_code} 
+                  className="flex-1 bg-background border border-border rounded-lg p-3 text-[10px] font-mono truncate"
+                />
+                <Button 
+                  size="sm"
+                  onClick={() => { navigator.clipboard.writeText(pixData.pix_code); toast.success("Código copiado!"); }}
+                  className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-black"
+                >
+                  Copiar
+                </Button>
+              </div>
+            </div>
+
+            <Button onClick={() => navigate("/orders")} className="w-full bg-primary hover:bg-orange-600 text-black font-black py-6 shadow-lg shadow-primary/20">
+              Já paguei, ver meus pedidos
+            </Button>
+            
+            <button onClick={() => setShowPixModal(false)} className="text-xs text-muted-foreground hover:text-white transition-colors">
+              Fechar e continuar no checkout
+            </button>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
