@@ -21,8 +21,15 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      // 1. Endereço fixo da API para trocar o token (Obrigatório para o Discord)
-      const apiCallbackUrl = `${req.protocol}://${req.get('host')}/api/oauth/callback`;
+      // FATO TÉCNICO: Forçamos o 'https' para bater com o que o Render usa externamente.
+      // Isso resolve o erro 400 do Discord.
+      const host = req.get('host');
+      const apiCallbackUrl = `https://${host}/api/oauth/callback`;
+      
+      console.log("[OAuth] Iniciando troca de token com URI:", apiCallbackUrl);
+
+      // 1. Troca o código pelo Token do Discord
+      const accessToken = await getDiscordAccessToken(code, apiCallbackUrl);
       
       // 2. Troca o código pelo Token do Discord
       const accessToken = await getDiscordAccessToken(code, apiCallbackUrl);
