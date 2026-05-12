@@ -8,7 +8,7 @@ import { ShopProvider } from "./contexts/ShopContext";
 import Home from "./pages/Home";
 import BenefitsPage from "./pages/BenefitsPage";
 import Checkout from "./pages/Checkout";
-import TermsPage from "./pages/Terms";
+import Terms from "./pages/Terms";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
