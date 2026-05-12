@@ -405,12 +405,11 @@ export default function Admin() {
                   />
                 </div>
                 <div>
-                <div>
                   <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto (Opcional)</label>
                   <textarea
                     value={newProduct.description || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary outline-none transition-all"
+                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground outline-none transition-all"
                     placeholder="Detalhes do pacote, o que ele inclui..."
                     rows={3}
                   />
@@ -428,12 +427,12 @@ export default function Admin() {
                 <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border mt-2">
                   <div className="space-y-0.5">
                     <label className="text-sm font-bold text-foreground">Mostrar Tag de Destaque?</label>
-                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo "NOVO" ou personalizado na foto</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo "NOVO" na foto</p>
                   </div>
                   <input 
                     type="checkbox" 
-                    className="w-6 h-6 accent-primary cursor-pointer"
-                    checked={newProduct.showTag !== false} // Por padrão vem marcado
+                    className="w-5 h-5 accent-primary cursor-pointer"
+                    checked={newProduct.showTag !== false}
                     onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
                   />
                 </div>
@@ -461,23 +460,11 @@ export default function Admin() {
                       <p className="text-sm text-muted-foreground">R$ {(product.price ? product.price / 100 : 0).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductUpMut.mutate({ id: product.id })}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductDownMut.mutate({ id: product.id })}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <Button variant="ghost" size="sm" onClick={() => moveProductUpMut.mutate({ id: product.id })}><ChevronUp className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => moveProductDownMut.mutate({ id: product.id })}><ChevronDown className="h-4 w-4" /></Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
                         onClick={() => {
                           setEditingProductId(product.id);
                           setNewProduct(product);
@@ -485,14 +472,7 @@ export default function Admin() {
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteProductMut.mutate({ id: product.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteProductMut.mutate({ id: product.id })}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
