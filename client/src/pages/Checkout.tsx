@@ -86,19 +86,27 @@ export default function Checkout() {
 
   const createOrderMut = trpc.shop.orders.create.useMutation({
     onSuccess: (data: any) => {
-      // FATO TÉCNICO: Se a Cakto devolveu o Pix, abrimos o Modal e NÃO redirecionamos
-      if (data.pix && data.pix.pix_qr_code) {
+      // DEBUG: Isso vai mostrar no F12 o que o servidor respondeu
+      console.log("RESPOSTA DO SERVIDOR:", data);
+
+      // FATO TÉCNICO: Verificamos se os dados do Pix realmente chegaram
+      if (data && data.pix && data.pix.pix_qr_code) {
         setPixData(data.pix);
         setShowPixModal(true);
-        toast.success("Pix gerado! Escaneie para pagar.");
+        toast.success("Pix gerado com sucesso!");
+        
+        // SÓ LIMPAMOS O CARRINHO SE O PIX APARECEU NA TELA
+        clearCart(); 
       } else {
-        // Caso falhe a API da Cakto, ele vai para os pedidos como fallback
-        toast.success("Pedido realizado! Verifique seu Discord.");
-        navigate("/orders");
+        // Se cair aqui, o pedido salvou no banco, mas a Cakto não respondeu
+        toast.error("Pedido registrado, mas o Pix falhou. Tente novamente ou chame o suporte.");
+        
+        // REMOVEMOS o navigate daqui para você não ser expulso da página sem o QR Code
       }
-      clearCart();
     },
-    onError: (err) => toast.error("Erro ao gerar pagamento: " + err.message),
+    onError: (err) => {
+      toast.error("Erro na comunicação com o servidor: " + err.message);
+    },
   });
 
   const handleProcessPayment = () => {
