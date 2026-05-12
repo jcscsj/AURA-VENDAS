@@ -413,6 +413,18 @@ export default function Admin() {
                     placeholder="https://..."
                   />
                 </div>
+                <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border">
+                  <div className="space-y-0.5">
+                    <label className="text-sm font-bold">Mostrar Tag "Novo"?</label>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-tight">Exibe o selo laranja na foto</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 accent-primary cursor-pointer"
+                    checked={newProduct.showTag !== false} // Padrão é true
+                    onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
+                  />
+                </div>
                 <div className="flex gap-2">
                   <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={handleSaveProduct}>
                     <Save className="h-4 w-4" />
