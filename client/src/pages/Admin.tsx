@@ -395,13 +395,13 @@ export default function Admin() {
                 </div>
                 {/* CAMPO DE PREÇO ANTIGO ADICIONADO ABAIXO */}
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Antigo / Riscado (Opcional)</label>
+                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Antigo (Opcional)</label>
                   <input
                     type="number"
                     value={newProduct.oldPrice || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : null })}
                     className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground outline-none transition-all"
-                    placeholder="Ex: 4990 (R$ 49,90)"
+                    placeholder="Ex: 2990 (R$ 29,90)"
                   />
                 </div>
                 <div>
