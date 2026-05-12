@@ -474,7 +474,9 @@ export async function logSystem(message: string, type: string = 'info') {
 // ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
 export async function createCaktoPayment(order: any) {
   try {
-    // 1. Pedir permissão para a Cakto (Token)
+    console.log(`[Cakto] Iniciando pagamento para Pedido #${order.id}`);
+
+    // 1. Autenticação na Cakto
     const authReq = await fetch("https://api.cakto.com.br/v1/oauth/token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -484,6 +486,13 @@ export async function createCaktoPayment(order: any) {
         grant_type: "client_credentials"
       })
     });
+
+    if (!authReq.ok) {
+      const errorText = await authReq.text();
+      console.error("[Cakto Auth Error]:", errorText);
+      return null;
+    }
+
     const { access_token } = await authReq.json();
 
     // 2. Criar a cobrança de PIX
@@ -494,28 +503,30 @@ export async function createCaktoPayment(order: any) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        external_id: order.id.toString(), // Liga o pagamento ao ID do banco TiDB
-        amount: order.total / 100, // Converte centavos para Reais (ex: 2990 -> 29.90)
+        external_id: order.id.toString(),
+        amount: order.total / 100,
         description: `Aura City - Pedido #${order.id}`,
         payment_method: "pix",
         customer: {
           name: order.playerNick,
-          email: order.email,
+          email: order.email || "contato@auracity.com",
           document: order.cpf?.replace(/\D/g, "")
         },
-        // O link que a Cakto vai avisar quando o pagamento for aprovado
         webhook_url: `https://aura-shop-huf9.onrender.com/api/webhook/cakto`
       })
     });
 
     const data = await paymentReq.json();
+    
+    // LOG DE SUCESSO: Isso vai aparecer no seu painel do Render
+    console.log("[Cakto API Success]: Pix gerado com sucesso.");
+    
     return {
-      pix_code: data.pix_code, // O código "Copia e Cola"
-      pix_qr_code: data.pix_qr_code, // A imagem do QR Code
-      payment_url: data.checkout_url // Caso queira mandar para a página da Cakto
+      pix_code: data.pix_code,
+      pix_qr_code: data.pix_qr_code
     };
   } catch (error) {
-    console.error("[Cakto API] Erro ao gerar Pix:", error);
+    console.error("[Cakto Fatal Error]:", error);
     return null;
   }
 }
