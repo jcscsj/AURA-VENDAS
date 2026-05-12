@@ -161,13 +161,12 @@ export async function createProduct(data: any) {
   }
 }
 export async function updateProduct(id: number, data: any) {
-  const db = await getDb();
-  if (!db) return null;
+  const db_i = await getDb(); if (!db_i) return null;
   try {
-    // Transformamos a lista em texto para o MySQL aceitar
     const benefitsString = Array.isArray(data.benefits) ? JSON.stringify(data.benefits) : "[]";
+    const showTagValue = data.showTag === false ? 0 : 1;
 
-    await db.update(products)
+    await db_i.update(products)
       .set({
         name: data.name,
         categoryId: data.categoryId,
@@ -175,12 +174,14 @@ export async function updateProduct(id: number, data: any) {
         price: data.price,
         oldPrice: data.oldPrice || null,
         image: data.image,
+        tag: data.tag || 'Novo',
+        showTag: showTagValue, // <--- GRAVA AQUI
         benefits: benefitsString,
         updatedAt: new Date()
       })
       .where(eq(products.id, id));
 
-    return db.select().from(products).where(eq(products.id, id)).then(r => r[0]);
+    return db_i.select().from(products).where(eq(products.id, id)).then(r => r[0]);
   } catch (error) {
     console.error("Erro ao atualizar produto:", error);
     return null;
