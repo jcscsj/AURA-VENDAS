@@ -474,22 +474,20 @@ export async function logSystem(message: string, type: string = 'info') {
 // ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
 export async function createCaktoPayment(order: any) {
   try {
-    console.log(`[Cakto] Iniciando autenticação para Pedido #${order.id}`);
+    console.log(`[Cakto] Iniciando autenticação oficial para Pedido #${order.id}`);
 
-    // 1. OBTENÇÃO DO TOKEN (Conforme Seção Authentication da Docs)
-    // FATO TÉCNICO: A URL correta é com /v1/ e o corpo é JSON.
-    const authReq = await fetch("https://api.cakto.com.br/v1/oauth/token", {
+    // 1. OBTENÇÃO DO TOKEN (Fato Técnico: URL e formato exatos da documentação)
+    const authParams = new URLSearchParams();
+    authParams.append('client_id', process.env.CAKTO_CLIENT_ID || '');
+    authParams.append('client_secret', process.env.CAKTO_CLIENT_SECRET || '');
+
+    const authReq = await fetch("https://api.cakto.com.br/public_api/token/", {
       method: "POST",
       headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "User-Agent": "AuraCityShop/1.2"
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
       },
-      body: JSON.stringify({
-        client_id: process.env.CAKTO_CLIENT_ID,
-        client_secret: process.env.CAKTO_CLIENT_SECRET,
-        grant_type: "client_credentials"
-      })
+      body: authParams
     });
 
     if (!authReq.ok) {
@@ -501,19 +499,21 @@ export async function createCaktoPayment(order: any) {
 
     const authData = await authReq.json();
     const access_token = authData.access_token;
+    
+    console.log("[Cakto] Token autorizado. Gerando cobrança Pix...");
 
     // 2. CRIAÇÃO DO PAGAMENTO PIX
-    const paymentReq = await fetch("https://api.cakto.com.br/v1/payments", {
+    // Fato: A documentação mostra que as operações de criação ficam no /public_api/
+    const paymentReq = await fetch("https://api.cakto.com.br/public_api/orders/", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${access_token}`,
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "User-Agent": "AuraCityShop/1.2"
+        "Accept": "application/json"
       },
       body: JSON.stringify({
         external_id: order.id.toString(),
-        amount: Number(order.total / 100).toFixed(2), // Formato decimal: 10.00
+        amount: Number(order.total / 100).toFixed(2),
         description: `Aura City - Pedido #${order.id}`,
         payment_method: "pix",
         customer: {
@@ -525,13 +525,14 @@ export async function createCaktoPayment(order: any) {
       })
     });
 
-    const data = await paymentReq.json();
-    
     if (!paymentReq.ok) {
-      console.error("[Cakto Payment Error]:", JSON.stringify(data));
+      const payError = await paymentReq.text();
+      console.error(`[Cakto Payment Error] Status ${paymentReq.status}:`, payError);
       return null;
     }
 
+    const data = await paymentReq.json();
+    
     return {
       pix_code: data.pix_code,
       pix_qr_code: data.pix_qr_code
