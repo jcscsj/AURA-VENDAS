@@ -1,10 +1,23 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Login() {
   const [, navigate] = useLocation();
+  // FATO TÉCNICO: Puxamos os dados para saber se o cara já está logado
+  const { isAuthenticated, loading } = useAuth();
+
+  // FATO TÉCNICO: O vigilante confere o login e te expulsa se você já entrou
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  if (loading) return null; // Não mostra nada enquanto o site decide se você fica ou sai
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
