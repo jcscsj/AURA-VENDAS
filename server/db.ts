@@ -474,28 +474,32 @@ export async function logSystem(message: string, type: string = 'info') {
 // ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
 export async function createCaktoPayment(order: any) {
   try {
-    console.log(`[Cakto] Iniciando pagamento para Pedido #${order.id}`);
+    console.log(`[Cakto] Iniciando autenticação para Pedido #${order.id}`);
 
-    // 1. Autenticação na Cakto
-    const authReq = await fetch("https://api.cakto.com.br/v1/oauth/token", {
+    // 1. Pedir permissão para a Cakto (OAuth2 Token)
+    // FATO TÉCNICO: Usamos URLSearchParams para o formato 'urlencoded', que é o exigido.
+    const params = new URLSearchParams();
+    params.append('client_id', process.env.CAKTO_CLIENT_ID || '');
+    params.append('client_secret', process.env.CAKTO_CLIENT_SECRET || '');
+    params.append('grant_type', 'client_credentials');
+
+    const authReq = await fetch("https://api.cakto.com.br/oauth/token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: process.env.CAKTO_CLIENT_ID,
-        client_secret: process.env.CAKTO_CLIENT_SECRET,
-        grant_type: "client_credentials"
-      })
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params
     });
 
     if (!authReq.ok) {
       const errorText = await authReq.text();
-      console.error("[Cakto Auth Error]:", errorText);
+      console.error("[Cakto Auth Error]: Falha ao obter token. Verifique Client ID/Secret no Render.");
       return null;
     }
 
-    const { access_token } = await authReq.json();
+    const authData = await authReq.json();
+    const access_token = authData.access_token;
 
     // 2. Criar a cobrança de PIX
+    console.log(`[Cakto] Gerando cobrança Pix...`);
     const paymentReq = await fetch("https://api.cakto.com.br/v1/payments", {
       method: "POST",
       headers: {
@@ -504,7 +508,7 @@ export async function createCaktoPayment(order: any) {
       },
       body: JSON.stringify({
         external_id: order.id.toString(),
-        amount: order.total / 100,
+        amount: order.total / 100, // Converte centavos para reais
         description: `Aura City - Pedido #${order.id}`,
         payment_method: "pix",
         customer: {
@@ -516,15 +520,18 @@ export async function createCaktoPayment(order: any) {
       })
     });
 
+    if (!paymentReq.ok) {
+      const errorDetail = await paymentReq.text();
+      console.error("[Cakto Payment Error]:", errorDetail);
+      return null;
+    }
+
     const data = await paymentReq.json();
-    
-    // LOG DE SUCESSO: Isso vai aparecer no seu painel do Render
-    console.log("[Cakto API Success]: Pix gerado com sucesso.");
-    
     return {
       pix_code: data.pix_code,
       pix_qr_code: data.pix_qr_code
     };
+
   } catch (error) {
     console.error("[Cakto Fatal Error]:", error);
     return null;
