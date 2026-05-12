@@ -221,9 +221,20 @@ export default function BenefitsPage() {
                   <h3 className="text-lg font-bold">{product.name}</h3>
                   <p className="mt-2 text-sm text-muted-foreground line-clamp-3 flex-grow">{product.description}</p>
                   <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-                    <p className="text-xl font-bold text-primary">{formatCurrency(product.price)}</p>
+                    <div className="flex flex-col">
+                      {/* FATO TÉCNICO: Se existir preço antigo no banco, ele aparece riscado aqui */}
+                      {product.oldPrice && product.oldPrice > 0 && (
+                        <span className="text-[10px] text-muted-foreground line-through decoration-red-500/50">
+                          {formatCurrency(product.oldPrice)}
+                        </span>
+                      )}
+                      <p className="text-xl font-bold text-primary leading-none">
+                        {formatCurrency(product.price)}
+                      </p>
+                    </div>
+
                     <Button 
-                      className="bg-primary hover:bg-orange-600 text-black font-bold h-9"
+                      className="bg-primary hover:bg-orange-600 text-black font-bold h-9 shadow-sm"
                       disabled={user?.role === "admin"}
                       onClick={() => addToCart(product)}
                     >
