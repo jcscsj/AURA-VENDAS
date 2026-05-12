@@ -214,7 +214,12 @@ export default function BenefitsPage() {
                 {product.image && (
                   <div className="relative w-full h-48 overflow-hidden bg-background">
                     <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                    <div className="absolute left-3 top-3 rounded bg-primary px-3 py-1 text-[10px] font-bold text-black uppercase">{product.tag || "Novo"}</div>
+                    {/* FATO TÉCNICO: Só desenha a tag se ela estiver ativa no Admin */}
+                    {(product.showTag !== false) && (
+                      <div className="absolute left-3 top-3 rounded bg-primary px-3 py-1 text-[10px] font-bold text-black uppercase shadow-lg">
+                        {product.tag || "Novo"}
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="p-5 flex flex-col flex-grow">
