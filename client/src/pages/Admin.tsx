@@ -394,13 +394,13 @@ export default function Admin() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-foreground">Preço Antigo (opcional)</label>
-                  <input
-                    type="number"
-                    value={newProduct.oldPrice || 0}
-                    onChange={(e: any) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="0"
+                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto (Opcional)</label>
+                  <textarea
+                    value={newProduct.description || ""}
+                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary outline-none transition-all"
+                    placeholder="Detalhes do pacote, o que ele inclui..."
+                    rows={3}
                   />
                 </div>
                 <div>
