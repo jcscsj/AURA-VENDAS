@@ -383,37 +383,41 @@ export default function Admin() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-foreground">Preço (em centavos)</label>
-                  <input
-                    type="number"
-                    value={newProduct.price || 0}
-                    onChange={(e: any) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                    <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Antigo / Riscado (Opcional)</label>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground">Preço (em centavos)</label>
+                    <input
+                      type="number"
+                      value={newProduct.price || 0}
+                      onChange={(e: any) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Preço Riscado (Opcional)</label>
                     <input
                       type="number"
                       value={newProduct.oldPrice || ""}
                       onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value ? Number(e.target.value) : null })}
-                      className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary outline-none transition-all"
-                      placeholder="Ex: 4990 (R$ 49,90)"
+                      className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-foreground"
+                      placeholder="Ex: 4990"
                     />
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto (Opcional)</label>
+                  <label className="block text-[10px] font-bold uppercase text-muted-foreground ml-1">Descrição do Produto</label>
                   <textarea
                     value={newProduct.description || ""}
                     onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary outline-none transition-all"
-                    placeholder="Detalhes do pacote, o que ele inclui..."
+                    className="mt-1 w-full rounded border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary outline-none"
+                    placeholder="O que este pacote inclui?"
                     rows={3}
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-foreground">URL da Imagem</label>
                   <input
@@ -424,22 +428,24 @@ export default function Admin() {
                     placeholder="https://..."
                   />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border mt-2">
+
+                <div className="flex items-center justify-between p-4 bg-card/50 rounded-xl border border-border">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-bold text-foreground">Mostrar Tag de Destaque?</label>
-                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo "NOVO" ou personalizado na foto</p>
+                    <label className="text-sm font-bold text-foreground">Mostrar Tag "Novo"?</label>
+                    <p className="text-[10px] text-muted-foreground uppercase">Ativa o selo laranja na foto</p>
                   </div>
                   <input 
                     type="checkbox" 
-                    className="w-6 h-6 accent-primary cursor-pointer"
-                    checked={newProduct.showTag !== false} // Por padrão vem marcado
+                    className="w-5 h-5 accent-primary cursor-pointer"
+                    checked={newProduct.showTag !== false}
                     onChange={(e) => setNewProduct({ ...newProduct, showTag: e.target.checked })}
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-semibold" onClick={handleSaveProduct}>
+
+                <div className="flex gap-2 pt-2">
+                  <Button className="gap-2 bg-primary hover:bg-orange-600 text-black font-bold" onClick={handleSaveProduct}>
                     <Save className="h-4 w-4" />
-                    {editingProductId ? "Atualizar" : "Criar"}
+                    {editingProductId ? "Atualizar Produto" : "Criar Produto"}
                   </Button>
                   {editingProductId && (
                     <Button variant="outline" onClick={() => { setEditingProductId(null); setNewProduct({}); }}>
@@ -451,32 +457,20 @@ export default function Admin() {
             </div>
 
             <div>
-              <h3 className="text-xl font-bold mb-4">Produtos Existentes</h3>
+              <h3 className="text-xl font-bold mb-4 border-t border-border pt-8">Produtos Existentes</h3>
               <div className="grid gap-3">
                 {products.map((product: any) => (
-                  <div key={product.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
+                  <div key={product.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">{product.name}</h4>
-                      <p className="text-sm text-muted-foreground">R$ {(product.price ? product.price / 100 : 0).toFixed(2)}</p>
+                      <h4 className="font-bold text-foreground">{product.name}</h4>
+                      <p className="text-sm text-primary font-mono">R$ {(product.price ? product.price / 100 : 0).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductUpMut.mutate({ id: product.id })}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => moveProductDownMut.mutate({ id: product.id })}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <Button variant="ghost" size="sm" onClick={() => moveProductUpMut.mutate({ id: product.id })}><ChevronUp className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => moveProductDownMut.mutate({ id: product.id })}><ChevronDown className="h-4 w-4" /></Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
                         onClick={() => {
                           setEditingProductId(product.id);
                           setNewProduct(product);
@@ -484,14 +478,7 @@ export default function Admin() {
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => deleteProductMut.mutate({ id: product.id })}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteProductMut.mutate({ id: product.id })}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
