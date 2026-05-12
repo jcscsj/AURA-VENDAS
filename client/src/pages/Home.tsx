@@ -172,13 +172,9 @@ export default function Home() {
           </a>
 
           <nav className="hidden items-center gap-8 text-sm font-semibold text-foreground lg:flex">
-            <a href="#catalogo" className="hover:text-primary">Catálogo</a>
-            <button 
-              onClick={() => navigate("/beneficios")} 
-              className="hover:text-primary transition-colors"
-            >
-              Benefícios
-            </button>
+            <a href="/" className="hover:text-primary transition-colors">Catálogo</a>
+            <button onClick={() => navigate("/beneficios")} className="hover:text-primary transition-colors">Benefícios</button>
+            <button onClick={() => navigate("/termos")} className="hover:text-primary transition-colors">Termos</button>
           </nav>
 
           <div className="flex items-center gap-2">
