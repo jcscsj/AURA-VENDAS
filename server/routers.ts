@@ -451,8 +451,19 @@ export const appRouter = router({
       updateStatus: publicProcedure
         .input(z.object({ orderId: z.number(), status: z.string() }))
         .mutation(async ({ input, ctx }) => {
-          if (ctx.user?.role !== "admin" && !ctx.adminSession) throw new TRPCError({ code: "FORBIDDEN" });
-          return db.updateOrderStatus(input.orderId, input.status);
+          // TRAVA DE SEGURANÇA UNIFICADA
+          if (ctx.user?.role !== "admin" && !ctx.adminSession) {
+            throw new TRPCError({ code: "FORBIDDEN" });
+          }
+          
+          const updatedOrder = await db.updateOrderStatus(input.orderId, input.status);
+          
+          // FATO TÉCNICO: Se você aprovou o pedido, disparar a mensagem VERDE no Discord
+          if (updatedOrder && input.status === 'completed') {
+            await notifyDiscordSuccess(updatedOrder);
+          }
+          
+          return updatedOrder;
         }),
       delete: publicProcedure
         .input(z.object({ orderId: z.number() }))
