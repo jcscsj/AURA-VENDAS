@@ -499,7 +499,7 @@ export async function logSystem(message: string, type: string = 'info') {
 // FUNÇÃO MESTRA: GERADOR DE PIX ESTÁTICO (CUSTO ZERO)
 export async function createManualPix(order: any) {
   // CONFIGURAÇÃO DA SUA CHAVE
-  const CHAVE_PIX = "df98f010-7b5b-4165-b7c8-504020a16fc9"; // SUA CHAVE AQUI
+  const CHAVE_PIX = "2bb97d4a-5280-4ac7-8777-908e8f9313bb"; // SUA CHAVE AQUI
   const NOME_LOJA = "Aura City Loja FiveM"; // Max 15 letras, sem acentos
   const CIDADE = "BR";        // Sem acentos
   
