@@ -130,18 +130,17 @@ export async function deleteCategory(id: number) {
 }
 
 // ===== PRODUTOS (INSERÇÃO BLINDADA) =====
+// 1. BUSCAR PRODUTOS (Ordenados corretamente)
 export async function getProducts() {
-  const db = await getDb(); 
-  if (!db) return [];
-  const res = await db.select().from(products).orderBy(asc(products.order));
+  const db_i = await getDb(); if (!db_i) return [];
+  // FATO TÉCNICO: O .orderBy(asc(products.order)) é o que faz a troca aparecer na tela
+  const res = await db_i.select().from(products).orderBy(asc(products.order));
   
-  // FATO TÉCNICO: Convertemos o texto do banco de volta para Lista (Array)
-  return res.map(p => ({
+  return res.map((p:any) => ({
     ...p,
     benefits: typeof p.benefits === 'string' ? JSON.parse(p.benefits) : (p.benefits || [])
   }));
 }
-
 export async function createProduct(data: any) {
   const db = await getDb();
   if (!db) return null;
@@ -191,6 +190,44 @@ export async function updateProduct(id: number, data: any) {
 export async function deleteProduct(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(products).where(eq(products.id, id));
+}
+
+// MOVER PRODUTO PARA CIMA
+export async function moveProductUp(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  try {
+    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    const prev = await db_i.select().from(products)
+      .where(lt(products.order, curr.order))
+      .orderBy(desc(products.order)).limit(1).then((r:any) => r[0]);
+
+    if (prev) {
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
+}
+
+// MOVER PRODUTO PARA BAIXO
+export async function moveProductDown(id: number) {
+  const db_i = await getDb(); if (!db_i) return null;
+  try {
+    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    const next = await db_i.select().from(products)
+      .where(gt(products.order, curr.order))
+      .orderBy(asc(products.order)).limit(1).then((r:any) => r[0]);
+
+    if (next) {
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
 }
 
 // ===== BANNERS (INSERÇÃO BLINDADA) =====
