@@ -275,9 +275,22 @@ export async function deleteOrder(id: number) {
 }
 
 export async function updateOrderStatus(id: number, status: string) {
-  const db = await getDb(); if (!db) return null;
-  await db.update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, id));
-  return db.select().from(orders).where(eq(orders.id, id)).then(r => r[0]);
+  const db_i = await getDb(); 
+  if (!db_i) return null;
+  try {
+    // FATO TÉCNICO: Usamos SQL puro para garantir a troca de status e atualizar o carimbo de tempo
+    await db_i.execute(sql`
+      UPDATE \`orders\` 
+      SET \`status\` = ${status}, \`updatedAt\` = NOW() 
+      WHERE \`id\` = ${id}
+    `);
+    
+    const res = await db_i.select().from(orders).where(eq(orders.id, id)).limit(1);
+    return res[0] || null;
+  } catch (error) {
+    console.error("Erro ao mudar status no banco:", error);
+    return null;
+  }
 }
 
 export async function getOrdersByGameId(gameId: string) {
