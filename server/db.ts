@@ -192,44 +192,6 @@ export async function deleteProduct(id: number) {
   await db.delete(products).where(eq(products.id, id));
 }
 
-// MOVER PRODUTO PARA CIMA
-export async function moveProductUp(id: number) {
-  const db_i = await getDb(); if (!db_i) return null;
-  try {
-    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
-    if (!curr) return null;
-
-    const prev = await db_i.select().from(products)
-      .where(lt(products.order, curr.order))
-      .orderBy(desc(products.order)).limit(1).then((r:any) => r[0]);
-
-    if (prev) {
-      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
-      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
-    }
-    return curr;
-  } catch (e) { return null; }
-}
-
-// MOVER PRODUTO PARA BAIXO
-export async function moveProductDown(id: number) {
-  const db_i = await getDb(); if (!db_i) return null;
-  try {
-    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
-    if (!curr) return null;
-
-    const next = await db_i.select().from(products)
-      .where(gt(products.order, curr.order))
-      .orderBy(asc(products.order)).limit(1).then((r:any) => r[0]);
-
-    if (next) {
-      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
-      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
-    }
-    return curr;
-  } catch (e) { return null; }
-}
-
 // ===== BANNERS (INSERÇÃO BLINDADA) =====
 export async function getBanners() {
   const db_i = await getDb(); if (!db_i) return [];
@@ -433,25 +395,37 @@ export async function moveCategoryDown(id: number) {
 // === MOVER PRODUTOS ===
 export async function moveProductUp(id: number) {
   const db_i = await getDb(); if (!db_i) return null;
-  const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
-  if (!curr) return null;
-  const prev = await db_i.select().from(products).where(lt(products.order, curr.order)).orderBy(desc(products.order)).limit(1).then((r:any) => r[0]);
-  if (prev) {
-    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
-    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
-  }
-  return curr;
+  try {
+    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    const prev = await db_i.select().from(products)
+      .where(lt(products.order, curr.order))
+      .orderBy(desc(products.order)).limit(1).then((r:any) => r[0]);
+
+    if (prev) {
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${prev.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${prev.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
 }
 export async function moveProductDown(id: number) {
   const db_i = await getDb(); if (!db_i) return null;
-  const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
-  if (!curr) return null;
-  const next = await db_i.select().from(products).where(gt(products.order, curr.order)).orderBy(asc(products.order)).limit(1).then((r:any) => r[0]);
-  if (next) {
-    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
-    await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
-  }
-  return curr;
+  try {
+    const curr = await db_i.select().from(products).where(eq(products.id, id)).then((r:any) => r[0]);
+    if (!curr) return null;
+
+    const next = await db_i.select().from(products)
+      .where(gt(products.order, curr.order))
+      .orderBy(asc(products.order)).limit(1).then((r:any) => r[0]);
+
+    if (next) {
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${next.order} WHERE \`id\` = ${curr.id}`);
+      await db_i.execute(sql`UPDATE \`products\` SET \`order\` = ${curr.order} WHERE \`id\` = ${next.id}`);
+    }
+    return curr;
+  } catch (e) { return null; }
 }
 
 // === MOVER BANNERS ===
