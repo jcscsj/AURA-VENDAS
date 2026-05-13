@@ -451,8 +451,8 @@ export default function Checkout() {
 
             <Button 
               onClick={() => {
-                clearCart(); // <--- O CARRINHO É LIMPO SÓ AQUI AGORA
-                navigate("/orders");
+                clearCart(); // Limpa a memória
+                navigate("/orders"); // Vai para pedidos
               }} 
               className="w-full bg-primary hover:bg-orange-600 text-black font-black py-6 shadow-lg shadow-primary/20"
             >
@@ -460,7 +460,10 @@ export default function Checkout() {
             </Button>
             
             <button 
-              onClick={() => setShowPixModal(false)}
+              onClick={() => {
+                clearCart(); // Limpa a memória
+                navigate("/"); // Volta para o início
+              }}
               className="text-xs text-muted-foreground hover:text-white transition-colors"
             >
               Fechar e voltar ao site
