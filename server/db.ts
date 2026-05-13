@@ -476,7 +476,7 @@ export async function logSystem(message: string, type: string = 'info') {
 export async function createManualPix(order: any) {
   // CONFIGURAÇÃO DA SUA CHAVE
   const CHAVE_PIX = "df98f010-7b5b-4165-b7c8-504020a16fc9"; // SUA CHAVE AQUI
-  const NOME_LOJA = "Aura City"; // Max 15 letras, sem acentos
+  const NOME_LOJA = "Aura City Loja FiveM"; // Max 15 letras, sem acentos
   const CIDADE = "BR";        // Sem acentos
   
   // Converte centavos para o formato 0.00 (Ex: 29.90)
