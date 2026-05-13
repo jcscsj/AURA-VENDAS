@@ -537,6 +537,6 @@ export async function createManualPix(order: any) {
   return {
     pix_code: result,
     // Imagem do QR Code gerada via API do Google (Segura e Rápida)
-    pix_qr_code: `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(result)}`
+    pix_qr_code: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(result)}`
   };
 }
