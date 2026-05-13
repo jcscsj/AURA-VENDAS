@@ -40,7 +40,7 @@ export default function Checkout() {
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
-  const [pixData, setPixData] = useState<{ pix_code: string; pix_qr_code: string } | null>(null);
+  const [pixData, setPixData] = useState<any>(null);
   const [showPixModal, setShowPixModal] = useState(false);
 
   // FUNÇÃO MESTRA: Formata CPF em tempo real (000.000.000-00)
