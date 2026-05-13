@@ -179,6 +179,14 @@ export default function Admin() {
     onError: () => toast.error("Erro ao mover banner"),
   });
 
+  const updateStatusMut = trpc.shop.orders.updateStatus.useMutation({
+    onSuccess: () => {
+      refetchOrders();
+      toast.success("Status do pedido atualizado!");
+    },
+    onError: (err) => toast.error("Erro ao atualizar: " + err.message),
+  });
+
   const createCouponMut = trpc.shop.admin.coupons.create.useMutation({
     onSuccess: () => {
       refetchCoupons();
@@ -706,6 +714,30 @@ export default function Admin() {
                       }`}>
                         {order.status === "pending" ? "⏳ Pendente" : order.status}
                       </span>
+                      
+                      <div className="flex gap-2">
+                        {/* BOTÃO APROVAR: Só aparece se o pedido estiver pendente */}
+                        {order.status === 'pending' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => updateStatusMut.mutate({ orderId: order.id, status: 'completed' })}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] h-8 px-2"
+                          >
+                            APROVAR
+                          </Button>
+                        )}
+                        
+                        {/* BOTÃO CANCELAR: Só se não estiver cancelado */}
+                        {order.status !== 'cancelled' && (
+                          <Button 
+                            variant="outline"
+                            size="sm" 
+                            onClick={() => { if(confirm("Deseja cancelar este pedido?")) updateStatusMut.mutate({ orderId: order.id, status: 'cancelled' }); }}
+                            className="border-red-500 text-red-500 hover:bg-red-500/10 text-[10px] h-8 px-2"
+                          >
+                            CANCELAR
+                          </Button>
+                        )}
                       
                       {/* BOTÃO DE APAGAR PEDIDO */}
                       <Button
