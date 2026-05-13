@@ -434,7 +434,7 @@ export default function Checkout() {
             
             {/* QR CODE 1:1 */}
             <div className="bg-white p-4 rounded-2xl inline-block mx-auto shadow-inner border-4 border-primary/20">
-              <img src={pixData.pix_qr_code} alt="QR Code Pix" className="w-48 h-48 aspect-square" />
+              <img src={pixData.pix_qr_code} alt="QR Code" className="w-48 h-48 aspect-square" />
             </div>
 
             <div className="space-y-2">
