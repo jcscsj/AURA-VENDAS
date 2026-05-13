@@ -54,10 +54,18 @@ export default function Orders() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container max-w-4xl mx-auto py-8">
-        <div className="mb-8 border-b border-border pb-4">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Meus Pedidos</h1>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* HEADER COM BOTÃO VOLTAR */}
+      <nav className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-4 flex items-center h-16">
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-primary">
+            <ChevronLeft className="mr-2 h-4 w-4" /> Voltar à Loja
+          </Button>
+        </div>
+      </nav>
+
+      <main className="container mx-auto py-12 px-4 flex-grow">
+        <h2 className="text-3xl font-black text-foreground mb-8 uppercase tracking-tighter">Meus Pedidos</h2>
           <p className="text-muted-foreground">Histórico de compras e status dos seus pedidos na Aura City.</p>
         </div>
 
