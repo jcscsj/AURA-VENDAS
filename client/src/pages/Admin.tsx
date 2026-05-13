@@ -755,6 +755,22 @@ export default function Admin() {
                       </div> {/* FECHAMENTO DA DIV DOS BOTÕES (ESTA LINHA FALTAVA) */}
                     </div>
                   </div>
+                  {/* LISTA DE PRODUTOS COMPRADOS */}
+                    <div className="mt-4 p-3 bg-background/50 rounded-xl border border-border/40">
+                      <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Itens no Carrinho:</p>
+                      <div className="space-y-1">
+                        {order.items && (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-xs border-b border-border/10 pb-1 last:border-0">
+                            <span className="text-foreground font-medium">
+                              {item.quantity}x {item.name || "Produto"}
+                            </span>
+                            <span className="text-muted-foreground font-mono">
+                              R$ {((item.price * item.quantity) / 100).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   <div className="space-y-2 text-sm border-t border-border/50 pt-3 mt-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total do Pedido:</span>
