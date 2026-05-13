@@ -24,7 +24,7 @@ async function notifyDiscordOrder(order: any, items: any[]) {
       title: "🛒 Novo Pedido Realizado!", color: 16744192,
       fields:[
         { name: "Discord (Menção)", value: mention, inline: true },
-        { name: "Nick no Jogo", value: order.playerNick || "N/A", inline: true },
+        { name: "Nome", value: order.playerNick || "N/A", inline: true },
         { name: "ID do Jogo", value: order.gameId || "N/A", inline: true },
         { name: "Produtos", value: itemsText || "N/A", inline: false },
         { name: "Total", value: `R$ ${(order.total / 100).toFixed(2)}`, inline: true },
