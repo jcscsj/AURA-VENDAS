@@ -426,13 +426,15 @@ export default function Checkout() {
       </footer>
       {/* --- COLE O MODAL DO PIX AQUI --- */}
       {showPixModal && pixData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md bg-card border-primary p-8 text-center space-y-6 shadow-[0_0_50px_-12px_rgba(255,125,0,0.5)]">
-            <h2 className="text-2xl font-black text-primary uppercase">Quase lá!</h2>
-            <p className="text-sm text-muted-foreground">Escaneie o QR Code abaixo ou copie o código para pagar via Pix na Cakto.</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+          <Card className="w-full max-w-md bg-card border-primary p-8 text-center space-y-6 shadow-[0_0_50px_-12px_rgba(255,125,0,0.5)] relative">
             
-            <div className="bg-white p-4 rounded-2xl inline-block mx-auto shadow-inner">
-              <img src={pixData.pix_qr_code} alt="QR Code Pix" className="w-48 h-48" />
+            <h2 className="text-2xl font-black text-primary uppercase tracking-tighter italic">Pedido Gerado!</h2>
+            <p className="text-sm text-muted-foreground italic">Pague o Pix abaixo para que os ADMs aprovem sua entrega.</p>
+            
+            {/* QR CODE 1:1 */}
+            <div className="bg-white p-4 rounded-2xl inline-block mx-auto shadow-inner border-4 border-primary/20">
+              <img src={pixData.pix_qr_code} alt="QR Code Pix" className="w-48 h-48 aspect-square" />
             </div>
 
             <div className="space-y-2">
@@ -446,19 +448,25 @@ export default function Checkout() {
                 <Button 
                   size="sm"
                   onClick={() => { navigator.clipboard.writeText(pixData.pix_code); toast.success("Código copiado!"); }}
-                  className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-black"
+                  className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-black font-bold"
                 >
                   Copiar
                 </Button>
               </div>
             </div>
 
-            <Button onClick={() => navigate("/orders")} className="w-full bg-primary hover:bg-orange-600 text-black font-black py-6 shadow-lg shadow-primary/20">
-              Já paguei, ver meus pedidos
+            <Button 
+              onClick={() => navigate("/orders")} 
+              className="w-full bg-primary hover:bg-orange-600 text-black font-black py-6 shadow-lg shadow-primary/20"
+            >
+              IR PARA MEUS PEDIDOS
             </Button>
             
-            <button onClick={() => setShowPixModal(false)} className="text-xs text-muted-foreground hover:text-white transition-colors">
-              Fechar e continuar no checkout
+            <button 
+              onClick={() => setShowPixModal(false)}
+              className="text-xs text-muted-foreground hover:text-white transition-colors"
+            >
+              Fechar e voltar ao site
             </button>
           </Card>
         </div>
