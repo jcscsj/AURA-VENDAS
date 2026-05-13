@@ -173,7 +173,13 @@ export default function Home() {
           </a>
 
           <nav className="hidden items-center gap-8 text-sm font-semibold text-foreground lg:flex">
-            <a href="/" className="hover:text-primary transition-colors">Catálogo</a>
+            {/* BOTÃO CORRIGIDO: Rola a tela suavemente até o catálogo */}
+            <button 
+              onClick={() => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })}
+              className="hover:text-primary transition-colors"
+            >
+              Catálogo
+            </button>
             <button onClick={() => navigate("/beneficios")} className="hover:text-primary transition-colors">Benefícios</button>
             <button onClick={() => navigate("/termos")} className="hover:text-primary transition-colors">Termos</button>
           </nav>
@@ -255,7 +261,10 @@ export default function Home() {
         {mobileMenuOpen && (
           <div className="container grid gap-4 border-t border-border bg-card py-6 text-sm font-semibold text-foreground lg:hidden">
             <button 
-              onClick={() => { setMobileMenuOpen(false); navigate("/"); }} 
+              onClick={() => {
+                setMobileMenuOpen(false);
+                document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" });
+              }} 
               className="text-left hover:text-primary py-2 border-b border-border/50"
             >
               Catálogo
