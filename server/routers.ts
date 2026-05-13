@@ -409,18 +409,16 @@ export const appRouter = router({
           };
 
           const order = await db.createOrder(orderData);
-
           if (order) {
-            // 1. Avisa o seu Discord que um pedido foi gerado (Pendente)
+            // 1. Avisa o seu Discord do pedido novo (Pendente)
             await notifyDiscordOrder(order, input.items);
 
-            // 2. FATO TÉCNICO: Solicita o pagamento real para a API da Cakto
-            const caktoData = await db.createCaktoPayment(order);
+            // 2. FATO TÉCNICO: Gera o QR Code usando a sua chave direta
+            const pixData = await db.createManualPix(order);
 
-            // 3. Devolvemos o pedido + os dados do Pix para o Checkout mostrar na tela
             return {
               ...order,
-              pix: caktoData // Contém o link da imagem e o código "copia e cola"
+              pix: pixData
             };
           }
           return order;
