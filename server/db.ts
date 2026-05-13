@@ -471,75 +471,48 @@ export async function logSystem(message: string, type: string = 'info') {
   }
 }
 
-// ===== FUNÇÃO PARA GERAR PAGAMENTO NA CAKTO =====
-export async function createCaktoPayment(order: any) {
-  try {
-    console.log(`[Cakto] Iniciando autenticação oficial para Pedido #${order.id}`);
+// ===== FUNÇÃO PARA GERAR PIX MANUAL (TAXA ZERO) =====
+// FUNÇÃO MESTRA: GERADOR DE PIX ESTÁTICO (CUSTO ZERO)
+export async function createManualPix(order: any) {
+  // CONFIGURAÇÃO DA SUA CHAVE
+  const CHAVE_PIX = "df98f010-7b5b-4165-b7c8-504020a16fc9"; // SUA CHAVE AQUI
+  const NOME_LOJA = "Aura City"; // Max 15 letras, sem acentos
+  const CIDADE = "BR";        // Sem acentos
+  
+  // Converte centavos para o formato 0.00 (Ex: 29.90)
+  const valor = (order.total / 100).toFixed(2); 
 
-    // 1. OBTENÇÃO DO TOKEN (Fato Técnico: URL e formato exatos da documentação)
-    const authParams = new URLSearchParams();
-    authParams.append('client_id', process.env.CAKTO_CLIENT_ID || '');
-    authParams.append('client_secret', process.env.CAKTO_CLIENT_SECRET || '');
+  // Função auxiliar de formatação PIX
+  const f = (id: string, val: string) => `${id}${val.length.toString().padStart(2, '0')}${val}`;
 
-    const authReq = await fetch("https://api.cakto.com.br/public_api/token/", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json"
-      },
-      body: authParams
-    });
+  // Montagem dos campos baseados no seu exemplo
+  const merchantInfo = f("00", "br.gov.bcb.pix") + f("01", CHAVE_PIX);
+  
+  let payload = f("00", "01") + 
+                f("26", merchantInfo) + 
+                f("52", "0000") + 
+                f("53", "986") + 
+                f("54", valor) + // ADICIONAMOS O VALOR AQUI PARA FACILITAR PRO PLAYER
+                f("58", "BR") + 
+                f("59", NOME_LOJA) + 
+                f("60", CIDADE) + 
+                f("62", f("05", "***")) + 
+                "6304";
 
-    if (!authReq.ok) {
-      const statusCode = authReq.status;
-      const errorText = await authReq.text();
-      console.error(`[Cakto Auth Error] Status ${statusCode}:`, errorText);
-      return null;
+  // CÁLCULO DO CRC16 (A assinatura do Pix)
+  let crc = 0xFFFF;
+  for (let i = 0; i < payload.length; i++) {
+    crc ^= (payload.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
     }
-
-    const authData = await authReq.json();
-    const access_token = authData.access_token;
-    
-    console.log("[Cakto] Token autorizado. Gerando cobrança Pix...");
-
-    // 2. CRIAÇÃO DO PAGAMENTO PIX
-    // Fato: A documentação mostra que as operações de criação ficam no /public_api/
-    const paymentReq = await fetch("https://api.cakto.com.br/public_api/orders/", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${access_token}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        external_id: order.id.toString(),
-        amount: Number(order.total / 100).toFixed(2),
-        description: `Aura City - Pedido #${order.id}`,
-        payment_method: "pix",
-        customer: {
-          name: order.playerNick,
-          email: order.email || "contato@auracity.com",
-          document: order.cpf?.replace(/\D/g, "")
-        },
-        webhook_url: `https://aura-shop-huf9.onrender.com/api/webhook/cakto`
-      })
-    });
-
-    if (!paymentReq.ok) {
-      const payError = await paymentReq.text();
-      console.error(`[Cakto Payment Error] Status ${paymentReq.status}:`, payError);
-      return null;
-    }
-
-    const data = await paymentReq.json();
-    
-    return {
-      pix_code: data.pix_code,
-      pix_qr_code: data.pix_qr_code
-    };
-
-  } catch (error) {
-    console.error("[Cakto Fatal Error]:", error);
-    return null;
   }
+  const checksum = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+  const result = payload + checksum;
+
+  return {
+    pix_code: result,
+    // Imagem do QR Code gerada via API do Google (Segura e Rápida)
+    pix_qr_code: `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(result)}`
+  };
 }
