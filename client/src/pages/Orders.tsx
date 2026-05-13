@@ -45,7 +45,7 @@ export default function Orders() {
   };
 
   // Se estiver verificando o login OU buscando os pedidos, mostra a bolinha girando.
-  if (authLoading || (isAuthenticated && ordersLoading)) {
+  if (authLoading || (isAuthenticated && ordersLoading && orders.length === 0)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -64,8 +64,9 @@ export default function Orders() {
         </div>
       </nav>
 
-      <main className="container mx-auto py-12 px-4 flex-grow">
-        <h2 className="text-3xl font-black text-foreground mb-8 uppercase tracking-tighter">Meus Pedidos</h2>
+      <div className="container max-w-4xl mx-auto py-12 px-4 flex-grow">
+        <div className="mb-8 border-b border-border pb-4">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Meus Pedidos</h1>
           <p className="text-muted-foreground">Histórico de compras e status dos seus pedidos na Aura City.</p>
         </div>
 
