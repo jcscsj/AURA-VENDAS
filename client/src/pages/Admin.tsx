@@ -716,7 +716,7 @@ export default function Admin() {
                       </span>
                       
                       <div className="flex gap-2">
-                        {/* BOTÃO APROVAR: Só aparece se o pedido estiver pendente */}
+                        {/* BOTÃO APROVAR */}
                         {order.status === 'pending' && (
                           <Button 
                             size="sm" 
@@ -727,7 +727,7 @@ export default function Admin() {
                           </Button>
                         )}
                         
-                        {/* BOTÃO CANCELAR: Só se não estiver cancelado */}
+                        {/* BOTÃO CANCELAR */}
                         {order.status !== 'cancelled' && (
                           <Button 
                             variant="outline"
@@ -739,19 +739,20 @@ export default function Admin() {
                           </Button>
                         )}
                       
-                      {/* BOTÃO DE APAGAR PEDIDO */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          if (window.confirm(`VOCÊ DESEJA MESMO APAGAR O PEDIDO DE "${order.playerNick}"?`)) {
-                            deleteOrderMut.mutate({ orderId: order.id });
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        {/* BOTÃO DE APAGAR PEDIDO */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            if (window.confirm(`VOCÊ DESEJA MESMO APAGAR O PEDIDO DE "${order.playerNick}"?`)) {
+                              deleteOrderMut.mutate({ orderId: order.id });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div> {/* FECHAMENTO DA DIV DOS BOTÕES (ESTA LINHA FALTAVA) */}
                     </div>
                   </div>
                   <div className="space-y-2 text-sm border-t border-border/50 pt-3 mt-3">
