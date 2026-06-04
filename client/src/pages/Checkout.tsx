@@ -31,9 +31,9 @@ export default function Checkout() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   
   // FATO TÉCNICO: Puxamos as funções de editar e remover do carrinho global
-  const { cart, clearCart, updateQuantity, removeItem } = useShop();
+  ct { cart, clearCart, updateQuantity, removeItem } = useShop();
 
-  const [playerNick, setPlayerNick] = useState("");
+  ct [playerNick, setPlayerNick] = useState("");
   const [gameId, setGameId] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [couponInput, setCouponInput] = useState("");
@@ -86,16 +86,15 @@ export default function Checkout() {
 
   const createOrderMut = trpc.shop.orders.create.useMutation({
     onSuccess: (data: any) => {
-      console.log("DADOS DO PIX RECEBIDOS:", data);
+      clearCart(); // Limpamos o carrinho com sucesso
 
-      if (data && data.pix && data.pix.pix_qr_code) {
-        setPixData(data.pix);
-        setShowPixModal(true);
-        toast.success("Pix gerado! Escaneie para pagar.");
-        
-        // FATO TÉCNICO: REMOVEMOS o clearCart daqui para a tela não sumir!
+      if (data && data.payment_info && data.payment_info.checkout_url) {
+        toast.success("Redirecionando para o pagamento seguro...");
+        // FATO TÉCNICO: Manda o jogador direto para a página de Pix da AbacatePay
+        window.location.href = data.payment_info.checkout_url;
       } else {
-        toast.error("Erro ao gerar o QR Code. Tente novamente.");
+        toast.error("Pedido salvo, mas falha ao conectar com a AbacatePay.");
+        navigate("/orders");
       }
     },
     onError: (err) => {
