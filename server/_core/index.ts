@@ -41,6 +41,29 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // Parse cookies for local authentication
   app.use(cookieParser());
+// WEBHOOK OFICIAL DA ABACATEPAY
+  app.post("/api/webhook/abacatepay", express.json(), async (req, res) => {
+    const payload = req.body;
+    
+    // FATO TÉCNICO: A AbacatePay avisa que o status mudou para PAID
+    if (payload?.data?.status === "PAID") {
+      // Pega o ID que enviamos lá no products[0].externalId
+      const orderId = payload.data.products?.[0]?.externalId;
+      
+      if (orderId) {
+        console.log(`[AbacatePay] Sucesso! Dinheiro na conta. Pedido #${orderId}`);
+        const updatedOrder = await db.updateOrderStatus(Number(orderId), "completed");
+        
+        if (updatedOrder) {
+          const { notifyDiscordSuccess } = await import("../routers");
+          await notifyDiscordSuccess(updatedOrder);
+        }
+      }
+    }
+    
+    // Sempre responder 200 OK para a AbacatePay não travar
+    res.status(200).send("OK");
+  });
   // registerStorageProxy(app);
   registerOAuthRoutes(app);
   // tRPC API
