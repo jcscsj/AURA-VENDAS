@@ -409,16 +409,18 @@ export const appRouter = router({
           };
 
           const order = await db.createOrder(orderData);
+
           if (order) {
-            // 1. Avisa o seu Discord do pedido novo (Pendente)
+            // 1. Manda a mensagem Laranja (Pendente) pro Discord
             await notifyDiscordOrder(order, input.items);
-
-            // 2. FATO TÉCNICO: Gera o QR Code usando a sua chave direta
-            const pixData = await db.createManualPix(order);
-
+            
+            // 2. Chama a AbacatePay
+            const abacateData = await db.createAbacatePayment(order);
+            
+            // 3. Devolve a URL para o site
             return {
               ...order,
-              pix: pixData
+              payment_info: abacateData
             };
           }
           return order;
