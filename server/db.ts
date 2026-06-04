@@ -52,15 +52,18 @@ export async function upsertUser(data: any) {
   }
 }
 export async function getUserByOpenId(openId: string) {
-  const db_instance = await getDb();
-  if (!db_instance) return undefined;
+  // FATO TÉCNICO: Trava de segurança. Se o ID vier vazio, cancela a busca na hora para não travar o banco.
+  if (!openId) return undefined; 
+
+  const db_i = await getDb();
+  if (!db_i) return undefined;
   
   try {
-    // FATO TÉCNICO: Usamos SQL puro para garantir que a busca pelo openId (ex: discord_4544...) funcione
-    const [rows] = await db_instance.execute(sql`SELECT * FROM \`users\` WHERE \`openId\` = ${openId} LIMIT 1`);
-    const users_list = rows as any[];
+    // FATO TÉCNICO: Voltamos ao padrão Drizzle, que coloca as aspas e os filtros (parâmetros)
+    // de forma 100% segura contra erros de Sintaxe do MySQL/TiDB.
+    const res = await db_i.select().from(users).where(eq(users.openId, openId)).limit(1);
     
-    return users_list.length > 0 ? users_list[0] : undefined;
+    return res[0] || undefined;
   } catch (error) {
     console.error("[DB Error] Erro ao buscar usuário por openId:", error);
     return undefined;
