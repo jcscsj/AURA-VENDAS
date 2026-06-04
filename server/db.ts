@@ -52,15 +52,15 @@ export async function upsertUser(data: any) {
   }
 }
 export async function getUserByOpenId(openId: string) {
-  // FATO TÉCNICO: Trava de segurança. Se o ID vier vazio, cancela a busca na hora para não travar o banco.
+  // FATO TÉCNICO 1: Se não tiver ID, ele nem tenta ir no banco e evita o erro 500
   if (!openId) return undefined; 
 
   const db_i = await getDb();
   if (!db_i) return undefined;
   
   try {
-    // FATO TÉCNICO: Voltamos ao padrão Drizzle, que coloca as aspas e os filtros (parâmetros)
-    // de forma 100% segura contra erros de Sintaxe do MySQL/TiDB.
+    // FATO TÉCNICO 2: Usamos Drizzle nativo. Ele coloca aspas automáticas
+    // e IMPEDE o erro de Sintaxe "LIMIT 1"
     const res = await db_i.select().from(users).where(eq(users.openId, openId)).limit(1);
     
     return res[0] || undefined;
