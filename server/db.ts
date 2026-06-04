@@ -52,17 +52,17 @@ export async function upsertUser(data: any) {
   }
 }
 export async function getUserByOpenId(openId: string) {
-  // FATO TÉCNICO 1: Se não tiver ID, ele nem tenta ir no banco e evita o erro 500
-  if (!openId) return undefined; 
+  // BLINDAGEM 1: Se o navegador enviar um id vazio, cancela a busca na hora e salva o site
+  if (!openId || openId.trim() === "") {
+    return undefined;
+  }
 
   const db_i = await getDb();
   if (!db_i) return undefined;
   
   try {
-    // FATO TÉCNICO 2: Usamos Drizzle nativo. Ele coloca aspas automáticas
-    // e IMPEDE o erro de Sintaxe "LIMIT 1"
+    // BLINDAGEM 2: Usamos o Drizzle Nativo. Ele NUNCA gera SQL quebrado, mesmo que haja falhas.
     const res = await db_i.select().from(users).where(eq(users.openId, openId)).limit(1);
-    
     return res[0] || undefined;
   } catch (error) {
     console.error("[DB Error] Erro ao buscar usuário por openId:", error);
