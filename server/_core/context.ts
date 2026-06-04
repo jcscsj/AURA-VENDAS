@@ -19,10 +19,19 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
   let user: User | null = null;
   let adminSession: any = null;
 
-  // 1. Pega a sessão básica do Cookie (Rápido)
-  const session = await sdk.authenticateRequest(req).catch(() => null);
-  if (session) {
-    user = session as User;
+  // 1. BLINDAGEM: Tenta ler a sessão. Se der erro (cookie corrompido), APAGA o cookie.
+  try {
+    const session = await sdk.authenticateRequest(req);
+    // Só aceita se a sessão for válida e tiver um openId real
+    if (session && session.openId) {
+      user = session as User;
+    } else {
+      res.clearCookie("app_session_id");
+    }
+  } catch (error) {
+    // Se o sistema do Manus falhar ao ler o cookie, jogamos ele no lixo
+    res.clearCookie("app_session_id");
+    user = null;
   }
 
   // 2. Pega a sessão de Admin
@@ -33,6 +42,7 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
       adminSession = JSON.parse(sessionData);
     }
   } catch (e) { 
+    res.clearCookie("adminSession");
     adminSession = null; 
   }
 
@@ -40,7 +50,7 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
     req: opts.req,
     res: opts.res,
     // FATO TÉCNICO: Se for Admin, injetamos um openId falso para o servidor de imagens não crashar
-    user: adminSession ? { ...adminSession, openId: `admin_${adminSession.id}` } : user,
+    user: adminSession ? { ...adminSession, openId: `admin_${adminSession.id}` } as any : user,
     adminSession,
   };
 }
