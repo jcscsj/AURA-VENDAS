@@ -540,3 +540,51 @@ export async function createManualPix(order: any) {
     pix_qr_code: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(result)}`
   };
 }
+
+export async function createAbacatePayment(order: any) {
+  try {
+    const payload = {
+      frequency: "ONE_TIME",
+      methods: ["PIX"],
+      products: [
+        {
+          externalId: order.id.toString(), // FATO TÉCNICO: Liga a AbacatePay ao seu banco TiDB
+          name: `Pedido #${order.id} - Aura City`,
+          quantity: 1,
+          price: order.total // O valor já está em centavos, perfeito para a API
+        }
+      ],
+      returnUrl: `https://aura-shop-huf9.onrender.com/orders`,
+      completionUrl: `https://aura-shop-huf9.onrender.com/api/webhook/abacatepay`,
+      customer: {
+        name: order.playerNick,
+        email: order.email || "contato@auracity.com",
+        taxId: order.cpf?.replace(/\D/g, "") || "00000000000",
+      }
+    };
+
+    const response = await fetch("https://api.abacatepay.com/v1/billing/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.ABACATE_API_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await response.json();
+    
+    if (!response.ok || !json.data) {
+      console.error("[AbacatePay Error]:", json);
+      return null;
+    }
+
+    return {
+      checkout_url: json.data.url, // O link seguro para o jogador pagar
+      payment_id: json.data.id
+    };
+  } catch (error) {
+    console.error("[AbacatePay Fatal]:", error);
+    return null;
+  }
+}
